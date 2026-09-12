@@ -65,26 +65,50 @@ something a client can be built against, not when the documents are written.
 - [ ] 3.4 Note the two IDE consumers wherever that command line is owned, so a
       future change to it is deliberate
 
-## 4. zenwave-architectural-vistas
+## 4. dsl-kotlin
 
-- [ ] 4.1 The page signals readiness through the host-provided channel when one
+- [x] 4.1 Record source spans for plugin configuration options — the enclosing
+      `config` block already does this in `enterConfig_option`, and
+      `enterPlugin_config_option` records nothing
+      (`src/commonMain/kotlin/io/zenwave360/language/zdl/internal/ZdlListenerImpl.kt`)
+- [x] 4.2 Do the same for plugin CLI options if the pattern extends cleanly; say
+      why if it does not
+      Declaration and value spans use `plugins.<name>.cliOptions.<option>`;
+      a valueless flag has only a declaration span.
+- [x] 4.3 Leave interpreted values alone — this is additive, and an existing
+      consumer must see the model it sees today
+      Contract caveat: decimal values currently remain strings; CLI values
+      preserve source text (including quotes), and JS integers are Kotlin Long
+      objects rather than plain JS numbers. These existing representations were
+      left unchanged; the requirement's blanket interpretation wording is broader
+      than the current API and needs clarification, not a silent breaking change.
+- [x] 4.4 A test that slices the source with a recorded span and gets the text
+      back including its quote delimiters
+- [x] 4.5 Say whether the JS artifact needs rebuilding for consumers to see it
+      Yes: shared Kotlin changes require `./gradlew jsProductionExecutableCompileSync`
+      and consumers must update their bundled or installed JS package. Documented
+      in dsl-kotlin's README; existing bundles do not gain the spans automatically.
+
+## 5. zenwave-architectural-vistas
+
+- [ ] 5.1 The page signals readiness through the host-provided channel when one
       exists, falling back to the parent frame
-- [ ] 4.2 Confirm the page loads with no remote resources at all, fonts included,
+- [ ] 5.2 Confirm the page loads with no remote resources at all, fonts included,
       under a restrictive content security policy
-- [ ] 4.3 Confirm JCEF is unaffected by both
-- [ ] 4.4 Make the bundle reachable by a second consumer — a second sync target
+- [ ] 5.3 Confirm JCEF is unaffected by both
+- [ ] 5.4 Make the bundle reachable by a second consumer — a second sync target
       or a published package
 
-## 5. Clients
+## 6. Clients
 
-- [ ] 5.1 `zenwave-platform-vscode`: implement `004-eventflow-panel` against this
-- [ ] 5.2 `zenwave-platform-vscode`: implement `005-model-preview` against this
-- [ ] 5.3 `zenwave-platform-vscode`: implement `006-model-explorer` against the
+- [ ] 6.1 `zenwave-platform-vscode`: implement `004-eventflow-panel` against this
+- [ ] 6.2 `zenwave-platform-vscode`: implement `005-model-preview` against this
+- [ ] 6.3 `zenwave-platform-vscode`: implement `006-model-explorer` against the
       hierarchy contract
-- [ ] 5.4 Compare both IDEs on the same fixture and record any difference as a
+- [ ] 6.4 Compare both IDEs on the same fixture and record any difference as a
       bug against one of them — expecting the trees to differ in presentation and
       the diagrams not to differ at all
 
-## 6. Archive
+## 7. Archive
 
-- [ ] 6.1 `openspec archive 001-ide-client-contracts --store zenwave-specs`
+- [ ] 7.1 `openspec archive 001-ide-client-contracts --store zenwave-specs`

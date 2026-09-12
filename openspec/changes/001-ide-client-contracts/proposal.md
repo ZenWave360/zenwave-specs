@@ -48,6 +48,9 @@ the concrete argument for the contract existing at all.
 - **The navigation and authoring requests** the IDE clients drive from editor
   commands — what a concept references, what references it, which concepts cover
   a position, and rewriting a flow's services.
+- **What the parsers report about source positions**, and the one gap already
+  costing something: options declared inside a plugin carry no span, so the two
+  IDE clients reconstruct their command lines differently for the same model.
 - **Capability advertisement** for all of them, so a client can tell an old server
   from an absent one.
 - **Two rules about content that everything visual rests on**: what the editor is
@@ -74,6 +77,8 @@ the concrete argument for the contract existing at all.
 - `sdk-plugin-catalogue`: that the ZenWave SDK reports its own plugins and their
   options in a machine-readable form, and that the IDE clients build plugin
   authoring on it.
+- `dsl-parser-output`: what the ZDL and ZFL parsers guarantee about the model
+  they return and about where each part of it came from in the source.
 
 ### Modified Capabilities
 
@@ -91,6 +96,9 @@ None — this store starts empty.
 - **`zenwave-architectural-vistas`** changes how the page signals readiness, and
   stops assuming it may reach `window.parent`. Both are small and neither breaks
   JCEF.
+- **`dsl-kotlin`** is asked for one addition: record source spans for options
+  declared inside a plugin, mirroring what the enclosing `config` block already
+  does. Additive, and no consumer sees a different model.
 - **`zenwave-sdk`** is asked for one addition: each plugin reporting where its
   documentation lives. Everything else in the catalogue requirement describes what
   it already does, and the obligation that creates is that a future change to that
