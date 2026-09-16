@@ -311,6 +311,16 @@ JVM nothing changes, because every capability is available. On Node, a
 `classpath:` `$ref` under `FAIL` now throws `CapabilityUnavailableException`
 instead of `MissingRefException("Cannot load: …")`.
 
+Deviation by agent on 2026-09-16, pending review (task 5.2, `dsl-kotlin` 835a75f):
+the Node-only test dependencies are removed rather than kept in `jsTest`. The npm `fs`
+placeholder and `kotlin-node` were used only by the test fixture reader, whose static
+`@JsModule("fs")` import breaks the browser test bundle (that bundle includes the whole
+`jsTest` compilation). The reader now uses `process.getBuiltinModule("node:fs")`. The
+Kotlin 2.3.0 default Node for tests supports it, so no Node version pin was needed. The
+published artifact never listed these dependencies, so consumers see no change. As in
+`json-schema-ref-parser-kmp`, only a browser-safe smoke test runs in the browser; the
+common suite still reads fixtures from disk on Node and the JVM.
+
 ### Verification belongs to the producer
 
 A consumer discovering this is a consumer discovering it in a Web Worker, in

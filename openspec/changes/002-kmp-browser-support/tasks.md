@@ -64,29 +64,50 @@ can bundle the language stack for a browser and it loads.
 
 ## 5. dsl-kotlin
 
-- [ ] 5.1 Confirm it still loads in a browser — already clean, and the one
+- [x] 5.1 Confirm it still loads in a browser — already clean, and the one
       artifact with a track record there
-- [ ] 5.2 Keep the Node-only test dependencies in `jsTest`, out of the published
+      Confirmed in dsl-kotlin 835a75f (branch `vscode-platform/dsl`): `jsBrowserTest`
+      (headless Edge 153) runs `JsBrowserSmokeTest` — `parseZdl`, `generateMermaidFromZdl`,
+      `parseZfl`, `GenerateMermaidFromZfl` and ELK layout via `GenerateFlowViewFromZfl`.
+      The production .mjs files contain no Node import. elkjs's
+      `require.resolve('web-worker')` cannot be resolved in a browser bundle; webpack reports
+      it and elkjs catches it at run time (main-thread fallback), so it is harmless.
+- [x] 5.2 Keep the Node-only test dependencies in `jsTest`, out of the published
       artifact
+      Done in dsl-kotlin 835a75f by removing them (deviation in design.md): the published
+      package.json never listed them, and `jsTest` no longer declares the npm `fs`
+      placeholder or `kotlin-node`; fixtures are read through `process.getBuiltinModule`.
 
 ## 6. Verification, in each producing repository
 
 - [ ] 6.1 Declare a `browser()` target wherever a JS artifact is published
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 (`build.gradle.kts` `js(IR)`)
+  - [x] dsl-kotlin: done in 835a75f (`build.gradle.kts` `js(IR)`, next to `nodejs()`)
 - [ ] 6.2 A build step that loads the artifact in a browser and fails if it
       cannot
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 — `jsBrowserTest` (Karma,
         ChromeHeadless; `CHROME_BIN` or a found Chrome/Chromium/Edge) is part of
         `check`; `karma.config.d/fail-on-empty.js` fails a run with no tests
+  - [x] dsl-kotlin: done in 835a75f — `jsBrowserTest` (Karma, ChromeHeadless, filtered to
+        `io.zenwave360.language.JsBrowserSmokeTest`; `CHROME_BIN` or a found
+        Chrome/Chromium/Edge) is part of `check`; `karma.config.d/fail-on-empty.js` fails a
+        run with no tests
 - [ ] 6.3 Confirm the check actually catches a regression, by introducing a Node
       import on a branch and watching the build fail
   - [x] json-schema-ref-parser-kmp: confirmed on throwaway branch (deleted) off
         9d87a93: a module-level `@JsModule("node:fs")` used by `NodeFsLoader` made
         `./gradlew check` fail in `:jsBrowserTest` with `UnhandledSchemeError:
         Reading from "node:fs" is not handled by plugins`; `jsNodeTest` still passed
+  - [x] dsl-kotlin: confirmed on throwaway branch `vscode-platform/dsl-regression-probe`
+        (deleted) off 835a75f: a `@file:JsModule("node:fs")` external called from
+        `parseZdl` made `./gradlew check` fail in `:jsBrowserTest` with
+        `UnhandledSchemeError: Reading from "node:fs" is not handled by plugins`;
+        `jsNodeTest` and `nodeIntegrationTest` still passed
 - [ ] 6.4 Node consumers still work throughout
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 — jvmTest 158, jsNodeTest 125,
         nodeIntegrationTest 5 pass (baseline 155 / 116 / 4)
+  - [x] dsl-kotlin: done in 835a75f — jvmTest 148, jsNodeTest 147, jsBrowserTest 4,
+        nodeIntegrationTest 90 pass and koverVerify passes (baseline 141 / 136 / none / 88)
 
 ## 7. Consumer confirmation
 

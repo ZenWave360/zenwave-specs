@@ -356,6 +356,20 @@ separate choice, which 005's design anticipates.
   returns PlantUML, because no client that reads the wire can render it.
 - IntelliJ (`ZdlPreviewEditor`), zenwave-sdk (`ZdlToMarkdownPlugin`): no change.
 
+Implementation note by agent on 2026-09-16, pending review: implemented in
+`dsl-kotlin` 835a75f (task 4.8). Choices the decision left open: (a) one
+whole-document `classDiagram`, not the SDK's per-service/per-aggregate diagrams, since
+`zenwave/preview` returns a single ZDL representation; (b) not carried over from the
+PlantUML templates: javadoc, method annotations, lifecycle state machines and the
+inputs/outputs/events namespaces (those types appear as classes with `<<input>>`,
+`<<output>>`, `<<event>>` and a service `..>` dependency); (c) relationships come from the
+top-level ZDL `relationships` with cardinality on both ends, and field references to
+declared types are `*--` for embedded types and `-->` otherwise; (d) names are reduced to
+`[A-Za-z0-9_]` identifiers, Mermaid keywords get a `_` suffix, and a renamed class keeps its
+original name as a label; (e) a document with no declared types returns `classDiagram`
+with `note "No types declared"`, because a class diagram without statements is not valid
+Mermaid; (f) it is also exported to JS as `generateMermaidFromZdl(input)`.
+
 **Additive:** yes. It is a new class in `dsl-kotlin` and a new result from a new
 request. Accepted consequence: until IntelliJ moves over, the two IDEs show ZDL
 diagrams in different notations. 6.4's comparison should record that as known,
@@ -460,6 +474,12 @@ consumers see.
   JVM model, and the comment in `ZdlListenerUtils` records why they are strings.
   This is raised as a spec question because the `dsl-parser-output` wording
   says "numbers as numbers".
+
+Implemented by agent on 2026-09-16 in `dsl-kotlin` 835a75f (task 4.7) as decided,
+with no deviation: the grammar change adds no token types, and every .zdl/.zfl/.jdl file
+under the workspace (383) lexes to an identical token stream before and after. Only text
+with a `-` directly before a digit lexes differently (for example `1-2` is now `1`, `-2`
+instead of `1`, an error token, `2`); none of those forms was valid ZDL or ZFL.
 
 **Release note for `dsl-kotlin`:** a rebuilt JS package is needed (see 4.5), and
 the change is flagged in its README as "integers in parseZdl/parseZfl output are

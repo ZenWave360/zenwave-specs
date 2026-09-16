@@ -104,6 +104,33 @@ something a client can be built against, not when the documents are written.
       is visible to every consumer, so decide it here rather than in dsl-kotlin
       alone
       (decision recorded in design.md §Decision (task 4.6), pending review)
+      Decision implemented in dsl-kotlin 835a75f (branch `vscode-platform/dsl`), see 4.7;
+      left open because the decision itself awaits review.
+- [x] 4.7 Implement the recorded 4.6 decision: JS exports return integers as plain
+      numbers (decimal string beyond ±(2^53 − 1)) with the common/JVM model unchanged,
+      and negative numeric literals keep their sign on every platform. Evidence before:
+      `src/jsMain/kotlin/NodeJsExports.kt` `convertToPlain` passed Kotlin `Long` through;
+      `Zdl.g4:85-86` / `Zfl.g4:79-80` defined `INT: DIGIT+` / `NUMBER: DIGIT+ ([.] DIGIT+)?`.
+      Done in dsl-kotlin 835a75f: `convertToPlain` `is Long ->` branch; both grammars
+      `INT: '-'? DIGIT+` / `NUMBER: '-'? DIGIT+ ([.] DIGIT+)?` (token types unchanged;
+      all 383 .zdl/.zfl/.jdl files under the workspace lex to identical token streams);
+      tests `ZdlListenerKotlinTest.parseZdl_NegativeNumericLiteralsKeepTheirSign`,
+      `ZflListenerKotlinTest.parseZfl_NegativeNumericLiteralsKeepTheirSign`,
+      `ZdlFormatterTest.format_keeps_the_sign_of_negative_numbers`,
+      `nodejs-test-project/zdl-parser.test.js` "ZDL Parser - Numbers",
+      `JsBrowserSmokeTest.parsesZdlIntoPlainJsValues`; README and
+      `release-notes/release-notes.v1.10.0.md` document the JS-visible change.
+- [x] 4.8 A multiplatform Mermaid class diagram generator for ZDL, as recorded in the
+      1.5 decision: `io.zenwave360.language.zdl.application.GenerateMermaidFromZdl`
+      `execute(zdlContent: String): String`, with inert output. Evidence before: dsl-kotlin
+      had only `eventflow/application/GenerateMermaidFromZfl.kt`; ZDL diagrams existed only
+      as PlantUML in zenwave-sdk `ZdlToMarkdownGenerator/*.plantuml.hbs` (JVM-only).
+      Done in dsl-kotlin 835a75f: `GenerateMermaidFromZdl` and
+      `zdl/view/ZdlToMermaidClassDiagramTransformer.kt` in commonMain, JS export
+      `generateMermaidFromZdl(input)`; `GenerateMermaidFromZdlTest` (exact output,
+      Mermaid-keyword names, corpora including `complete.zdl`); every ZDL file in the
+      workspace (330) produced a diagram accepted by `mermaid.parse` (Mermaid 11.12.3),
+      except two copies of zdl-jvm `complete.zdl`, on which `parseZdl` itself already throws.
 
 ## 5. zenwave-architectural-vistas
 
