@@ -109,6 +109,33 @@ resources and no inline script beyond what the host explicitly allows.
 - **WHEN** the page renders it
 - **THEN** no part of it is sent anywhere
 
+### Requirement: The page states the protocol version it speaks
+The page SHALL state the version of the host message protocol it implements, both
+where a host can read it without running the page and in its readiness signal. The
+version SHALL change only when a change to the protocol is not backwards compatible
+for a host; additions a host may ignore SHALL keep it.
+
+#### Scenario: A host checks the bundle it ships
+- **GIVEN** a host that pins a copy of the page
+- **WHEN** it is built or packaged
+- **THEN** it can read the page's protocol version without loading the page, and
+  refuse a version it does not support
+
+#### Scenario: A host meets a page with an incompatible protocol
+- **GIVEN** a host that supports one protocol version and a page that speaks another
+- **WHEN** the page signals that it is ready
+- **THEN** the signal carries the page's version, and the host can report the
+  mismatch instead of showing a blank or broken diagram
+
+#### Scenario: An additive change
+- **GIVEN** a page that gains a new optional payload field or a new message type
+- **WHEN** it is released
+- **THEN** its protocol version is unchanged
+
+**Rationale:** the page and its hosts ship separately, and a synced or packaged
+copy of the page has no other version a host can check. Ignoring unknown messages
+covers additions; only a stated version makes a breaking change visible.
+
 ### Requirement: Unknown messages are ignored
 The page SHALL ignore messages it does not recognise, and messages that do not
 carry a recognisable type, without failing or disturbing what it is showing.

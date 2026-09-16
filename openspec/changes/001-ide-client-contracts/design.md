@@ -530,6 +530,36 @@ The server uses the language module's symbol at the position unless the cross-re
 narrower symbol there, so the id is one the reference requests know. It is not `conceptAt`: architecture
 identities do not exist in committed `zenwave-lsp` code.
 
+### Decision (task 5.5): the page carries a protocol version; hosts pin the package and check the version
+
+Decided by agent on 2026-09-17, pending review
+
+`zenwave-platform-vscode` 004 task 1.5 asks how the bundle version is pinned so a
+protocol change cannot break the diagram silently. The page had no version a host
+could see: IntelliJ syncs a directory, and the ready message was `{type:"webviewReady"}`.
+
+- **Distribution:** the built page is published as its own package,
+  `@zenwave360/vistas-eventflow-webview` (`zenwave-architectural-vistas/packages/eventflow-webview`),
+  with the page under `webview/` and no runtime dependencies. A host pins an exact
+  version in its lockfile. IntelliJ keeps `pnpm sync:intellij`.
+- **Protocol version:** an integer, `1` today, separate from the package version.
+  It is stated in `webview/protocol.json`, in `<meta name="zenwave-webview-protocol-version">`
+  in `index.html`, as `EVENTFLOW_WEBVIEW_PROTOCOL_VERSION` exported by the package,
+  and at run time in the ready message, which gains an additive payload:
+  `{type:"webviewReady", payload:{protocol:"zenwave.eventflow.webview", protocolVersion:1}}`.
+  A host that ignores `payload` is unaffected.
+- **When it changes:** only for a change a host cannot ignore (a message removed or
+  renamed, or a payload field changing meaning), together with a major package bump.
+  New optional fields and new message types keep it, since the page and hosts ignore
+  what they do not know.
+- **Host obligation:** check the version at build time and on `webviewReady`, and show
+  an error state naming the mismatch rather than a blank diagram. A ready message
+  without `payload` comes from a page that predates versioning.
+
+Rejected: using the npm package version as the protocol version (every renderer fix
+would look like a protocol change), and a version query message (a page too old to
+answer it would be indistinguishable from one still loading).
+
 ## Risks / Trade-offs
 
 - **A behavioural contract cannot be mechanically verified.** Nothing fails a

@@ -20,6 +20,11 @@ something a client can be built against, not when the documents are written.
       PlantUML
       (decision recorded in design.md §Decision (task 1.5), pending review)
 
+- [ ] 1.6 Review with `zenwave-architectural-vistas` and `zenwave-platform-vscode`: is a
+      protocol version stated by the page, with the page published as its own package,
+      the right way to pin the bundle (`zenwave-platform-vscode` 004 task 1.5)?
+      (decision recorded in design.md §Decision (task 5.5), pending review)
+
 ## 2. zenwave-lsp
 
 - [x] 2.1 A request returning the flow and service view models for a ZFL
@@ -176,13 +181,43 @@ something a client can be built against, not when the documents are written.
 
 ## 5. zenwave-architectural-vistas
 
-- [ ] 5.1 The page signals readiness through the host-provided channel when one
+- [x] 5.1 The page signals readiness through the host-provided channel when one
       exists, falling back to the parent frame
-- [ ] 5.2 Confirm the page loads with no remote resources at all, fonts included,
+      Done in zenwave-architectural-vistas 2e60d25 (branch `vscode-platform/vistas`): `apps/eventflow-webview/src/bootstrap.ts`
+      sends `webviewReady` to `window.__zenwaveHost`, else `acquireVsCodeApi()` (called once, cached on
+      `window.__zenwaveVsCodeApi`), else `window.parent` only when framed; asserted for each channel, including a
+      host that acquired the API first, in `packages/eventflow-webview/test/browser.test.mjs` (headless Edge)
+- [x] 5.2 Confirm the page loads with no remote resources at all, fonts included,
       under a restrictive content security policy
+      Done in zenwave-architectural-vistas 2e60d25: inline bootstrap and `<style>` moved into the built entry
+      chunk and CSS. `browser.test.mjs` serves the packaged page under `default-src 'none'; script-src 'self';
+      style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'` (and with asset URLs rewritten to
+      another origin), renders both `zenwave/eventFlowViews` samples, and fails on any CSP violation, request to a
+      non-local origin, failed request or exception; `package.test.mjs` checks the CSS has no `@font-face`,
+      `@import` or non-`data:` `url()`. A negative control (an inline script and a Google Fonts link added to
+      `index.html`) failed every scenario
 - [ ] 5.3 Confirm JCEF is unaffected by both
+      Evidence, not conclusive without running IntelliJ: `ZflJcefDiagramHost` (ZenWaveDomainModelEditor 9417bf8)
+      registers only the assets `index.html` names as `src`/`href="./…"`, treats CEF `onLoadEnd` as ready and
+      posts with `executeJavaScript("window.postMessage(…)")`; it never listens for `webviewReady`. The page still
+      references only `./assets/*` from `index.html`, with the bootstrap in the entry chunk. The JCEF-like scenario
+      in `browser.test.mjs` serves only those assets, posts `renderBundle` and `setViewMode` after load and
+      renders cleanly. Open: needs a human run of the IntelliJ tool window after `pnpm sync:intellij`
 - [ ] 5.4 Make the bundle reachable by a second consumer — a second sync target
       or a published package
+      Package exists locally: `@zenwave360/vistas-eventflow-webview` (`packages/eventflow-webview`, 2e60d25), page
+      under `webview/`, `pnpm pack` tarball validated by `scripts/release-packages.mjs validate-tarball`.
+      Open: needs publication (the first publish of a new package is manual, per CONTRIBUTING.md)
+- [x] 5.5 The page states its protocol version, readable without running it and in
+      `webviewReady` (requirement "The page states the protocol version it speaks")
+      (decision recorded in design.md §Decision (task 5.5), pending review as task 1.6).
+      Evidence before: `zenwave-platform-vscode` 004 task 1.5 and its design risk "The bundle is not versioned
+      for this consumer today"; `apps/eventflow-webview/index.html` sent `{type:"webviewReady"}` with no version
+      and the synced directory carried none.
+      Done in zenwave-architectural-vistas 2e60d25: `apps/eventflow-webview/src/protocol.ts` →
+      `webviewReady.payload {protocol:"zenwave.eventflow.webview", protocolVersion:1}`,
+      `<meta name="zenwave-webview-protocol-version">`, `webview/protocol.json`, and
+      `EVENTFLOW_WEBVIEW_PROTOCOL_VERSION` exported by the package; `package.test.mjs` fails when they differ
 
 ## 6. Clients
 
