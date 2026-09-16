@@ -96,3 +96,23 @@ in a consumer.
 **Rationale:** without this, the only test of browser safety is a user opening a
 web IDE, and the only symptom is a worker that fails to start. The property has
 to be checked by whoever can still cheaply fix it.
+
+
+### Requirement: The JS language server provides runnable message endpoints
+The published JS language server SHALL provide entry points that accept and
+answer Language Server Protocol messages over Node child-process IPC and Web
+Worker messaging, respectively. A consumer SHALL be able to initialise the
+server, discover its advertised language and custom-request capabilities, and
+use those capabilities without supplying its own language-server implementation.
+
+#### Scenario: A desktop consumer starts the shipped JS server
+- **GIVEN** a consumer with the published JS server available
+- **WHEN** it starts the server in a Node child process and initialises over IPC
+- **THEN** the server answers initialisation and subsequent supported requests
+  through that connection
+
+#### Scenario: A browser consumer starts the shipped JS server
+- **GIVEN** a consumer with the published JS server available and no Node runtime
+- **WHEN** it starts the server in a Web Worker and initialises through messaging
+- **THEN** the server answers initialisation and subsequent supported requests
+  through that connection without requiring Node APIs

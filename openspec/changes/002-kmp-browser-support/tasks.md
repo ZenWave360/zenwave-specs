@@ -35,9 +35,17 @@ can bundle the language stack for a browser and it loads.
 
 - [ ] 4.1 Confirm `lsp-core` loads in a browser once its dependencies do — its
       `jsMain` carries no Node API
-- [ ] 4.2 `lsp-js` with real sources
-      *(its protocol transport is tracked in `zenwave-platform-vscode`'s
-      `003-lsp-client`; this task is about the module existing and loading)*
+- [ ] 4.2 `lsp-js` with real sources, available to consumers as a versioned
+      JS artifact. Evidence from `zenwave-platform-vscode` 003:
+      `zenwave-lsp/lsp-js/src/main/kotlin/io/zenwave360/lsp/js/.gitkeep` is the
+      only tracked main-source file; `lsp-js/build.gradle.kts:5-35` declares
+      executable/npm metadata but there is no server implementation to start.
+- [ ] 4.3 Provide runnable Node IPC and Web Worker messaging entry points and
+      verify initialise plus a supported request over each real wire, with
+      capability discovery. `zenwave-platform-vscode` 003 tasks 3.1/3.2 cannot
+      connect without these; a client supervisor cannot replace the producer's
+      language-server implementation. The desktop transport must be available
+      independently of the remaining browser dependency-chain work.
 
 ## 5. dsl-kotlin
 
