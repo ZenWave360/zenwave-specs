@@ -41,10 +41,33 @@ can bundle the language stack for a browser and it loads.
 
 - [ ] 3.1 Confirm `manifest-core`, `manifest-graph` and `workspace-runtime` load
       in a browser once the loader is fixed — they carry no Node API of their own
-- [ ] 3.2 Confirm a caller can supply its own reader all the way through, without
+  - [x] manifest-core: confirmed in 2edd677 (branch `vscode-platform/manifest`):
+        `jsBrowserTest` (headless Edge 153) runs the whole JS test suite, 65 tests incl.
+        `src/jsTest/.../ManifestBrowserSmokeTest.kt`, which loads a manifest with a `$ref`,
+        its docs and an artifact
+  - [x] manifest-graph: confirmed in 2edd677: `jsBrowserTest` runs 8 tests incl.
+        `src/jsTest/.../graph/ManifestGraphBrowserSmokeTest.kt`, which builds an
+        architecture graph from ZDL and ZFL (with dsl-kotlin 835a75f)
+  - [ ] workspace-runtime: blocked, the module is not in zenwave-manifest's history. At
+        `develop` c82feb5 `settings.gradle.kts` includes only `manifest-core` and
+        `manifest-graph`. `workspace-runtime/` exists only as untracked files in the main
+        checkout, so it cannot be built or verified from committed sources
+- [x] 3.2 Confirm a caller can supply its own reader all the way through, without
       a platform default being required to load
-- [ ] 3.3 Report archive extraction as unavailable on JS, rather than failing in
+      Confirmed in zenwave-manifest 2edd677: both browser smoke tests construct
+      `ZenWaveManifestLoader(documentLoaders = listOf(reader), archiveEntryLoader = null)`
+      and assert that every document (manifest, `$ref` target, docs, artifacts, ZDL/ZFL read
+      by `ArchitectureGraphBuilder`) was requested through that reader, in headless Edge.
+      `theFilesystemIsReportedAsUnavailableInABrowser` shows the default readers still load there.
+- [x] 3.3 Report archive extraction as unavailable on JS, rather than failing in
       a way that reads like a defect
+      Done in zenwave-manifest 2edd677 (decision 1.3): commonMain
+      `io.zenwave360.manifest.ManifestPlatform` (`ARCHIVE_EXTRACTION =
+      "manifest.archiveExtraction"`, JVM `{it}`, JS `{}`). `ZenWaveManifestLoader` throws
+      `CapabilityUnavailableException(ARCHIVE_EXTRACTION, RefParserPlatform.name)` for an
+      archive candidate without a loader, and the candidate loop continues.
+      Tests: `ManifestPlatformTest` (common: next candidate loads, final error names the
+      capability), `ManifestPlatformJvmTest`, `ManifestBrowserSmokeTest`.
 
 ## 4. zenwave-lsp
 
@@ -83,6 +106,8 @@ can bundle the language stack for a browser and it loads.
 - [ ] 6.1 Declare a `browser()` target wherever a JS artifact is published
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 (`build.gradle.kts` `js(IR)`)
   - [x] dsl-kotlin: done in 835a75f (`build.gradle.kts` `js(IR)`, next to `nodejs()`)
+  - [x] zenwave-manifest: done in 2edd677 (`manifest-core/build.gradle.kts` and
+        `manifest-graph/build.gradle.kts` `js(IR)`, next to `nodejs()`)
 - [ ] 6.2 A build step that loads the artifact in a browser and fails if it
       cannot
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 — `jsBrowserTest` (Karma,
@@ -92,6 +117,10 @@ can bundle the language stack for a browser and it loads.
         `io.zenwave360.language.JsBrowserSmokeTest`; `CHROME_BIN` or a found
         Chrome/Chromium/Edge) is part of `check`; `karma.config.d/fail-on-empty.js` fails a
         run with no tests
+  - [x] zenwave-manifest: done in 2edd677 — `jsBrowserTest` in both modules (Karma,
+        ChromeHeadless, unfiltered: the whole JS suite runs in the browser) is part of
+        `check`; `CHROME_BIN` fallback in the root `build.gradle.kts`;
+        `<module>/karma.config.d/fail-on-empty.js` fails a run with no tests
 - [ ] 6.3 Confirm the check actually catches a regression, by introducing a Node
       import on a branch and watching the build fail
   - [x] json-schema-ref-parser-kmp: confirmed on throwaway branch (deleted) off
@@ -103,11 +132,23 @@ can bundle the language stack for a browser and it loads.
         `parseZdl` made `./gradlew check` fail in `:jsBrowserTest` with
         `UnhandledSchemeError: Reading from "node:fs" is not handled by plugins`;
         `jsNodeTest` and `nodeIntegrationTest` still passed
+  - [x] zenwave-manifest: confirmed on throwaway branch
+        `vscode-platform/manifest-regression-probe` (deleted) off 2edd677: a
+        `@file:JsModule("node:fs")` external used from manifest-core `jsMain` made `check`
+        fail in `:manifest-core:jsBrowserTest` and, once reachable from the default loader,
+        in `:manifest-graph:jsBrowserTest`, with `UnhandledSchemeError: Reading from
+        "node:fs" is not handled by plugins`; `jsNodeTest` still passed. An import that
+        manifest-graph's code does not reach is left out of its test bundle, so only
+        manifest-core's run catches that one
 - [ ] 6.4 Node consumers still work throughout
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 — jvmTest 158, jsNodeTest 125,
         nodeIntegrationTest 5 pass (baseline 155 / 116 / 4)
   - [x] dsl-kotlin: done in 835a75f — jvmTest 148, jsNodeTest 147, jsBrowserTest 4,
         nodeIntegrationTest 90 pass and koverVerify passes (baseline 141 / 136 / none / 88)
+  - [x] zenwave-manifest: done in 2edd677 — manifest-core jvmTest 85, jsNodeTest 65,
+        jsBrowserTest 65; manifest-graph jvmTest 8, jsNodeTest 8, jsBrowserTest 8; koverVerify
+        passes (baseline 81 / 59 / none and 8 / 7 / none). The public API is unchanged apart from
+        additions
 
 ## 7. Consumer confirmation
 
