@@ -88,6 +88,15 @@ something a client can be built against, not when the documents are written.
       Yes: shared Kotlin changes require `./gradlew jsProductionExecutableCompileSync`
       and consumers must update their bundled or installed JS package. Documented
       in dsl-kotlin's README; existing bundles do not gain the spans automatically.
+- [ ] 4.6 Settle the 4.3 caveat on numbers. In `parseZdl` output an integer is a
+      Kotlin `Long` object (`maxDepth 3` → `{"h2_1":3,"i2_1":0}`), whose field
+      names are compiler-mangled and change between Kotlin versions; a consumer
+      that serialises it gets those fields, as the VS Code runner did in its
+      command line. Separately, `neg -2` inside a plugin config is reported as
+      `2` — the sign is lost. Found from `zenwave-platform-vscode` 002; that
+      client now uses `String(value)` as a stopgap. Changing the representation
+      is visible to every consumer, so decide it here rather than in dsl-kotlin
+      alone
 
 ## 5. zenwave-architectural-vistas
 
