@@ -8,9 +8,12 @@ can bundle the language stack for a browser and it loads.
 - [ ] 1.1 `json-schema-ref-parser-kmp` chooses how to keep the Node filesystem
       loader out of a browser's module graph — named targets, a separate
       artifact, or a lazily resolved import (surveyed in `design.md`)
+      (decision recorded in design.md §Decision (task 1.1), pending review)
 - [ ] 1.2 Agree whether existing Node consumers keep today's default behaviour,
       and what the migration is if they do not
+      (decision recorded in design.md §Decision (task 1.2), pending review)
 - [ ] 1.3 Agree how a consumer asks which capabilities exist on its platform
+      (decision recorded in design.md §Decision (task 1.3), pending review)
 
 ## 2. json-schema-ref-parser-kmp
 

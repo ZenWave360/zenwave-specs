@@ -7,14 +7,18 @@ something a client can be built against, not when the documents are written.
 
 - [ ] 1.1 Review with `zenwave-lsp`: are both requests the right shape, and does
       the initialize result already carry enough for capability discovery?
+      (decision recorded in design.md §Decision (task 1.1), pending review)
 - [ ] 1.2 Review with `zenwave-architectural-vistas`: are the two webview changes
       acceptable, and do they keep JCEF working unchanged?
+      (decision recorded in design.md §Decision (task 1.2), pending review)
 - [ ] 1.4 Settle how a browser-hosted server reaches private repositories when
       the `git` content source fires — VS Code can supply a GitHub session, but
       not without an agreed way to hand it over
+      (decision recorded in design.md §Decision (task 1.4), pending review)
 - [ ] 1.5 Decide whether ZDL class diagrams become Mermaid upstream — it changes
       what a server may return, and `zenwave-platform-vscode` cannot render
       PlantUML
+      (decision recorded in design.md §Decision (task 1.5), pending review)
 
 ## 2. zenwave-lsp
 
@@ -41,6 +45,7 @@ something a client can be built against, not when the documents are written.
       `didChangeConfiguration` and `didChangeWatchedFiles` are empty today
 - [ ] 2.10 Decide whether a hierarchy `label` stays composed by the server now
       that it is contractually a default rather than a mandate
+      (decision recorded in design.md §Decision (task 2.10), pending review)
 - [ ] 2.11 Open documents overlaid on manifest content resolution, so an edited
       document is what contributes to a result wherever it appears
 - [ ] 2.12 A request asking the client for a credential for a location, applied to
@@ -62,6 +67,7 @@ something a client can be built against, not when the documents are written.
       for plugins that did not ship with the SDK
 - [ ] 3.3 Decide how a plugin with no documentation is distinguished from one
       whose location is simply missing
+      (decision recorded in design.md §Decision (task 3.3), pending review)
 - [ ] 3.4 Note the two IDE consumers wherever that command line is owned, so a
       future change to it is deliberate
 
@@ -97,6 +103,7 @@ something a client can be built against, not when the documents are written.
       client now uses `String(value)` as a stopgap. Changing the representation
       is visible to every consumer, so decide it here rather than in dsl-kotlin
       alone
+      (decision recorded in design.md §Decision (task 4.6), pending review)
 
 ## 5. zenwave-architectural-vistas
 

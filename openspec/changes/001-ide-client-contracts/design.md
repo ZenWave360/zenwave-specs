@@ -119,6 +119,352 @@ references. The contract asks only that the page *tolerate* being served that wa
 This keeps host-specific knowledge in the hosts, which is where it can be fixed
 without a release of the visualization package.
 
+### Decision (task 1.1): the two requests' shape, and advertisement through `experimental.customRequests`
+
+Decided by agent on 2026-09-16, pending review
+
+This is the agent's assessment in place of a review with `zenwave-lsp`. The wire
+names and fields below are what `zenwave-lsp` implements; they are recorded here
+so the implementing agent does not have to choose them. They are **not** spec
+requirements: the rule above that behaviour is the contract still holds.
+
+**Is the initialize result enough for discovery?** Yes, with no new mechanism.
+`ZenwaveLspServer.buildCapabilities()` (`lsp-jvm/.../ZenwaveLspServer.kt:253-268`)
+already returns `capabilities.experimental.customRequests: string[]`, and the
+VS Code client already reads exactly that (`advertisedRequests` in
+`packages/extension/src/lsp/supervisor.ts`). The IntelliJ plugin calls the
+server in-process and never reads the list, so adding names to it cannot affect
+it. That covers the spec's three scenarios (current, older and newer server)
+with a presence check. Per-request versioning is not needed now, because the
+payloads carry a `schema` string (`zfl.eventflow.view@1`,
+`zfl.mermaid.view@1`). If a request's parameters ever change incompatibly, it
+gets a new method name rather than a version field.
+
+Required of `zenwave-lsp` (tasks 2.3 and 4.3 in 002): every custom request the
+server answers is listed in `customRequests`, and nothing it does not answer
+is. The list is built from the same place that registers the handlers, so the
+two cannot drift, and `lsp-js` returns the same list as `lsp-jvm`.
+
+**Request 1, the EventFlow view models** (task 2.1), method
+`zenwave/eventFlowViews`:
+
+- params: `{ textDocument: { uri: string } }`
+- result: `{ flowGraph: FlowViewModel, serviceGraph: ServiceViewModel }`. This is
+  the JSON `ZflDiagramModelProvider` builds today and the webview's
+  `renderBundle` payload takes, serialised as `dsl-kotlin`'s
+  `GenerateFlowViewFromZfl` / `GenerateServiceViewFromZfl` output (each carrying
+  its own `schema`). The host copies these two fields into `renderBundle`
+  without changing them.
+
+**Request 2, the preview representations** (task 2.2), method `zenwave/preview`
+(the name `zenwave-platform-vscode` already uses in `docs/architecture.md` and
+its supervisor tests):
+
+- params: `{ textDocument: { uri: string }, sequenceRenderMode?:
+  "SEPARATE_VARIANTS" | "ALT_BLOCKS" | "AUTO" }`. Only ZFL uses the mode; when it
+  is absent the server uses `ALT_BLOCKS`, like
+  `GenerateMermaidFromZfl.execute(text)`.
+- result: `{ representations: [{ id: string, title: string, format: "MARKDOWN" |
+  "MERMAID" | "HTML", content: string }], defaultRepresentationId: string }`. The
+  format names match IntelliJ's `PreviewContentFormat` enum, so the in-process
+  and wire routes use the same words. A client that meets an unknown `format`
+  shows that representation as unavailable and does not guess.
+
+**Errors, for both requests** (task 2.4; spec "a document that cannot be
+read"):
+
+- unparseable document: JSON-RPC error `-32803` (LSP `RequestFailed`) with
+  `data: { kind: "documentUnreadable", diagnostics: Diagnostic[] }`;
+- document neither open nor readable by the server: `-32803` with
+  `data: { kind: "documentNotFound" }`;
+- a document kind the request does not cover (such as a ZDL passed to
+  `zenwave/eventFlowViews`): `-32803` with `data: { kind: "unsupportedDocument" }`;
+- `-32601 MethodNotFound` only ever means that the server is too old. Clients
+  must not reach it anyway, because they check `customRequests` first.
+
+An empty model is a successful result with empty graphs or an empty list.
+Errors are never encoded as results.
+
+### Decision (task 1.2): both webview changes are acceptable, and JCEF is unaffected
+
+Decided by agent on 2026-09-16, pending review
+
+This is the agent's assessment in place of a review with
+`zenwave-architectural-vistas`.
+
+**JCEF impact: none.** `ZflJcefDiagramHost` (IntelliJ) never listens for
+`webviewReady`. It treats the page as ready on CEF `onLoadEnd` for the main
+frame and then calls `executeJavaScript("window.postMessage({type:
+"renderBundle", …})")`. In JCEF the page is the top frame, so today's
+`window.parent.postMessage` posts to the page itself and the page ignores it
+(no handler for `webviewReady`). Changing how readiness is sent therefore
+cannot change anything IntelliJ sees. Loading assets through the local request
+handler (`JBCefLocalRequestHandler("http", "zfl-toolwindow")`) already requires
+relative paths, which is the second change.
+
+**Readiness signal (task 5.1): recommended shape** in
+`apps/eventflow-webview`, sent once on `window` `load`:
+
+```js
+const msg = { type: "webviewReady" };
+const host = window.__zenwaveHost;                          // 1. host-injected channel
+if (host && typeof host.postMessage === "function") host.postMessage(msg);
+else if (typeof acquireVsCodeApi === "function") {          // 2. VS Code webview
+  window.__zenwaveVsCodeApi ??= acquireVsCodeApi();         //    acquired once, cached
+  window.__zenwaveVsCodeApi.postMessage(msg);
+} else if (window.parent && window.parent !== window) {      // 3. iframe parent
+  window.parent.postMessage(msg, "*");
+}                                                           // 4. top frame (JCEF): nothing to address
+```
+
+`acquireVsCodeApi` may only be called once per webview, so the page caches the
+handle on `window.__zenwaveVsCodeApi`. A host script that needs the API reads
+that global instead of calling `acquireVsCodeApi` again. The page listens for
+inbound messages exactly as it does now (`window` `message` events, which is how
+VS Code delivers them), so the inbound protocol, the pending-message queue and
+the four message types stay the same.
+
+**CSP (task 5.2): recommended shape.** The page has two CSP obstacles today:
+the inline `<script>` bootstrap in `index.html` (the message listener, the
+pending queue and the readiness signal) and the inline `<style>`. Move the
+bootstrap into the built entry, as the first import in `main.tsx` or as a
+separate `bootstrap.ts` emitted to `./assets/`, so that the only scripts left are
+`<script type="module" src="./assets/…">`. A host can then allow them by source
+or nonce, with no `'unsafe-inline'`. The listener must still be registered
+before React mounts, so it goes in the first module evaluated. Move the inline
+`<style>` into the CSS bundle. The font stack is already system fonts only;
+5.2 confirms no `@font-face`/`url(http…)` remains in the built CSS. None of this
+changes JCEF, which applies no CSP and serves the same files.
+
+### Decision (task 1.4): credentials are handed over per request through a server-to-client `zenwave/credential` request; the browser-hosted server fetches with them itself
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** the server asks the client for a credential when it needs
+one, over the same LSP connection, on both transports (Node IPC and Web
+Worker). The client owns identity, matches the origin and releases the
+credential. The server applies it to that one fetch and keeps nothing. This is
+the option the spec requirement ("The server asks the client for a credential
+when it needs one") and `zenwave-platform-vscode` 003's design already assume.
+Handing credentials over at initialise, or through `initializationOptions`, was
+rejected because tokens expire mid-session and the server would hold secrets.
+
+**Wire shape** (server → client request; `zenwave-lsp` implements the sender,
+`zenwave-platform-vscode` the handler):
+
+- method `zenwave/credential`
+- params: `{ uri: string, origin: string, attempt: "initial" | "rejected",
+  status?: number }`
+  - `uri` is the full request URL with userinfo and fragment removed. The
+    client uses it only for display and logging.
+  - `origin` is `scheme://host[:port]`, computed by the server with the same
+    normalisation the client uses, and it is what the client matches against.
+  - `attempt: "rejected"` means a credential previously released for this origin
+    was just refused (`status` 401/403). The client must not answer from a
+    cached value it knows was refused, and should refresh the session
+    (`vscode.authentication.getSession(…, { forceNewSession })` or equivalent)
+    or decline.
+- result: `{ type: "HEADER" | "QUERY", key: string, value: string } | null`.
+  `null` means declined. The type names match `AuthenticationType`.
+- The client advertises support at initialise as
+  `initializationOptions.zenwave.clientCapabilities.credentialRequest: true`.
+  The server sends `zenwave/credential` only when that flag is present (IntelliJ,
+  in-process, does not set it and keeps its current behaviour).
+
+**Server behaviour** (tasks 2.12, 2.13):
+
+1. Fetch without credentials first.
+2. On HTTP 401 or 403, or on 404 from a source configured under
+   `config.sources.git` (GitHub and GitLab answer 404 for private content), and
+   only if the client supports the request, send
+   `zenwave/credential { attempt: "initial" }`.
+3. With a non-null answer, retry once with
+   `defaultLoaders(listOf(AuthenticationValue(key, value, type,
+   urlMatcher = { url -> originOf(url) == origin })))` (the `FetchLoader` /
+   `HttpLoader` it contains). This is an exact origin comparison, not the
+   default `urlPatterns = listOf(".*")` and not a regex built from the host
+   name. That loader list is created for this fetch only.
+4. If the retry is 401/403, ask once more with `attempt: "rejected"`, and after
+   that treat the candidate as failed. A `null` answer counts as a failed
+   candidate, and resolution moves on to the next one (spec: "a client with
+   nothing to give").
+5. The credential is never cached, logged, put in an exception message (the
+   existing `redactUri` / `redactErrorMessage` apply to query credentials), or
+   sent to another origin. For redirects: the JVM `HttpLoader` already follows
+   redirects by hand and re-evaluates `AuthenticationValue.matches(currentUri)`
+   on each hop, so the origin matcher above stops a header crossing origins.
+   `FetchLoader` depends on `fetch`, which removes `Authorization` on a
+   cross-origin redirect in browsers and in Node's undici. Headers other than
+   `Authorization` (for example `PRIVATE-TOKEN`) are not removed, so when a
+   credential is present on Node, `FetchLoader` uses `redirect: "manual"` and
+   repeats the match on each hop, as `HttpLoader` does. In a browser, a manual
+   redirect's `Location` cannot be read (the response is `opaqueredirect`), so it
+   uses `redirect: "error"` instead, and a redirected credentialed fetch fails as
+   an unreachable candidate rather than forwarding the header. Query-type credentials are applied
+   only to the initial URL today (see the comments in both loaders), which is the
+   safe direction.
+
+The client caches sessions itself (VS Code authentication sessions are cheap to
+read silently), so asking on every fetch does not mean prompting on every fetch.
+
+**Browser-hosted server specifics.** The Web Worker server fetches with
+`FetchLoader` directly. The credential is not routed through the extension host,
+which in vscode.dev is also a browser worker under the same CORS rules and gains
+nothing. What a browser cannot get around is CORS: the default GitHub provider
+expression `${server}/${domain.id}/${service.id}/raw/v${version}/${content.path}`
+points at `github.com/…/raw/…`, which sends no CORS headers, so that content is
+unreachable from a browser with or without a credential. That is a
+content-resolution question for `zenwave-manifest`, raised as a spec question in
+the step handoff, not something this decision can settle. Until it is settled, a
+browser-hosted server reaches private GitHub content only through a manifest
+whose `contentUrlExpression` targets a CORS-enabled endpoint, such as
+`https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref=…` with
+`Accept: application/vnd.github.raw`.
+
+**Additive:** yes. It is a new request, sent only to clients that opt in.
+
+### Decision (task 1.5): ZDL class diagrams become Mermaid upstream, in `dsl-kotlin`, alongside PlantUML rather than instead of it
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** yes. ZDL gets a Mermaid class diagram generator in
+**`dsl-kotlin` commonMain**, and `zenwave-lsp`'s `zenwave/preview` returns it for
+ZDL documents. `ZdlToMarkdownPlugin.generatePlantUML` and the IntelliJ ZDL
+preview are left as they are.
+
+**Reason.** The generator has to live where the server can run it on every host.
+`ZdlToMarkdownPlugin` is JVM-only (zenwave-sdk, Handlebars `.plantuml.hbs`
+templates), so `lsp-js` could never call it. `dsl-kotlin` is already
+multiplatform, already parses ZDL, and already holds the ZFL counterpart
+(`GenerateMermaidFromZfl`). Keeping PlantUML where it is avoids disturbing
+IntelliJ and the SDK's Markdown output. Moving IntelliJ onto Mermaid is a later,
+separate choice, which 005's design anticipates.
+
+**What is implemented:**
+
+- `dsl-kotlin`: `io.zenwave360.language.zdl.application.GenerateMermaidFromZdl`
+  with `fun execute(zdlContent: String): String`, returning a Mermaid
+  `classDiagram` document. It covers the content of the PlantUML templates:
+  aggregates, entities (with fields and types), enums (with values), services
+  (with commands), and relationships with their cardinality. It must not return
+  script, `click`/`callback` directives, links or remote references (spec: rendered
+  content is inert). Tests use a ZDL fixture that the PlantUML generator also
+  covers, so the two can be compared by hand.
+- `zenwave-lsp`: for a ZDL document, `zenwave/preview` returns one
+  representation `{ id: "class-diagram", title: "Class diagram", format:
+  "MERMAID", content }`, which is also `defaultRepresentationId`. It never
+  returns PlantUML, because no client that reads the wire can render it.
+- IntelliJ (`ZdlPreviewEditor`), zenwave-sdk (`ZdlToMarkdownPlugin`): no change.
+
+**Additive:** yes. It is a new class in `dsl-kotlin` and a new result from a new
+request. Accepted consequence: until IntelliJ moves over, the two IDEs show ZDL
+diagrams in different notations. 6.4's comparison should record that as known,
+not as a bug.
+
+### Decision (task 2.10): the server keeps composing hierarchy labels, as plain IDE-neutral names
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** keep the label composed by the server, with no change in
+behaviour. `HierarchyNode.label` stays a required `String`.
+
+**Reason.** It is the least disruptive option and it already meets the
+requirement. The builders emit plain names (`ZflHierarchyBuilder`: `system.name`,
+`service.name`, `command.name`, `"systems"`, `"flows"`, triggers joined with
+`" and "`), and IntelliJ already decorates them on its own side
+(`ZflHierarchyPresentationFormatter`: `"service …"`, `"start …"`). Dropping or
+emptying the label would break the requirement's "a kind released after the
+client" scenario and IntelliJ's formatter.
+
+**Rule for `zenwave-lsp` to keep:** a label is the concept's name as written in
+the model, or a short structural noun for grouping nodes. It never carries IDE
+decoration: no keyword prefixes like `service `/`start `, no icons or emoji,
+no counts, no markup. When a builder is touched, check that none of these
+appear, and remove any that do (this is the requirement's "SHALL NOT encode a
+particular IDE's presentation", not a new rule). Presentation input a client may
+need goes in `kind` and `uiHints`.
+
+### Decision (task 3.3): `documentationUrl` is always reported; `null` means nowhere to link, and a missing key means an SDK too old to say
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** a three-state field, where "no documentation" and
+"undeclared" merge into one state.
+
+- zenwave-sdk: add `String documentationUrl() default ""` to
+  `io.zenwave360.sdk.doc.@DocumentedPlugin`. `Help.buildHelpModel` puts a
+  top-level key `documentationUrl` in every plugin's model, next to
+  `configClassName`, so it appears in each entry of `plugins` in the catalogue
+  and in single-plugin `-h json`. The value is the absolute `http(s)` URL when
+  the annotation declares one, and **JSON `null`** otherwise. The key is always
+  written. Every plugin in the catalogue already carries `@DocumentedPlugin`,
+  because `buildHelpModel` reads `pluginDocumentation.hiddenOptions()`
+  unconditionally.
+- Consumers read it as follows:
+  - **string**: link to it;
+  - **`null`**: this plugin has nowhere to link to (spec: "a plugin with nowhere
+    to send anyone"); show no link;
+  - **key absent**: the SDK predates the field. Show no link, and do not work out
+    an address from the plugin's name (spec: "not one the editor worked out").
+
+**Reason.** A consumer does the same thing whether a plugin explicitly has no
+documentation or simply never declared any: it shows no link. An annotation
+cannot tell "left at the default" from "set to empty" without a sentinel value,
+and a sentinel would only be spelled wrong by third-party plugin authors. The
+distinction a consumer does act on is between a plugin with no documentation
+and an SDK that cannot report it, and key presence gives that.
+
+**Additive:** yes. It is a new key, and existing readers ignore unknown keys
+(spec: "an answer from a newer SDK").
+
+### Decision (task 4.6): JS exports return integers as plain JS numbers; negative numeric literals are parsed with their sign; the common model is unchanged
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** fix both defects in `dsl-kotlin`, and change only what JS
+consumers see.
+
+1. **Integer representation, JS only.** In `src/jsMain/kotlin/NodeJsExports.kt`,
+   `convertToPlain` (used by the exported `parseZdl` and `parseZfl`) gains a
+   branch `is Long ->`. It returns a JS `number` (`value.toDouble()`) when
+   `value` is within ±(2^53 − 1), and the decimal string `value.toString()`
+   otherwise. The Kotlin model (`ZdlParser`/`ZflParser` output: `Long` for `INT`,
+   `String` for `NUMBER`) is **unchanged**, so JVM consumers (IntelliJ plugin,
+   zenwave-sdk, zdl-jvm users) see exactly what they see today.
+2. **Sign.** `Zdl.g4` and `Zfl.g4` both define `INT: DIGIT+` and
+   `NUMBER: DIGIT+ ([.] DIGIT+)?` with no minus token, so `neg -2` lexes as an
+   unrecognised `-` followed by `2`. Change both grammars to
+   `INT: '-'? DIGIT+ ;` and `NUMBER: '-'? DIGIT+ ([.] DIGIT+)? ;`.
+   `getValueText` already calls `text.toLong()` / keeps the text, so `-2` becomes
+   `Long(-2)` on the JVM, `-2` in JS, and `"-2.5"` for a decimal. The `'--'` CLI
+   option token and `POLICY_ID` (which may contain `-`) are unaffected: `--` is
+   longer than any `INT` match, and `POLICY_ID` must start with a letter. Spans
+   (task 4.1) cover the sign.
+
+**Who sees what:**
+
+- JS consumers of `@zenwave360/dsl` (`zenwave-platform-vscode`'s
+  `packages/extension/src/sdk/model.ts`, `zdl-vscode`'s parser and preview):
+  integers change from a Kotlin `Long` object (`{"h2_1":3,"i2_1":0}`) to `3`.
+  This is **not additive**, but the previous shape used compiler-mangled field
+  names that change between Kotlin versions and was never usable as a value.
+  Both known consumers already handle it: `model.ts` accepts
+  `typeof value === 'number'`, and `String(value)` gives `"3"` for both shapes,
+  and `zdl-vscode`'s renderer already has a `typeof value === 'number'` branch.
+  The VS Code `String(value)` stopgap can stay or be removed.
+- Every consumer (JVM and JS): a negative literal that used to be mis-parsed
+  (sign dropped, with a token-recognition error) now parses to the negative
+  value. This is a bug fix, and it only changes documents that were already
+  wrong.
+- Not changed: decimals stay strings everywhere. Changing them would change the
+  JVM model, and the comment in `ZdlListenerUtils` records why they are strings.
+  This is raised as a spec question because the `dsl-parser-output` wording
+  says "numbers as numbers".
+
+**Release note for `dsl-kotlin`:** a rebuilt JS package is needed (see 4.5), and
+the change is flagged in its README as "integers in parseZdl/parseZfl output are
+now JS numbers".
+
 ## Risks / Trade-offs
 
 - **A behavioural contract cannot be mechanically verified.** Nothing fails a

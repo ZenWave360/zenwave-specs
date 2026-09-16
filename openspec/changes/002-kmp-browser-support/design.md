@@ -119,6 +119,177 @@ one `jsMain`, so there is no per-environment `actual`:
   external. Smallest diff; easiest to reintroduce by accident later, which is
   what the verification requirement is there to catch.
 
+### Decision (task 1.1): the Node filesystem import is resolved lazily, at call time
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** resolving the import lazily. Named targets and a separate
+artifact were rejected.
+
+**Reason.** It is the only option that changes nothing for any existing
+consumer:
+
+- `zenwave-manifest`'s `ZenWaveManifestLoader` calls `defaultLoaders()` from
+  **commonMain** (`manifest-core/.../ZenWaveManifestLoader.kt:28`). A separate
+  Node-loader artifact would break that call on JS or make `manifest-core`
+  choose a platform, and moving the problem up one repository does not fix it.
+- Named JS targets would make every Kotlin consumer with a single `js()` target
+  (`manifest-core`, `lsp-core`) choose between two variants through Gradle
+  attributes. Choosing wrong brings back today's failure, as the Risks section
+  says.
+- The static import only exists because `NodeFsLoader.kt` declares
+  `@JsModule("node:fs") external object NodeFsModule`. Kotlin/JS turns that
+  into a top-level `import`, both in this library's own npm package and in any
+  Kotlin consumer's final bundle, because the klib carries the declaration.
+  Remove that declaration and the static import is gone everywhere, with no
+  change to the API.
+
+The downside the survey names, that the import is easy to bring back by
+accident, is what task 6.2's browser-load check catches.
+
+**What `json-schema-ref-parser-kmp` implements** (no public signature changes):
+
+1. Delete the `@JsModule("node:fs") external object NodeFsModule` declaration.
+   `NodeFsLoader` keeps its name, package
+   (`io.zenwave360.jsonrefparser.io`), constructor and `canLoad` behaviour.
+2. `NodeFsLoader.load` (already `suspend`) gets the `fs` module when it is
+   called, through a private helper in `jsMain`:
+   - if `globalThis.process?.getBuiltinModule` is a function, call it with
+     `"node:fs"`. This works on Node 20.16+/22.3+, is synchronous, and bundlers
+     cannot see it;
+   - otherwise, if `globalThis.process?.versions?.node` is a string, use
+     `await (new Function("s", "return import(s)"))("node:fs")` and take its
+     `readFileSync` (or `default.readFileSync`). The specifier is never a
+     literal `import()` in the output, so webpack, esbuild and Vite do not try
+     to resolve it. Cache the resolved module in a private top-level `var`;
+   - otherwise (browser or Web Worker), throw
+     `CapabilityUnavailableException(RefParserPlatform.FILESYSTEM, …)` (see the
+     task 1.3 decision).
+   The implementer must confirm Kotlin's `js("…")` parser accepts the chosen
+   expression. `new Function` is used above because Kotlin's `js()` may reject a
+   bare `import(…)`.
+3. `jsMain` `defaultLoaders(auth)` still returns
+   `listOf(NodeFsLoader(), FetchLoader(auth))`, in that order, on every JS
+   runtime. Constructing `NodeFsLoader` touches no Node API. Keeping the list
+   the same on every runtime avoids a default set that depends on the runtime;
+   a browser consumer that reaches a file URI gets a reported unavailability
+   instead of "no loader".
+4. `libs.kotlin.node` (kotlin-wrappers) moves from `jsMain` to `jsTest` if no
+   main source references it after step 1. It is a wrapper library whose
+   externals are `@JsModule` declarations, which is exactly what task 6.2 is
+   there to keep out.
+5. Add `browser()` next to `nodejs()` in `js(IR)` (task 6.1), keeping
+   `useEsModules()` and `binaries.executable()`, and add the browser-load check
+   (task 6.2).
+
+### Decision (task 1.2): existing Node consumers keep today's defaults; no migration
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** keep today's default behaviour for every existing consumer.
+
+- **JVM** (`ClasspathLoader`, `FileLoader`, `HttpLoader`): unchanged.
+- **JS on Node** (`nodejs-test-project`, zenwave-lsp's `lsp-js` on Node, any
+  npm consumer of `@zenwave360/json-schema-ref-parser-kmp`): `defaultLoaders()`
+  returns the same two loaders in the same order, and `NodeFsLoader` reads the
+  same files with `readFileSync(path, "utf8")`. The only difference is that the
+  `fs` module is fetched on the first `load` instead of when the module graph
+  loads. `load` was already `suspend`, and the exported
+  `dereferenceSchema`/`dereferenceSchemaText` already return a `Promise`, so
+  callers cannot tell the difference.
+- **Minimum Node version:** unchanged in practice. The fallback in the task 1.1
+  decision covers every Node version with dynamic `import()`, and
+  `getBuiltinModule` is only an optimisation.
+- **JS in a browser:** this never loaded before, so there is no behaviour to
+  keep. It now loads, reads over HTTP(S) with `FetchLoader`, and reports the
+  filesystem as unavailable.
+
+**Migration:** none. Nothing that another consumer reads changes: no API, no
+artifact coordinates, no npm package name, no export. Task 2.2 ("keep the Node
+filesystem loader available to Node consumers") is satisfied by the existing
+`nodejs-test-project` suite, which keeps passing unmodified.
+
+### Decision (task 1.3): each library answers a synchronous capability query, and a shared exception reports unavailability
+
+Decided by agent on 2026-09-16, pending review
+
+**Chosen option:** each library that has platform-dependent capabilities
+exposes a small, side-effect-free query object in **commonMain**. When a
+consumer reaches something that is unavailable anyway, it gets one exception
+type, defined at the bottom of the chain so every library above can use it.
+Asking never throws and never loads anything.
+
+**Reason.** The spec asks for two things: a consumer can find out before
+depending on a capability, and an unavailable capability reads as unavailable,
+not as a defect. A query object answers the first; a typed exception answers the
+second. Putting the exception in `json-schema-ref-parser-kmp` needs no new
+artifact, because `manifest-core`, and through it `workspace-runtime` and
+`lsp-core`, already depend on it. `dsl-kotlin` has no platform-dependent
+capability today, so it adds nothing.
+
+**Shape, in `json-schema-ref-parser-kmp`** (package
+`io.zenwave360.jsonrefparser.platform`, commonMain):
+
+```kotlin
+class CapabilityUnavailableException(
+    val capability: String,   // one of the capability ids below
+    val platform: String,     // "jvm" | "node" | "browser"
+    message: String = "Capability '$capability' is not available on $platform",
+) : UnsupportedOperationException(message)
+
+object RefParserPlatform {
+    const val FILESYSTEM = "jsonrefparser.filesystem"
+    const val CLASSPATH  = "jsonrefparser.classpath"
+    const val HTTP       = "jsonrefparser.http"
+    val name: String                              // "jvm" | "node" | "browser"
+    fun capabilities(): Set<String>
+    fun isAvailable(capability: String): Boolean  // false for unknown ids
+}
+```
+
+- JVM: `name = "jvm"`, `{FILESYSTEM, CLASSPATH, HTTP}`.
+- JS: `name` is computed when read. It is `"node"` when
+  `globalThis.process?.versions?.node` is a string, otherwise `"browser"`.
+  Node: `{FILESYSTEM, HTTP}`. Browser: `{HTTP}` when a global `fetch` exists.
+- JS export (in `NodeJsExports.kt`): `refParserPlatform(): dynamic` returning
+  `{ name: string, capabilities: string[] }`.
+- `RefParser`: when no loader can load a URI, and the URI is a `file:` or bare
+  path while `FILESYSTEM` is unavailable (or `classpath:` while `CLASSPATH` is
+  unavailable), throw `CapabilityUnavailableException` instead of the generic
+  "no loader" error.
+
+**Same convention, in `zenwave-manifest`** (`manifest-core`, package
+`io.zenwave360.manifest`, commonMain):
+
+```kotlin
+object ManifestPlatform {
+    const val ARCHIVE_EXTRACTION = "manifest.archiveExtraction"
+    fun capabilities(): Set<String>   // JVM: {ARCHIVE_EXTRACTION}; JS: {}
+    fun isAvailable(capability: String): Boolean
+}
+```
+
+When a candidate with an `archiveEntry` meets a `null` archive-entry loader,
+`ZenWaveManifestLoader` throws `CapabilityUnavailableException(
+ManifestPlatform.ARCHIVE_EXTRACTION, RefParserPlatform.name)` instead of
+`error("No archive-entry loader is available …")` (currently
+`ZenWaveManifestLoader.kt:367-368`). Content resolution still treats it like any
+other candidate failure and moves on to the next candidate (the existing
+`catch (error: Throwable)` loop). If this is the last error, it appears in
+`ManifestResourceLoadException`'s "Final load error", which then names the
+capability. This is task 3.3.
+
+**Convention for future libraries:** an `object <Library>Platform` with
+`capabilities()` and `isAvailable(id)`, capability ids namespaced
+`<library>.<capability>`, and `CapabilityUnavailableException` thrown when an
+absent capability is reached. A higher library (for example `lsp-core`) may
+report the union of the ids below it, but must not rename them.
+
+**Additive:** yes. These are new types and exports. The only change in existing
+behaviour is the exception type on paths that failed before anyway.
+`CapabilityUnavailableException` extends `UnsupportedOperationException`, so an
+existing `catch (e: RuntimeException)` still catches it.
+
 ### Verification belongs to the producer
 
 A consumer discovering this is a consumer discovering it in a Web Worker, in
