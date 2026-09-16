@@ -17,13 +17,25 @@ can bundle the language stack for a browser and it loads.
 
 ## 2. json-schema-ref-parser-kmp
 
-- [ ] 2.1 Apply the chosen fix, so loading the library in a browser does not
+- [x] 2.1 Apply the chosen fix, so loading the library in a browser does not
       require a Node filesystem module
-- [ ] 2.2 Keep the Node filesystem loader available to Node consumers
-- [ ] 2.3 Confirm the HTTP loader works unchanged in a browser — it already uses
+      Done in 9d87a93 (branch `vscode-platform/ref-parser`): the `@JsModule("node:fs")`
+      declaration is gone; `NodeFsLoader.load` resolves `fs` at call time via
+      `jsMain/.../platform/JsPlatform.kt` `nodeFs()`. `jsBrowserTest` loads the
+      library in headless Chromium (Edge 153 locally).
+- [x] 2.2 Keep the Node filesystem loader available to Node consumers
+      Done in 9d87a93: `defaultLoaders()` unchanged on JS; `nodejs-test-project`
+      (5 tests) and `jsNodeTest` (125, incl. `NodeTargetSmokeTest` and both
+      `getBuiltinModule` and dynamic-import resolution paths) pass.
+- [x] 2.3 Confirm the HTTP loader works unchanged in a browser — it already uses
       the global `fetch`
-- [ ] 2.4 A browser test that loads the library and reads a document through a
+      Confirmed in 9d87a93: `FetchLoader` unchanged; `JsRuntimeTest.
+      fetchLoaderResolvesCrossDocumentRefsInABrowser` dereferences `GH-36/root.json`
+      and its relative `$ref` over HTTP from the Karma server.
+- [x] 2.4 A browser test that loads the library and reads a document through a
       caller-supplied reader
+      Done in 9d87a93: `src/jsTest/.../JsRuntimeTest.kt`
+      `readsDocumentsThroughACallerSuppliedReader`, run by `jsBrowserTest`.
 
 ## 3. zenwave-manifest
 
@@ -60,11 +72,21 @@ can bundle the language stack for a browser and it loads.
 ## 6. Verification, in each producing repository
 
 - [ ] 6.1 Declare a `browser()` target wherever a JS artifact is published
+  - [x] json-schema-ref-parser-kmp: done in 9d87a93 (`build.gradle.kts` `js(IR)`)
 - [ ] 6.2 A build step that loads the artifact in a browser and fails if it
       cannot
+  - [x] json-schema-ref-parser-kmp: done in 9d87a93 — `jsBrowserTest` (Karma,
+        ChromeHeadless; `CHROME_BIN` or a found Chrome/Chromium/Edge) is part of
+        `check`; `karma.config.d/fail-on-empty.js` fails a run with no tests
 - [ ] 6.3 Confirm the check actually catches a regression, by introducing a Node
       import on a branch and watching the build fail
+  - [x] json-schema-ref-parser-kmp: confirmed on throwaway branch (deleted) off
+        9d87a93: a module-level `@JsModule("node:fs")` used by `NodeFsLoader` made
+        `./gradlew check` fail in `:jsBrowserTest` with `UnhandledSchemeError:
+        Reading from "node:fs" is not handled by plugins`; `jsNodeTest` still passed
 - [ ] 6.4 Node consumers still work throughout
+  - [x] json-schema-ref-parser-kmp: done in 9d87a93 — jvmTest 158, jsNodeTest 125,
+        nodeIntegrationTest 5 pass (baseline 155 / 116 / 4)
 
 ## 7. Consumer confirmation
 

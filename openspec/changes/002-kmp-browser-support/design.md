@@ -182,6 +182,18 @@ accident, is what task 6.2's browser-load check catches.
    `useEsModules()` and `binaries.executable()`, and add the browser-load check
    (task 6.2).
 
+Deviation by agent on 2026-09-16, pending review: implemented in
+`json-schema-ref-parser-kmp` 9d87a93 with two variants of the steps above.
+(a) Step 4: `libs.kotlin.node` is removed rather than moved to `jsTest`. The
+test utilities also switched to `process.getBuiltinModule`, because the browser
+test run bundles the whole `jsTest` compilation and a `@JsModule` wrapper there
+fails that bundle the same way as one in `jsMain`. So the Kotlin/JS tooling
+Node is pinned to 22.12.0 (the plugin default 22.0.0 predates
+`getBuiltinModule`); a test still exercises the dynamic-`import()` fallback.
+Published consumers are unaffected. (b) Steps 2 and 5: the browser check runs
+only `JsRuntimeTest` in the browser; the common suite reads fixtures from disk
+and stays Node/JVM-only.
+
 ### Decision (task 1.2): existing Node consumers keep today's defaults; no migration
 
 Decided by agent on 2026-09-16, pending review
@@ -289,6 +301,15 @@ report the union of the ids below it, but must not rename them.
 behaviour is the exception type on paths that failed before anyway.
 `CapabilityUnavailableException` extends `UnsupportedOperationException`, so an
 existing `catch (e: RuntimeException)` still catches it.
+
+Deviation by agent on 2026-09-16, pending review: in `json-schema-ref-parser-kmp`
+9d87a93, `RefParser.parse()` always throws the exception for an unavailable root
+URI. For `$ref` targets, the resolver throws it (unwrapped, not inside
+`MissingRefException`) only under `OnMissing.FAIL`; under `OnMissing.SKIP` the
+reference is skipped as before, so a caller's skip policy is honoured. On the
+JVM nothing changes, because every capability is available. On Node, a
+`classpath:` `$ref` under `FAIL` now throws `CapabilityUnavailableException`
+instead of `MissingRefException("Cannot load: …")`.
 
 ### Verification belongs to the producer
 
