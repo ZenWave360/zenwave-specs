@@ -22,15 +22,29 @@ something a client can be built against, not when the documents are written.
 
 ## 2. zenwave-lsp
 
-- [ ] 2.1 A request returning the flow and service view models for a ZFL
+- [x] 2.1 A request returning the flow and service view models for a ZFL
       document, laid out, each naming its schema
-- [ ] 2.2 A request returning ordered preview representations for a ZDL or ZFL
+      Done in zenwave-lsp 62eb591 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-requests`): `zenwave/eventFlowViews` in lsp-jvm and lsp-js,
+      shared `lsp-core/.../visualization/ModelVisualizations.kt` over dsl-kotlin's
+      `GenerateFlowViewFromZfl`/`GenerateServiceViewFromZfl` (`schema` `zfl.eventflow.view@1`,
+      `zfl.services.view@1`); `ModelVisualizationsTest`, `LspCoreBrowserSmokeTest` (elkjs in a browser).
+      Known upstream difference: dsl-kotlin's JVM and JS `ElkFlowLayoutEngine` actuals use different node
+      dimensions, so the two servers' flow geometry differs (everything else is identical)
+- [x] 2.2 A request returning ordered preview representations for a ZDL or ZFL
       document, each with an id, a title, a format and its content, plus the
       default to show first
-- [ ] 2.3 Both advertised in the initialize result alongside the existing custom
+      Done in zenwave-lsp 62eb591 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-requests`): `zenwave/preview`; ZFL = `flowchart` then
+      `sequence:<outcome>:<index>` (ids, titles and default as IntelliJ's `ZflPreviewEditor`), ZDL = one
+      Mermaid `class-diagram` from `GenerateMermaidFromZdl` (decision 1.5)
+- [x] 2.3 Both advertised in the initialize result alongside the existing custom
       requests
-- [ ] 2.4 A document that cannot be read answers as such, distinguishably from an
+      Done in zenwave-lsp 62eb591 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-requests`): both servers advertise `ZenwaveCustomRequests.ALL`; lsp-js from
+      handler registration, lsp-jvm checked against its `@JsonRequest` annotations in `ZenwaveLspWireTest`
+- [x] 2.4 A document that cannot be read answers as such, distinguishably from an
       empty model
+      Done in zenwave-lsp 62eb591 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-requests`): JSON-RPC -32803 with `data.kind` `documentUnreadable` (+ LSP
+      `diagnostics`; ZFL syntax/parser problems, ZDL ANTLR syntax errors, generator failures),
+      `documentNotFound`, `unsupportedDocument`; malformed params -32602
 - [ ] 2.5 Hierarchy nodes that point at the document that declares them — today
       every node is built with the requested URI, and an annotated ZDL appears
       only as a related resource
@@ -55,9 +69,14 @@ something a client can be built against, not when the documents are written.
       `defaultLoaders(auth: List<AuthenticationValue>)` already takes them
 - [ ] 2.14 Carry `ManifestLoadOptions` through to `ZenWaveManifestLoader`, so a
       client can pin a source — today the LSP constructs it with defaults
-- [ ] 2.15 Serialisation checked over a real wire, not only in-process — this is
+- [x] 2.15 Serialisation checked over a real wire, not only in-process — this is
       where IntelliJ's shortcut has been hiding problems, and the recursive
       hierarchy node is the likeliest place for it
+      Done in zenwave-lsp 62eb591 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-requests`): lsp-jvm `ZenwaveLspWireTest` (LSP4J launcher on a TCP socket, raw
+      JSON-RPC client) and lsp-js `nodeIpcTest` + `WorkerWireTest` cover `zenwave/hierarchy` (4-level
+      recursion), forward/reverse references, `organizeZflServices`, both new requests and every error kind.
+      No serialisation defect found; lsp-jvm and lsp-js responses compared equal for all of them except
+      the flow geometry noted in 2.1
 
 ## 3. zenwave-sdk
 
