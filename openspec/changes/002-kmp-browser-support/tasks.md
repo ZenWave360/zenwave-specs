@@ -71,19 +71,60 @@ can bundle the language stack for a browser and it loads.
 
 ## 4. zenwave-lsp
 
-- [ ] 4.1 Confirm `lsp-core` loads in a browser once its dependencies do — its
+- [x] 4.1 Confirm `lsp-core` loads in a browser once its dependencies do — its
       `jsMain` carries no Node API
-- [ ] 4.2 `lsp-js` with real sources, available to consumers as a versioned
+      Confirmed in zenwave-lsp f79bbf7 (branch `vscode-platform/lsp-js`, built against
+      dsl-kotlin 835a75f, json-schema-ref-parser-kmp 9d87a93, zenwave-manifest 2edd677):
+      `lsp-core/build.gradle.kts` `browser()` target; `jsBrowserTest` (headless Edge 153) runs
+      `src/jsTest/.../LspCoreBrowserSmokeTest.kt` — every language module loaded, ZDL diagnostics,
+      hover, hierarchy and formatting, ZFL hierarchy, in memory. `jsMain` no longer declares
+      `kotlin-node`. Two fixes were needed for JS at all: `@Volatile` from `kotlin.concurrent`
+      (common metadata/JS did not compile at a72d9b7) and escaped `\}\}` in two placeholder
+      regexes (JS unicode-mode "Lone quantifier brackets"). Scope: lsp-core at a72d9b7 does not
+      depend on `workspace-runtime` (only the uncommitted work in the main checkout does), so
+      that part of the chain is not covered here (see 3.1).
+- [x] 4.2 `lsp-js` with real sources, available to consumers as a versioned
       JS artifact. Evidence from `zenwave-platform-vscode` 003:
       `zenwave-lsp/lsp-js/src/main/kotlin/io/zenwave360/lsp/js/.gitkeep` is the
       only tracked main-source file; `lsp-js/build.gradle.kts:5-35` declares
       executable/npm metadata but there is no server implementation to start.
-- [ ] 4.3 Provide runnable Node IPC and Web Worker messaging entry points and
+      Done in zenwave-lsp a521e9f: `lsp-js/src/jsMain/.../ZenwaveJsLanguageServer.kt` binds
+      lsp-core to a `vscode-languageserver` connection (same modules, standard requests, JSON
+      shapes and `experimental.moduleSelectors` as lsp-jvm's `ZenwaveLspServer`; custom requests
+      registered in one table from which `experimental.customRequests` is built).
+      `lsp-js/npm/build.mjs` (run by `:lsp-js:lspJsBundle`) assembles npm package
+      `@zenwave360/lsp-js`, version from the Gradle project (0.1.0-SNAPSHOT), with exports
+      `./node` and `./worker` documented in `lsp-js/README.md`; `:lsp-js:lspJsNpmPack` packs it.
+      Built and packed locally only; not published.
+- [x] 4.3 Provide runnable Node IPC and Web Worker messaging entry points and
       verify initialise plus a supported request over each real wire, with
       capability discovery. `zenwave-platform-vscode` 003 tasks 3.1/3.2 cannot
       connect without these; a client supervisor cannot replace the producer's
       language-server implementation. The desktop transport must be available
       independently of the remaining browser dependency-chain work.
+      Done in zenwave-lsp a521e9f. Entry points (self-contained bundles, no `node_modules` at run
+      time): `dist/node/zenwave-lsp-server.js` (CommonJS; IPC by default and with `--node-ipc`,
+      also `--stdio`/`--socket`/`--pipe`) and `dist/browser/zenwave-lsp-worker.js` (classic worker
+      script; `BrowserMessageReader`/`BrowserMessageWriter` on `self`, bundled with
+      `platform: browser`). Verified over the real wires in `check`:
+      `:lsp-js:nodeIpcTest` (`lsp-js/npm/test/node-ipc.test.mjs`, 7 tests) forks the packaged Node
+      entry and runs initialize (capabilities, `customRequests`, `serverInfo`), didOpen →
+      publishDiagnostics, hover, documentSymbol, `zenwave/hierarchy`, incremental didChange,
+      `-32601` for an unregistered method, shutdown/exit with exit code 0;
+      `:lsp-js:jsBrowserTest` `WorkerWireTest` starts the packaged worker in a Web Worker in
+      headless Edge 153 and runs initialize, diagnostics, hover, `zenwave/hierarchy`, `-32601`
+      and shutdown over postMessage (checked to fail on a wrong assertion).
+- [ ] 4.4 `lsp-core`'s manifest tests agree with the manifest content resolution it builds
+      against. Four tests fail identically on JVM and JS, already at a72d9b7 against
+      zenwave-manifest 2edd677 (and a72d9b7 does not compile against the local
+      manifest-core 0.1.0-SNAPSHOT: `ArchitectureManifestParser.kt:57` unresolved `repository`):
+      `ArchitectureManifestLanguageModuleTest.hoverAndDefinitionResolveOwnedRepositoryAndSpecs`,
+      `.crossReferenceContributionsExposeOwnedResources`,
+      `ArchitectureManifestParserTest.resolvesServiceOwnedResourcesUsingExpandedRepositoryBase`,
+      `.recordsUnresolvedVariablesAsDiagnostics` (service resources now resolve under the
+      domain path, e.g. `file:///workspace/my-docs/orders/orders-api/...`). Blocked: the
+      matching parser and test changes exist only as uncommitted work in the zenwave-lsp main
+      checkout (branch `codex/integrate-manifest-workspace-runtime`).
 
 ## 5. dsl-kotlin
 
@@ -108,6 +149,8 @@ can bundle the language stack for a browser and it loads.
   - [x] dsl-kotlin: done in 835a75f (`build.gradle.kts` `js(IR)`, next to `nodejs()`)
   - [x] zenwave-manifest: done in 2edd677 (`manifest-core/build.gradle.kts` and
         `manifest-graph/build.gradle.kts` `js(IR)`, next to `nodejs()`)
+  - [x] zenwave-lsp: done in f79bbf7/a521e9f (`lsp-core/build.gradle.kts` and
+        `lsp-js/build.gradle.kts` `js(IR)`, next to `nodejs()`)
 - [ ] 6.2 A build step that loads the artifact in a browser and fails if it
       cannot
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 — `jsBrowserTest` (Karma,
@@ -121,6 +164,12 @@ can bundle the language stack for a browser and it loads.
         ChromeHeadless, unfiltered: the whole JS suite runs in the browser) is part of
         `check`; `CHROME_BIN` fallback in the root `build.gradle.kts`;
         `<module>/karma.config.d/fail-on-empty.js` fails a run with no tests
+  - [x] zenwave-lsp: done in f79bbf7/a521e9f — `:lsp-core:jsBrowserTest` (filtered to
+        `LspCoreBrowserSmokeTest`) and `:lsp-js:jsBrowserTest` (unit tests plus `WorkerWireTest`,
+        which loads the packaged worker bundle in a Web Worker) are part of `check`, with
+        `karma.config.d/fail-on-empty.js` in both; `:lsp-js:lspJsBundle` builds the worker with
+        esbuild `platform: browser`, which fails on any Node built-in; `CHROME_BIN` fallback in
+        the root `build.gradle.kts`
 - [ ] 6.3 Confirm the check actually catches a regression, by introducing a Node
       import on a branch and watching the build fail
   - [x] json-schema-ref-parser-kmp: confirmed on throwaway branch (deleted) off
@@ -140,6 +189,13 @@ can bundle the language stack for a browser and it loads.
         "node:fs" is not handled by plugins`; `jsNodeTest` still passed. An import that
         manifest-graph's code does not reach is left out of its test bundle, so only
         manifest-core's run catches that one
+  - [x] zenwave-lsp: confirmed on throwaway branch `vscode-platform/lsp-js-regression-probe`
+        (8f94044, deleted) off a521e9f: a `@file:JsModule("node:fs") @file:JsNonModule` external
+        called from lsp-core `jsMain` (`PlatformReadWriteLock.read`) made
+        `:lsp-core:jsBrowserTest` fail with `UnhandledSchemeError: Reading from "node:fs" is not
+        handled by plugins` and `:lsp-js:lspJsBundle` fail with `Could not resolve "node:fs"`
+        (so the worker wire test cannot run); `:lsp-core:jsNodeTest` still passed. Back on
+        `vscode-platform/lsp-js`, both checks were green again
 - [ ] 6.4 Node consumers still work throughout
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 — jvmTest 158, jsNodeTest 125,
         nodeIntegrationTest 5 pass (baseline 155 / 116 / 4)
@@ -149,6 +205,12 @@ can bundle the language stack for a browser and it loads.
         jsBrowserTest 65; manifest-graph jvmTest 8, jsNodeTest 8, jsBrowserTest 8; koverVerify
         passes (baseline 81 / 59 / none and 8 / 7 / none). The public API is unchanged apart from
         additions
+        additions
+  - [x] zenwave-lsp: done in a521e9f — lsp-jvm test 13/13 (baseline 13/13), lsp-js jsNodeTest
+        6, jsBrowserTest 7, nodeIpcTest 7 (the packaged server on Node over IPC); lsp-core jvmTest
+        74 and jsNodeTest 78 with the 4 pre-existing manifest failures of task 4.4 on each
+        (baseline: jvmTest 74 with the same 4; JS did not compile). lsp-core's public API is
+        unchanged
 
 ## 7. Consumer confirmation
 
