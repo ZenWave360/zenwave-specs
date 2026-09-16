@@ -45,16 +45,31 @@ something a client can be built against, not when the documents are written.
       Done in zenwave-lsp 62eb591 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-requests`): JSON-RPC -32803 with `data.kind` `documentUnreadable` (+ LSP
       `diagnostics`; ZFL syntax/parser problems, ZDL ANTLR syntax errors, generator failures),
       `documentNotFound`, `unsupportedDocument`; malformed params -32602
-- [ ] 2.5 Hierarchy nodes that point at the document that declares them — today
+- [x] 2.5 Hierarchy nodes that point at the document that declares them — today
       every node is built with the requested URI, and an annotated ZDL appears
       only as a related resource
-- [ ] 2.6 Answer a hierarchy request for a document that is not open, without the
+      Done in zenwave-lsp d7156e7 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-hierarchy`): a ZFL system, and the services and commands its `@zdl` model declares,
+      carry that ZDL's `sourceUri`/`sourceRange` (editor content when open, otherwise read), plus a
+      `referenced-by` related resource back to the flow; a ZDL the server cannot reach leaves them in the
+      flow. `textDocument/documentSymbol` stays single-document. Wire shape in design.md §Decision (tasks 2.5–2.8)
+- [x] 2.6 Answer a hierarchy request for a document that is not open, without the
       client having to open it
-- [ ] 2.7 A position-to-symbol step the reference requests accept — the request
+      Done in zenwave-lsp d7156e7 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-hierarchy`): `ZenwaveLanguageServer.conceptualHierarchy` reads unopened documents through
+      json-schema-ref-parser-kmp's platform loaders (`LoaderDocumentReader`: files on the JVM and Node,
+      `http(s)` via fetch everywhere); unreachable → -32803 `documentNotFound`; a kind no module builds
+      hierarchies for → `[]`. Caveat: a browser-hosted server cannot read `file:` or `vscode-vfs:` documents,
+      so there it answers `documentNotFound` for them (spec question in the lsp-hierarchy handoff)
+- [x] 2.7 A position-to-symbol step the reference requests accept — the request
       that reports concepts at a position returns architecture identities, which
       they do not
-- [ ] 2.8 A way to match a hierarchy node against a view-model node; today one is
+      Done in zenwave-lsp d7156e7 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-hierarchy`): new `zenwave/symbolAt` `{textDocument:{uri}, position}` → `{uri, semanticId, range?}` or
+      `null`, in lsp-jvm and lsp-js. Note: no `conceptAt` request or architecture identities exist in committed
+      zenwave-lsp code (only in uncommitted work in the main checkout), so nothing here builds on them
+- [x] 2.8 A way to match a hierarchy node against a view-model node; today one is
       `uri#path` and the other is a kind-scoped name
+      Done in zenwave-lsp d7156e7 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-hierarchy`): hierarchy nodes gain `viewNodeIds`, the ids of the same document's
+      `zenwave/eventFlowViews` nodes and service groups that stand for the concept (only ids actually
+      present; empty = no counterpart)
 - [ ] 2.9 Take up configuration and manifest changes on a running server —
       `didChangeConfiguration` and `didChangeWatchedFiles` are empty today
 - [ ] 2.10 Decide whether a hierarchy `label` stays composed by the server now
@@ -69,6 +84,14 @@ something a client can be built against, not when the documents are written.
       `defaultLoaders(auth: List<AuthenticationValue>)` already takes them
 - [ ] 2.14 Carry `ManifestLoadOptions` through to `ZenWaveManifestLoader`, so a
       client can pin a source — today the LSP constructs it with defaults
+- [x] 2.16 Hierarchies and cross-references read the `when` blocks the current ZFL parser produces.
+      Evidence before: `lsp-core/.../zfl/ZflModelEnricher.kt` and `ZflCrossReferenceContributor.kt` read
+      `whens[].command`/`system`/`service`/`events` and outcomes directly on `end`, while dsl-kotlin 835a75f
+      emits `whens[].action` + `occurrence{system, service, emits}` and `end.endOutcomes`; the 4b sample
+      `.handoff/lsp-requests-samples/*/hierarchy-zfl.json` has no commands and outcomes named
+      `endOutcomes`/`javadoc`, contrary to "Elements the model implies rather than states".
+      Done in zenwave-lsp d7156e7 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-hierarchy`): both shapes are read (`normalizedWhen`); parts with no recorded location fall back
+      to the enclosing element's
 - [x] 2.15 Serialisation checked over a real wire, not only in-process — this is
       where IntelliJ's shortcut has been hiding problems, and the recursive
       hierarchy node is the likeliest place for it

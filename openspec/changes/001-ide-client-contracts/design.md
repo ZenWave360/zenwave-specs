@@ -485,6 +485,51 @@ instead of `1`, an error token, `2`); none of those forms was valid ZDL or ZFL.
 the change is flagged in its README as "integers in parseZdl/parseZfl output are
 now JS numbers".
 
+### Decision (tasks 2.5–2.8): unopened reads, declaring documents, `viewNodeIds` and `zenwave/symbolAt`
+
+Decided by agent on 2026-09-16, pending review
+
+These are the wire shapes `zenwave-lsp` d7156e7 implements, in lsp-jvm and lsp-js alike (samples from both
+servers compare equal). All changes to existing shapes are additive.
+
+**`zenwave/hierarchy` for a document that is not open** (task 2.6). Params unchanged (`{uri}`). An open
+document is answered from the editor's content; otherwise the server reads it with the same platform loaders
+the manifest's content resolution uses (files on the JVM and Node, `http(s)` everywhere). Failures:
+- not open and unreadable → `-32803` with `data: {kind: "documentNotFound"}` (the 1.1 error vocabulary);
+- a document no language module builds hierarchies for (by extension) → `[]`, without reading it;
+- missing `uri` → `-32602`.
+A browser-hosted server has no file system and no reader for editor schemes such as `vscode-vfs:`, so those
+answer `documentNotFound`.
+
+**Nodes that point at the declaring document** (task 2.5). No new field: `sourceUri`/`sourceRange` of a ZFL
+`system` node point at the ZDL named by its `@zdl` (start of the document, since a ZDL has no system
+declaration of its own), and those of `service` and `command` nodes at the ZDL's `service` / service method
+when the ZDL declares them. The ZDL is the editor's content when open, otherwise read; if it cannot be reached
+the nodes stay in the flow. Each relocated node gains a related resource `{targetKind: "reference",
+relationType: "referenced-by", category: "zfl", uri: <flow>, range: <where the flow names it>}`. `id`,
+`label`, `kind` and `language` are unchanged. `textDocument/documentSymbol` is not affected: it stays within
+the document.
+
+**Matching hierarchy and view-model nodes** (task 2.8). Hierarchy nodes gain `viewNodeIds: string[]` (always
+present, possibly empty): the ids, in the same document's `zenwave/eventFlowViews` result, of the flow nodes,
+service nodes and service groups that stand for the node's concept. Only ids that the document's view models
+actually contain are listed, so an empty list means "no counterpart". For ZFL: `command` → `command:<name>`;
+`start` → `event:<name>`; `event` → `event:<name>` and, under a `when` with a service,
+`event:<name>@<System>><Service>`; `policy` → `policy:<triggers joined by ",">:<command>`; `service` →
+`group:<System>><Service>`; `system` → `group:<System>` when present. Other kinds and other languages carry
+`[]`. The same view-model id may be listed by several hierarchy nodes (an event appears under its `when` and
+under an outcome); they are the same concept.
+
+**Position to symbol** (task 2.7). New request `zenwave/symbolAt`, advertised in `customRequests`:
+- params: `{textDocument: {uri}, position: {line, character}}` (LSP `TextDocumentPositionParams`);
+- result: `{uri, semanticId, range?}` (`uri` and `semanticId` are exactly the params of
+  `zenwave/forwardReferences` / `zenwave/reverseReferences`), or `null` when nothing is declared or referenced
+  at the position;
+- errors: document not open → `-32803` `documentNotFound`; missing `textDocument.uri` or `position` → `-32602`.
+The server uses the language module's symbol at the position unless the cross-reference index records a
+narrower symbol there, so the id is one the reference requests know. It is not `conceptAt`: architecture
+identities do not exist in committed `zenwave-lsp` code.
+
 ## Risks / Trade-offs
 
 - **A behavioural contract cannot be mechanically verified.** Nothing fails a
