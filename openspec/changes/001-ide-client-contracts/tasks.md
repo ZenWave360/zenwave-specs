@@ -24,6 +24,12 @@ something a client can be built against, not when the documents are written.
       protocol version stated by the page, with the page published as its own package,
       the right way to pin the bundle (`zenwave-platform-vscode` 004 task 1.5)?
       (decision recorded in design.md §Decision (task 5.5), pending review)
+      Consumer side, for the review: zenwave-platform-vscode vscode-platform/client-004 (e8cceb9) pins the exact
+      package version and protocol version in its package.json (`zenwaveEventFlowWebview`), fails its build when
+      `webview/protocol.json` differs, and treats a `webviewReady` without `protocolVersion: 1` as a named load
+      failure (its 004 design §Decision (task 1.5), also pending review). The page as built, `crossorigin`
+      attributes included, loads under a webview CSP in VS Code desktop and in `@vscode/test-web` (smoke: module
+      script runs, stylesheet loads, no CSP violation reported)
 
 ## 2. zenwave-lsp
 
@@ -312,13 +318,19 @@ something a client can be built against, not when the documents are written.
 
 ## 6. Clients
 
-- [ ] 6.1 `zenwave-platform-vscode`: implement `004-eventflow-panel` against this
+- [x] 6.1 `zenwave-platform-vscode`: implement `004-eventflow-panel` against this
+      Done in zenwave-platform-vscode vscode-platform/client-004 (e8cceb9): custom editor hosting
+      `@zenwave360/vistas-eventflow-webview` 0.1.0, `zenwave/eventFlowViews` from @zenwave360/lsp-js 0.1.0-SNAPSHOT
+      forwarded verbatim in `renderBundle` after `webviewReady` (protocol version 1), `highlightNode` from the
+      hierarchy's `viewNodeIds`; smoke-tested in both hosts, dev build and packaged VSIX. Still open there:
+      its 1.5 decision review and human checks (reload, offline, memory, IntelliJ comparison, which is 6.4 here)
 - [ ] 6.2 `zenwave-platform-vscode`: implement `005-model-preview` against this
 - [ ] 6.3 `zenwave-platform-vscode`: implement `006-model-explorer` against the
       hierarchy contract
       Progress: implemented on zenwave-platform-vscode vscode-platform/client-006 (6e94e1d) against @zenwave360/lsp-js
-      0.1.0-SNAPSHOT (d7156e7), smoke-tested in both hosts; still open there: the diagram selection sync
-      (waits on its 004), the manifest location from the server (2.22 above) and human checks
+      0.1.0-SNAPSHOT (d7156e7), smoke-tested in both hosts; the diagram selection sync is done in
+      vscode-platform/client-004 (e8cceb9: a tree selection highlights the node in the real page, both hosts);
+      still open there: the manifest location from the server (2.22 above) and human checks
 - [ ] 6.4 Compare both IDEs on the same fixture and record any difference as a
       bug against one of them — expecting the trees to differ in presentation and
       the diagrams not to differ at all
