@@ -127,6 +127,44 @@ something a client can be built against, not when the documents are written.
       so every request on the connection stalls. lsp-jvm not checked. VS Code only avoids it by never
       sending unrelated YAML (003 selects the manifest by URI); a workspace whose manifest or `@zdl`
       references reach such a document has no such protection
+- [ ] 2.18 A request reporting the architectural concepts a position belongs to
+      (requirement "A client can ask which architectural concepts a position belongs to").
+      Evidence (zenwave-lsp d7156e7): no `zenwave/conceptAt` handler in lsp-jvm or lsp-js and
+      `ZenwaveCustomRequests.ALL` does not list one; `customRequests` of @zenwave360/lsp-js
+      0.1.0-SNAPSHOT is [hierarchy, forwardReferences, reverseReferences, organizeZflServices,
+      eventFlowViews, preview, symbolAt]. Architecture identities (`ArchitectureConceptRef`) exist
+      only in uncommitted work in the main checkout. zenwave-platform-vscode 007 §4
+      (`zenwave.model.conceptsAt`) is not offered until this is advertised
+- [ ] 2.19 `zenwave/reverseReferences` finds uses from other documents
+      (requirement "Reference requests answer in both directions, and say where").
+      Evidence (zenwave-lsp d7156e7, lsp-js over Node IPC, zenwave-platform-vscode fixtures
+      `lsp/checkout.zfl` + `lsp/orders/model.zdl` + `lsp/orders.zdl`, all open):
+      reverseReferences answers `[]` for every symbolAt result tried — ZFL system, `when`
+      commands, start event; ZDL service `OrderService` (used by the flow) and entity
+      `CustomerOrder`. Causes: `lsp-core/.../zfl/ZflCrossReferenceContributor.kt:17,37,52`
+      index every ZFL use with `targetSemanticId = null`, which
+      `xref/InMemoryCrossReferenceIndex.kt:84-85` keys as `"$targetUri#"`; a reverse request always
+      carries a semanticId, so it can never reach them (only uses whose target semantic id is
+      recorded, e.g. ZDL → OpenAPI/AsyncAPI, are reachable); ZDL
+      entity-to-entity uses (`customer Customer`) are not indexed at all
+      (`zdl/ZdlCrossReferenceContributor.kt` records APIs, AsyncAPI and REST only).
+      zenwave-platform-vscode `zenwave.model.reverseReferences` therefore always reports "nothing
+      references this" (smoke test asserts that, to be updated when this lands)
+- [ ] 2.20 Reference results carry the place in the target document
+      (same requirement). Evidence: every `CrossReferenceContribution` is built with
+      `targetRange = null` (`ZflCrossReferenceContributor.kt:18,38,53`,
+      `ZdlCrossReferenceContributor.kt:22,66,95`), so forwardReferences from
+      `when CheckoutStarted do createOrder` answers
+      `[{"targetKind":"reference","label":"createOrder","uri":"…/orders/model.zdl","relationType":"uses"}]`
+      with no `range`; zenwave-platform-vscode opens the ZDL at its first line
+- [ ] 2.21 `zenwave/symbolAt` resolves the name of a ZDL entity declaration
+      (requirement "A client can resolve a position to the concept declared there", scenario
+      "Asking about what is under the cursor", and "A declaration resolved by its name").
+      Evidence (lsp-js d7156e7, `lsp/orders.zdl` open): `entity Customer {` at 0:8 and
+      `entity CustomerOrder {` at 4:10 answer `null`; 5:6 inside the body answers
+      `#entities.CustomerOrder`; 5:15 on the field type `Customer` answers
+      `#entities.CustomerOrder.name` with range 4:7–4:20 (the enclosing entity's name, not the
+      referenced entity)
 - [x] 2.15 Serialisation checked over a real wire, not only in-process — this is
       where IntelliJ's shortcut has been hiding problems, and the recursive
       hierarchy node is the likeliest place for it

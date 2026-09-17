@@ -238,6 +238,65 @@ identities — so a client following the natural reading gets something it canno
 pass on. Whatever closes that gap, a client needs one path from a cursor to a
 question about what is under it.
 
+### Requirement: A client can ask which architectural concepts a position belongs to
+The server SHALL, given a position in a document, report the architectural
+concepts that position belongs to, each named as the architecture names it. Where
+there are more than it reports, it SHALL say the list is incomplete. It SHALL
+distinguish a position that belongs to no concept from a workspace for which no
+architecture is resolved.
+
+#### Scenario: Locating a position in an architecture
+- **GIVEN** a workspace whose architecture manifest is resolved, and a position
+  inside a service declaration of a model it covers
+- **WHEN** a client asks which concepts that position belongs to
+- **THEN** it receives the concepts covering it, each with the name and kind the
+  architecture gives it
+
+#### Scenario: A position that belongs to nothing
+- **GIVEN** a position the server can associate with no architectural concept
+- **WHEN** a client asks
+- **THEN** it receives an empty answer, not a failure
+
+#### Scenario: No architecture
+- **GIVEN** a workspace for which no architecture manifest is resolved
+- **WHEN** a client asks which concepts a position belongs to
+- **THEN** it learns that no architecture is resolved, distinguishably from a
+  position that belongs to nothing
+
+**Rationale:** this question is different from resolving a position to the symbol
+declared there, and a client must not be tempted to answer it by combining other
+answers. It is advertised like every other ZenWave request, so a client offers it
+only where a server answers it.
+
+### Requirement: Reference requests answer in both directions, and say where
+Given a concept a client resolved from a position, the server SHALL answer what that
+concept references and what references it, including references from and to other
+documents it knows of, and each result SHALL carry the place in its document the
+result stands for, where that place is known.
+
+#### Scenario: What uses a declaration, from another document
+- **GIVEN** a ZDL model declaring an entity, a service or a command, and a ZFL flow
+  using it through its `@zdl` annotation
+- **WHEN** a client resolves a position on that declaration and asks what
+  references it
+- **THEN** the uses in the flow are among the results
+
+#### Scenario: Following a reference to its declaration
+- **GIVEN** a command in a ZFL flow that a ZDL model declares
+- **WHEN** a client asks what the command references
+- **THEN** the result names the place in the ZDL where the command is declared,
+  not only the ZDL document
+
+#### Scenario: A declaration resolved by its name
+- **GIVEN** the cursor on the name of a ZDL entity declaration
+- **WHEN** a client resolves that position
+- **THEN** it receives that entity, which the reference requests then accept
+
+**Rationale:** the requests exist and are advertised, so a client presents their
+answer as complete. An answer that is always empty in one direction, or that names
+a document but not the place in it, reads to the user as "nothing uses this" or
+"here is the file, find it yourself".
+
 ### Requirement: A node in a diagram and a node in a hierarchy can be matched
 Where the same concept appears both in a document's conceptual hierarchy and in a
 view model drawn from that document, a client SHALL be able to determine that
