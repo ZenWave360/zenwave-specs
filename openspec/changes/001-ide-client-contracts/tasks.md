@@ -77,6 +77,14 @@ something a client can be built against, not when the documents are written.
       present; empty = no counterpart)
 - [ ] 2.9 Take up configuration and manifest changes on a running server —
       `didChangeConfiguration` and `didChangeWatchedFiles` are empty today
+      Evidence (zenwave-lsp d7156e7): `lsp-jvm/.../ZenwaveLspServer.kt:281,284` are empty
+      overrides; `lsp-js/.../ZenwaveJsLanguageServer.kt` registers no handler for either
+      notification (the `connection.on…` block ending at line 176). What zenwave-platform-vscode
+      sends since vscode-platform/client-003: the standard `workspace/didChangeWatchedFiles` for
+      each folder's `.zenwave/config.yml` and the resolved manifest file, and a restart with new
+      `initializationOptions.zenwave` when the resolved `configUri`/`projectManifestUri` change.
+      Without this task a saved edit to a manifest that is not open is not taken up until a restart
+      (003 task 4.6). No payload is defined for `didChangeConfiguration`; the client sends none
 - [ ] 2.10 Decide whether a hierarchy `label` stays composed by the server now
       that it is contractually a default rather than a mandate
       (decision recorded in design.md §Decision (task 2.10), pending review)
@@ -85,10 +93,19 @@ something a client can be built against, not when the documents are written.
 - [ ] 2.12 A request asking the client for a credential for a location, applied to
       that request only, re-asked when a credential stops working, and never
       carried across hosts
+      Client side exists: zenwave-platform-vscode vscode-platform/client-003 answers
+      `zenwave/credential` in the decision 1.4 shape (`src/lsp/credentials.ts`) and sends
+      `initializationOptions.zenwave.clientCapabilities.credentialRequest: true`. No server sends
+      the request yet, so 003 tasks 5.1, 5.5, 5.7–5.9 wait on this and 2.13
 - [ ] 2.13 Build loaders with the supplied credential —
       `defaultLoaders(auth: List<AuthenticationValue>)` already takes them
 - [ ] 2.14 Carry `ManifestLoadOptions` through to `ZenWaveManifestLoader`, so a
       client can pin a source — today the LSP constructs it with defaults
+      (requirement "A client can restrict content resolution to one declared source", added with
+      the wire shape left to this task). Evidence: `lsp-core/.../manifest/ArchitectureManifestParser.kt:17`
+      `private val loader = ZenWaveManifestLoader()`; `ZenwaveInitializationOptions` in
+      `lsp-js/.../ZenwaveJsLanguageServer.kt:38` has only `configUri`/`projectManifestUri`.
+      zenwave-platform-vscode 003 tasks 4.11/4.12 wait on the shape and ship no setting until it exists
 - [x] 2.16 Hierarchies and cross-references read the `when` blocks the current ZFL parser produces.
       Evidence before: `lsp-core/.../zfl/ZflModelEnricher.kt` and `ZflCrossReferenceContributor.kt` read
       `whens[].command`/`system`/`service`/`events` and outcomes directly on `end`, while dsl-kotlin 835a75f
@@ -97,6 +114,19 @@ something a client can be built against, not when the documents are written.
       `endOutcomes`/`javadoc`, contrary to "Elements the model implies rather than states".
       Done in zenwave-lsp d7156e7 (worktree `zenwave-lsp-vscode-platform`, branch `vscode-platform/lsp-hierarchy`): both shapes are read (`normalizedWhen`); parts with no recorded location fall back
       to the enclosing element's
+- [ ] 2.17 A document the server cannot process does not stop it serving the others
+      (requirement "One document a server cannot process does not stop it serving the others").
+      Evidence (@zenwave360/lsp-js 0.1.0-SNAPSHOT, zenwave-lsp d7156e7, Node IPC): after
+      `didOpen` of zenwave-platform-vscode
+      `packages/extension/fixtures/modules/orders/modules/orders/src/main/resources/apis/openapi.yml`
+      no `publishDiagnostics` arrives for it, and `textDocument/hover` on it **and on an already
+      open, previously answering ZDL** does not answer within 10 s. The first 8 lines of that file
+      followed by `paths: {}` are served normally; the first 8 lines followed by its `paths:` section
+      (internal `#/components/schemas/…` refs only) reproduce it. The JS thread is blocked from
+      `didOpen` (`ZenwaveJsLanguageServer.kt:204-205`, `server.open` → `publishDiagnosticsIfHandled`),
+      so every request on the connection stalls. lsp-jvm not checked. VS Code only avoids it by never
+      sending unrelated YAML (003 selects the manifest by URI); a workspace whose manifest or `@zdl`
+      references reach such a document has no such protection
 - [x] 2.15 Serialisation checked over a real wire, not only in-process — this is
       where IntelliJ's shortcut has been hiding problems, and the recursive
       hierarchy node is the likeliest place for it

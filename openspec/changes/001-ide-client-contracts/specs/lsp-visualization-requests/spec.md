@@ -392,3 +392,52 @@ or a model, causing code to run in an IDE, not a client having a renderer.
 - **WHEN** its representations are rendered
 - **THEN** nothing in the content causes the model, or any part of it, to be
   fetched from or sent to a remote service
+
+### Requirement: One document a server cannot process does not stop it serving the others
+Where a server cannot finish processing a document it has been sent — its parse,
+its diagnostics or a request about it — the server SHALL keep answering for every
+other document, and SHALL answer for that document within a bounded time, with a
+failure where it has no result.
+
+#### Scenario: A specification document that defeats the parser
+- **GIVEN** a running server with a model document open and answering
+- **WHEN** a client opens a specification document the server cannot finish
+  processing
+- **THEN** requests about the model document are still answered, and requests
+  about the specification document fail rather than never completing
+
+#### Scenario: Recovering without a restart
+- **GIVEN** a document that could not be processed
+- **WHEN** the user edits it into a form the server can process
+- **THEN** the server serves it, without the client having to restart the server
+
+**Rationale:** a client has one connection per workspace. A document that stops the
+server stops every view and every language feature in every document, and to the
+user it reads as the editor being broken rather than one file being unreadable.
+
+### Requirement: A client can restrict content resolution to one declared source
+A client SHALL be able to tell the server, when it initialises the connection and
+when the choice changes, to resolve content from one of the sources the manifest
+declares instead of the manifest's declared order, and whether falling back to the
+other declared sources is allowed. A source the manifest does not declare SHALL be
+reported to the client as not active for that manifest, rather than resolving to
+nothing.
+
+#### Scenario: Pinning a declared source
+- **GIVEN** a manifest declaring a workspace source and a remote source
+- **WHEN** the client asks for the remote source only
+- **THEN** content resolves from the remote source and the workspace is not read
+
+#### Scenario: Pinning a source the manifest does not declare
+- **GIVEN** a manifest declaring only a workspace source
+- **WHEN** the client asks for a remote source
+- **THEN** the client is told that source is not active for this manifest
+
+#### Scenario: No choice made
+- **GIVEN** a client that asks for no particular source
+- **WHEN** content is resolved
+- **THEN** the manifest's declared order is used
+
+**Rationale:** `ManifestLoadOptions.preferredSource` / `allowFallback` already carry
+this choice inside zenwave-manifest, but no request or initialization option
+reaches it, so an IDE client offering the choice has nothing to send.
