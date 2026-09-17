@@ -165,6 +165,16 @@ something a client can be built against, not when the documents are written.
       `#entities.CustomerOrder`; 5:15 on the field type `Customer` answers
       `#entities.CustomerOrder.name` with range 4:7–4:20 (the enclosing entity's name, not the
       referenced entity)
+- [ ] 2.22 A client learns from the server where the workspace's architecture manifest is
+      (requirement "A client can request the conceptual hierarchy of a document", scenario
+      "Finding what to ask about"). Evidence (zenwave-lsp d7156e7): no `zenwave/workspaceStatus` or
+      other request reports the manifest in use — `ZenwaveCustomRequests.ALL`
+      (`lsp-core/.../visualization/Visualizations.kt:20`) is [hierarchy, forwardReferences,
+      reverseReferences, organizeZflServices, eventFlowViews, preview, symbolAt], and no `workspaceStatus`
+      appears anywhere in zenwave-lsp. zenwave-platform-vscode therefore reads `.zenwave/config.yml` itself,
+      mirroring `ZenwaveWorkspaceConfig.parseScalar` (`src/lsp/manifest-resolution.ts:33`), and its
+      architecture tree (006 task 4.1) asks about the manifest the client resolved rather than the one the
+      server reports working against
 - [x] 2.15 Serialisation checked over a real wire, not only in-process — this is
       where IntelliJ's shortcut has been hiding problems, and the recursive
       hierarchy node is the likeliest place for it
@@ -306,6 +316,9 @@ something a client can be built against, not when the documents are written.
 - [ ] 6.2 `zenwave-platform-vscode`: implement `005-model-preview` against this
 - [ ] 6.3 `zenwave-platform-vscode`: implement `006-model-explorer` against the
       hierarchy contract
+      Progress: implemented on zenwave-platform-vscode vscode-platform/client-006 (6e94e1d) against @zenwave360/lsp-js
+      0.1.0-SNAPSHOT (d7156e7), smoke-tested in both hosts; still open there: the diagram selection sync
+      (waits on its 004), the manifest location from the server (2.22 above) and human checks
 - [ ] 6.4 Compare both IDEs on the same fixture and record any difference as a
       bug against one of them — expecting the trees to differ in presentation and
       the diagrams not to differ at all
