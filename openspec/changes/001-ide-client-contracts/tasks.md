@@ -108,15 +108,28 @@ something a client can be built against, not when the documents are written.
 
 ## 3. zenwave-sdk
 
-- [ ] 3.1 Confirm the plugin catalogue reports everything else the requirement
+- [x] 3.1 Confirm the plugin catalogue reports everything else the requirement
       asks for, and that asking generates nothing
-- [ ] 3.2 Add where a plugin's documentation lives to what it reports, including
+      Done in zenwave-sdk 5f88ace8 (worktree `zenwave-sdk-vscode-platform`, branch `vscode-platform/sdk`): `-h json` already reported
+      `configClassName`/`configClassSimpleName`, `plugin.title/summary/description` and per option
+      `name/description/type/defaultValue/values` (enum constants or `@DocumentedOption.values`); it prints
+      help and returns before any generation (`Main.main`). Now asserted by `HelpTest`
+      `testCatalogueIsPureJsonAndReportsWhatEditorsNeed` (stdout is pure JSON) and
+      `testAskingForTheCatalogueGeneratesNothing` (working directory and targetFolder unchanged, plugin chain not run)
+- [x] 3.2 Add where a plugin's documentation lives to what it reports, including
       for plugins that did not ship with the SDK
+      Done in zenwave-sdk 5f88ace8 (worktree `zenwave-sdk-vscode-platform`, branch `vscode-platform/sdk`): `@DocumentedPlugin(documentationUrl)`; `Help.buildHelpModel` always writes
+      top-level `documentationUrl` (absolute http(s) URL or `null`) per decision 3.3. Standard plugins declare
+      their zenwave360.io page or GitHub README; plugins without documentation report `null`.
+      Tests: `HelpTest.testCatalogueReportsDocumentationOfPluginsThatDidNotShipWithTheSdk` (plugins in
+      `com.example.thirdparty`), `testSinglePluginJsonHelpReportsDocumentationUrl`
 - [ ] 3.3 Decide how a plugin with no documentation is distinguished from one
       whose location is simply missing
       (decision recorded in design.md §Decision (task 3.3), pending review)
-- [ ] 3.4 Note the two IDE consumers wherever that command line is owned, so a
+- [x] 3.4 Note the two IDE consumers wherever that command line is owned, so a
       future change to it is deliberate
+      Done in zenwave-sdk 5f88ace8 (worktree `zenwave-sdk-vscode-platform`, branch `vscode-platform/sdk`): `zenwave-sdk-cli/.../Main.java` (`-h json` branch), `Help` class Javadoc
+      (fields each consumer reads), `DocumentedPlugin#documentationUrl` Javadoc, and README.md help section
 
 ## 4. dsl-kotlin
 
