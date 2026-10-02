@@ -37,7 +37,7 @@ can bundle the language stack for a browser and it loads.
       Done in 9d87a93: `src/jsTest/.../JsRuntimeTest.kt`
       `readsDocumentsThroughACallerSuppliedReader`, run by `jsBrowserTest`.
 
-## 3. zenwave-manifest
+## 3. zenwave-architecture
 
 - [ ] 3.1 Confirm `manifest-core`, `manifest-graph` and `workspace-runtime` load
       in a browser once the loader is fixed — they carry no Node API of their own
@@ -48,20 +48,20 @@ can bundle the language stack for a browser and it loads.
   - [x] manifest-graph: confirmed in 2edd677: `jsBrowserTest` runs 8 tests incl.
         `src/jsTest/.../graph/ManifestGraphBrowserSmokeTest.kt`, which builds an
         architecture graph from ZDL and ZFL (with dsl-kotlin 835a75f)
-  - [ ] workspace-runtime: blocked, the module is not in zenwave-manifest's history. At
+  - [ ] workspace-runtime: blocked, the module is not in zenwave-architecture's history. At
         `develop` c82feb5 `settings.gradle.kts` includes only `manifest-core` and
         `manifest-graph`. `workspace-runtime/` exists only as untracked files in the main
         checkout, so it cannot be built or verified from committed sources
 - [x] 3.2 Confirm a caller can supply its own reader all the way through, without
       a platform default being required to load
-      Confirmed in zenwave-manifest 2edd677: both browser smoke tests construct
+      Confirmed in zenwave-architecture 2edd677: both browser smoke tests construct
       `ZenWaveManifestLoader(documentLoaders = listOf(reader), archiveEntryLoader = null)`
       and assert that every document (manifest, `$ref` target, docs, artifacts, ZDL/ZFL read
       by `ArchitectureGraphBuilder`) was requested through that reader, in headless Edge.
       `theFilesystemIsReportedAsUnavailableInABrowser` shows the default readers still load there.
 - [x] 3.3 Report archive extraction as unavailable on JS, rather than failing in
       a way that reads like a defect
-      Done in zenwave-manifest 2edd677 (decision 1.3): commonMain
+      Done in zenwave-architecture 2edd677 (decision 1.3): commonMain
       `io.zenwave360.manifest.ManifestPlatform` (`ARCHIVE_EXTRACTION =
       "manifest.archiveExtraction"`, JVM `{it}`, JS `{}`). `ZenWaveManifestLoader` throws
       `CapabilityUnavailableException(ARCHIVE_EXTRACTION, RefParserPlatform.name)` for an
@@ -74,7 +74,7 @@ can bundle the language stack for a browser and it loads.
 - [x] 4.1 Confirm `lsp-core` loads in a browser once its dependencies do — its
       `jsMain` carries no Node API
       Confirmed in zenwave-lsp f79bbf7 (branch `vscode-platform/lsp-js`, built against
-      dsl-kotlin 835a75f, json-schema-ref-parser-kmp 9d87a93, zenwave-manifest 2edd677):
+      dsl-kotlin 835a75f, json-schema-ref-parser-kmp 9d87a93, zenwave-architecture 2edd677):
       `lsp-core/build.gradle.kts` `browser()` target; `jsBrowserTest` (headless Edge 153) runs
       `src/jsTest/.../LspCoreBrowserSmokeTest.kt` — every language module loaded, ZDL diagnostics,
       hover, hierarchy and formatting, ZFL hierarchy, in memory. `jsMain` no longer declares
@@ -116,7 +116,7 @@ can bundle the language stack for a browser and it loads.
       and shutdown over postMessage (checked to fail on a wrong assertion).
 - [ ] 4.4 `lsp-core`'s manifest tests agree with the manifest content resolution it builds
       against. Four tests fail identically on JVM and JS, already at a72d9b7 against
-      zenwave-manifest 2edd677 (and a72d9b7 does not compile against the local
+      zenwave-architecture 2edd677 (and a72d9b7 does not compile against the local
       manifest-core 0.1.0-SNAPSHOT: `ArchitectureManifestParser.kt:57` unresolved `repository`):
       `ArchitectureManifestLanguageModuleTest.hoverAndDefinitionResolveOwnedRepositoryAndSpecs`,
       `.crossReferenceContributionsExposeOwnedResources`,
@@ -147,7 +147,7 @@ can bundle the language stack for a browser and it loads.
 - [ ] 6.1 Declare a `browser()` target wherever a JS artifact is published
   - [x] json-schema-ref-parser-kmp: done in 9d87a93 (`build.gradle.kts` `js(IR)`)
   - [x] dsl-kotlin: done in 835a75f (`build.gradle.kts` `js(IR)`, next to `nodejs()`)
-  - [x] zenwave-manifest: done in 2edd677 (`manifest-core/build.gradle.kts` and
+  - [x] zenwave-architecture: done in 2edd677 (`manifest-core/build.gradle.kts` and
         `manifest-graph/build.gradle.kts` `js(IR)`, next to `nodejs()`)
   - [x] zenwave-lsp: done in f79bbf7/a521e9f (`lsp-core/build.gradle.kts` and
         `lsp-js/build.gradle.kts` `js(IR)`, next to `nodejs()`)
@@ -160,7 +160,7 @@ can bundle the language stack for a browser and it loads.
         `io.zenwave360.language.JsBrowserSmokeTest`; `CHROME_BIN` or a found
         Chrome/Chromium/Edge) is part of `check`; `karma.config.d/fail-on-empty.js` fails a
         run with no tests
-  - [x] zenwave-manifest: done in 2edd677 — `jsBrowserTest` in both modules (Karma,
+  - [x] zenwave-architecture: done in 2edd677 — `jsBrowserTest` in both modules (Karma,
         ChromeHeadless, unfiltered: the whole JS suite runs in the browser) is part of
         `check`; `CHROME_BIN` fallback in the root `build.gradle.kts`;
         `<module>/karma.config.d/fail-on-empty.js` fails a run with no tests
@@ -181,7 +181,7 @@ can bundle the language stack for a browser and it loads.
         `parseZdl` made `./gradlew check` fail in `:jsBrowserTest` with
         `UnhandledSchemeError: Reading from "node:fs" is not handled by plugins`;
         `jsNodeTest` and `nodeIntegrationTest` still passed
-  - [x] zenwave-manifest: confirmed on throwaway branch
+  - [x] zenwave-architecture: confirmed on throwaway branch
         `vscode-platform/manifest-regression-probe` (deleted) off 2edd677: a
         `@file:JsModule("node:fs")` external used from manifest-core `jsMain` made `check`
         fail in `:manifest-core:jsBrowserTest` and, once reachable from the default loader,
@@ -201,7 +201,7 @@ can bundle the language stack for a browser and it loads.
         nodeIntegrationTest 5 pass (baseline 155 / 116 / 4)
   - [x] dsl-kotlin: done in 835a75f — jvmTest 148, jsNodeTest 147, jsBrowserTest 4,
         nodeIntegrationTest 90 pass and koverVerify passes (baseline 141 / 136 / none / 88)
-  - [x] zenwave-manifest: done in 2edd677 — manifest-core jvmTest 85, jsNodeTest 65,
+  - [x] zenwave-architecture: done in 2edd677 — manifest-core jvmTest 85, jsNodeTest 65,
         jsBrowserTest 65; manifest-graph jvmTest 8, jsNodeTest 8, jsBrowserTest 8; koverVerify
         passes (baseline 81 / 59 / none and 8 / 7 / none). The public API is unchanged apart from
         additions

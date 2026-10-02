@@ -314,7 +314,7 @@ nothing. What a browser cannot get around is CORS: the default GitHub provider
 expression `${server}/${domain.id}/${service.id}/raw/v${version}/${content.path}`
 points at `github.com/…/raw/…`, which sends no CORS headers, so that content is
 unreachable from a browser with or without a credential. That is a
-content-resolution question for `zenwave-manifest`, raised as a spec question in
+content-resolution question for `zenwave-architecture`, raised as a spec question in
 the step handoff, not something this decision can settle. Until it is settled, a
 browser-hosted server reaches private GitHub content only through a manifest
 whose `contentUrlExpression` targets a CORS-enabled endpoint, such as

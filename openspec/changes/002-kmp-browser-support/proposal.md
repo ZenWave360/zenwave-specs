@@ -15,7 +15,7 @@ None of them can use a library that reaches for a Node API.
 
 An audit of the published JS surface found this is closer than anyone assumed,
 and blocked by less than anyone assumed. Across `dsl-kotlin`,
-`json-schema-ref-parser-kmp`, `zenwave-manifest` and `zenwave-lsp`, exactly one
+`json-schema-ref-parser-kmp`, `zenwave-architecture` and `zenwave-lsp`, exactly one
 file in any `jsMain` touches a Node API. Everything else is already clean.
 
 What makes that one file decisive is how it is reached. It is imported
@@ -73,7 +73,7 @@ None.
 - **`zenwave-lsp`** additionally needs `lsp-js` to exist — it is currently a
   `.gitkeep` — and to speak the protocol over browser transports rather than the
   Node build of `vscode-languageserver`.
-- **`dsl-kotlin`, `zenwave-manifest`** are already clean, and this change asks
+- **`dsl-kotlin`, `zenwave-architecture`** are already clean, and this change asks
   them to stay that way and to prove it.
 - **Every module** gains a browser target, so that breaking this is a build
   failure rather than a consumer's incident.

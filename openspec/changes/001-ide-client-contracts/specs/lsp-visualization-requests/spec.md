@@ -498,5 +498,5 @@ nothing.
 - **THEN** the manifest's declared order is used
 
 **Rationale:** `ManifestLoadOptions.preferredSource` / `allowFallback` already carry
-this choice inside zenwave-manifest, but no request or initialization option
+this choice inside zenwave-architecture, but no request or initialization option
 reaches it, so an IDE client offering the choice has nothing to send.

@@ -13,7 +13,7 @@ none declares `browser()`. On its own that is not disqualifying: with
 declaration mostly governs test runners and dev servers.
 
 **Node API usage.** Across `dsl-kotlin`, `json-schema-ref-parser-kmp`,
-`zenwave-manifest` and `zenwave-lsp`, exactly one `jsMain` file references a Node
+`zenwave-architecture` and `zenwave-lsp`, exactly one `jsMain` file references a Node
 API:
 
 ```kotlin
@@ -129,7 +129,7 @@ artifact were rejected.
 **Reason.** It is the only option that changes nothing for any existing
 consumer:
 
-- `zenwave-manifest`'s `ZenWaveManifestLoader` calls `defaultLoaders()` from
+- `zenwave-architecture`'s `ZenWaveManifestLoader` calls `defaultLoaders()` from
   **commonMain** (`manifest-core/.../ZenWaveManifestLoader.kt:28`). A separate
   Node-loader artifact would break that call on JS or make `manifest-core`
   choose a platform, and moving the problem up one repository does not fix it.
@@ -270,7 +270,7 @@ object RefParserPlatform {
   unavailable), throw `CapabilityUnavailableException` instead of the generic
   "no loader" error.
 
-**Same convention, in `zenwave-manifest`** (`manifest-core`, package
+**Same convention, in `zenwave-architecture`** (`manifest-core`, package
 `io.zenwave360.manifest`, commonMain):
 
 ```kotlin
