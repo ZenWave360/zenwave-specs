@@ -35,11 +35,11 @@ actual fun defaultLoaders(auth) = listOf(NodeFsLoader(), FetchLoader(auth))
 | `dsl-kotlin` jsMain | `npm("elkjs")` only; no Node API. Consistent with `zdl-vscode` having shipped it to the browser |
 | `FetchLoader` | uses the global `fetch`; identical in a browser |
 | `lsp-core` jsMain | two files, no Node API |
-| `manifest-core` jsMain | one file, returns `null` |
+| `architecture-manifest` jsMain | one file, returns `null` |
 | `dsl-kotlin` `npm("fs")`, `kotlin-node` | declared in **jsTest**, not in the published artifact |
 
-**The chain.** `json-schema-ref-parser-kmp` → `manifest-core` →
-`manifest-graph` → `workspace-runtime` → `lsp-core` → `lsp-js`. One import at the
+**The chain.** `json-schema-ref-parser-kmp` → `architecture-manifest` →
+`architecture-graph` → `workspace-runtime` → `lsp-core` → `lsp-js`. One import at the
 bottom, every consumer above it.
 
 ## Goals / Non-Goals
@@ -130,11 +130,11 @@ artifact were rejected.
 consumer:
 
 - `zenwave-architecture`'s `ZenWaveManifestLoader` calls `defaultLoaders()` from
-  **commonMain** (`manifest-core/.../ZenWaveManifestLoader.kt:28`). A separate
-  Node-loader artifact would break that call on JS or make `manifest-core`
+  **commonMain** (`architecture-manifest/.../ZenWaveManifestLoader.kt:28`). A separate
+  Node-loader artifact would break that call on JS or make `architecture-manifest`
   choose a platform, and moving the problem up one repository does not fix it.
 - Named JS targets would make every Kotlin consumer with a single `js()` target
-  (`manifest-core`, `lsp-core`) choose between two variants through Gradle
+  (`architecture-manifest`, `lsp-core`) choose between two variants through Gradle
   attributes. Choosing wrong brings back today's failure, as the Risks section
   says.
 - The static import only exists because `NodeFsLoader.kt` declares
@@ -235,7 +235,7 @@ Asking never throws and never loads anything.
 depending on a capability, and an unavailable capability reads as unavailable,
 not as a defect. A query object answers the first; a typed exception answers the
 second. Putting the exception in `json-schema-ref-parser-kmp` needs no new
-artifact, because `manifest-core`, and through it `workspace-runtime` and
+artifact, because `architecture-manifest`, and through it `workspace-runtime` and
 `lsp-core`, already depend on it. `dsl-kotlin` has no platform-dependent
 capability today, so it adds nothing.
 
@@ -270,8 +270,8 @@ object RefParserPlatform {
   unavailable), throw `CapabilityUnavailableException` instead of the generic
   "no loader" error.
 
-**Same convention, in `zenwave-architecture`** (`manifest-core`, package
-`io.zenwave360.manifest`, commonMain):
+**Same convention, in `zenwave-architecture`** (`architecture-manifest`, package
+`io.zenwave360.architecture.manifest`, commonMain):
 
 ```kotlin
 object ManifestPlatform {

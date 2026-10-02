@@ -26,7 +26,7 @@ sits at the bottom of the dependency chain, it reaches every consumer above it:
 
 ```
 json-schema-ref-parser-kmp
-  └ manifest-core → manifest-graph → workspace-runtime
+  └ architecture-manifest → architecture-graph → workspace-runtime
       └ lsp-core
           └ lsp-js
 ```
