@@ -223,7 +223,7 @@ something a client can be built against, not when the documents are written.
       (`src/commonMain/kotlin/io/zenwave360/language/zdl/internal/ZdlListenerImpl.kt`)
 - [x] 4.2 Do the same for plugin CLI options if the pattern extends cleanly; say
       why if it does not
-      Declaration and value spans use `plugins.<name>.cliOptions.<option>`;
+      Declaration and value spans use `pluginsList.<n>.cliOptions.<option>`;
       a valueless flag has only a declaration span.
 - [x] 4.3 Leave interpreted values alone — this is additive, and an existing
       consumer must see the model it sees today
@@ -264,6 +264,17 @@ something a client can be built against, not when the documents are written.
       `nodejs-test-project/zdl-parser.test.js` "ZDL Parser - Numbers",
       `JsBrowserSmokeTest.parsesZdlIntoPlainJsValues`; README and
       `release-notes/release-notes.v1.10.0.md` document the JS-visible change.
+- [x] 4.9 Keep every plugin declaration when several share a type name, with a
+      source span for each. `pluginsList` is declaration order. Evidence:
+      `ZdlListenerImpl.enterPlugin`; `pluginsList.N` locations; tests
+      `ZdlListenerKotlinTest.parseZdl_DuplicatePluginNamesKeepEveryDeclaration`
+      and `nodejs-test-project/zdl-parser.test.js` "should keep every plugin
+      declaration when several share a type name".
+- [x] 4.10 Accept CLI options directly in the ZDL `config` block and report
+      them in the top-level `cliOptions` map, with declaration/value spans that
+      mirror plugin CLI options. Verify valueless flags, source-form values,
+      formatter preservation, JS output and the absence of parser recovery
+      corruption in a following configuration property.
 - [x] 4.8 A multiplatform Mermaid class diagram generator for ZDL, as recorded in the
       1.5 decision: `io.zenwave360.language.zdl.application.GenerateMermaidFromZdl`
       `execute(zdlContent: String): String`, with inert output. Evidence before: dsl-kotlin
@@ -334,6 +345,11 @@ something a client can be built against, not when the documents are written.
 - [ ] 6.4 Compare both IDEs on the same fixture and record any difference as a
       bug against one of them — expecting the trees to differ in presentation and
       the diagrams not to differ at all
+- [ ] 6.5 Make configuration-level CLI options effective in both IDE runners:
+      inherit them with the enclosing configuration, exclude them for
+      `(inherit false)`, and let a plugin-local CLI option replace a shared
+      option with the same name. Use a fixture with `--force` in `config` and
+      compare the complete commands emitted by both clients.
 
 ## 7. Archive
 
