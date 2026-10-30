@@ -49,7 +49,7 @@ is the useful fact.
 | Variables use `{{root}}`, Maven resources use `zenwave://maven/` | `${...}` expressions and the `maven` source. Neither older form exists |
 | A manifest has a `workspace:` block | `config` and `domains` |
 | A preview renderer in Handlebars comes first | The server is the provider. `packages/preview-renderer` is an empty placeholder |
-| `.zw` is ZDL | It has been its own language since the brand change |
+| `.zw` and `.zdl` share one VS Code language id | Same language, but `.zw` has had its own language id and icon since the brand change |
 | Reverse provenance is an open question | `WorkspaceQueryApi.at` exists |
 
 **Not settled: these need a decision or work.**

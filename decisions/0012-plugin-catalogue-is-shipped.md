@@ -23,7 +23,8 @@ is open and a derived address would be confidently wrong for anything that did n
 ## Open
 
 Whether an installed SDK should ever be asked, and when: an explicit refresh command, a persisted cache, or never.
-Its benefit is real. Task 002/11.7 in the [backlog](../work/backlog.md).
+Its benefit is real. Task 002/11.7 in the [backlog](../work/backlog.md). If it happens, the extension can hand the newer
+catalogue to the language server, which has its own copy too ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
 
 ## See also
 

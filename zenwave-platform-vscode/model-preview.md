@@ -42,13 +42,37 @@ server. See [decision 0002](../decisions/0002-server-advertises-its-requests.md)
 **MP-T3. VS Code.** A typed `requests.preview(uri, sequenceRenderMode?)` wrapper exists.
 There is no preview editor and no bundled Mermaid renderer.
 
+<a id="mp-t4"></a>
+**MP-T4. The Commit button's menu is not open to us.** Checked 2026-10-30 in the VS Code 1.144.0
+installed here. The green Commit button in a `COMMIT_EDITMSG` editor is contributed to the
+`editor/content` menu by the built-in Git extension, which declares the proposed API
+`contribEditorContentMenu`. An extension outside the allowlist in VS Code's `product.json` can only use
+a proposed API in extension development mode or with `--enable-proposed-api`, so ordinary users would
+not get the button. The allowlist has `ms-python.python`, `GitHub.vscode-pull-request-github`,
+`GitHub.copilot-chat` and `ms-vscode.vscode-chat-customizations-evaluations`, and not ZenWave. Our
+extension declares no proposed APIs today. Whether a Marketplace publish would also refuse it was not tried.
+
+<a id="mp-t5"></a>
+**MP-T5. The server does not seem to know `.zw`.** Read in `zenwave-lsp` on 2026-10-30, not run. The ZDL
+module declares only `.zdl`, the client sends the language id `zw`, and `zenwave/preview` answers only
+`zdl` and `zfl`, rejecting anything else as unsupported. So a `.zw` document would get no preview today.
+
+<a id="mp-t6"></a>
+**MP-T6. What a `.zw` preview would be built from.** The parser reads the `config` block and the plugins.
+The rules that combine them, inheritance and `(inherit false)`, are applied in the VS Code client when
+it builds a command ([sdk-runner](sdk-runner.md)). Plugin titles and option descriptions are in the
+[catalogue](../flows/sdk-plugin-catalogue.md) shipped with the extension
+([decision 0012](../decisions/0012-plugin-catalogue-is-shipped.md)). The server has neither. The catalogue
+is 116 KB for 19 plugins. The extension never asks the installed SDK for it, so a workspace's own plugins
+are not in it ([task 002/11.7](../work/backlog.md)). `dsl-docs` has no page for configuration or plugins.
+
 ## Rules
 
 ### One preview, bound to its document
 
 <a id="mp-r1"></a>
 **MP-R1 (proposed). A model file can be previewed beside its text.** The extension offers a
-preview action for ZDL and ZFL documents, from the editor and the palette, through
+preview action for ZDL and ZFL documents, from the editor's title bar and the palette, through
 `zenwave.preview.openToSide` and `zenwave.preview.open`, and opens it beside the editor
 without taking focus from the text. Invoking it again for a document with a preview reveals
 that preview rather than opening a second one. It is not offered for other files.
@@ -69,6 +93,44 @@ needs a locking command to reconcile them; binding from the start avoids inventi
 
 <a id="mp-r9"></a>
 **MP-R9 (proposed). Read-only.** Editing stays in the text editor.
+
+<a id="mp-r13"></a>
+**MP-R13 (proposed; an idea to review later, not to implement now). The text editor of a model shows a
+button for its view.** ZDL and ZFL text editors would show a labelled button inside the editor, at the
+bottom right, the way a `COMMIT_EDITMSG` editor shows Commit. For example, with `orders.zfl` open as text
+the button is there without opening a menu, and it is gone in a diagram, a preview or any other language.
+*Why it is worth keeping:* the title bar's controls are small, and someone who doesn't already know about
+them may not find them. *Why not now:* the menu is closed to us ([MP-T4](#mp-t4)). Review it if VS Code
+finalises `contribEditorContentMenu`. Until then the route is the title bar
+([EP-R1](eventflow-panel.md#ep-r1)).
+
+<a id="mp-r14"></a>
+**MP-R14 (proposed). A `.zw` file has its own preview, in Markdown.** `.zw` and `.zdl` are the same
+language, but a `.zw` file is generally used to configure plugins, so its preview is different. A ZDL preview shows
+classes, aggregates, commands and events. A `.zw` preview shows the global configuration, with a
+description of it, and for each plugin what it is going to do, its own configuration and the resolved sum
+of its properties. For example, a plugin that sets `targetFolder` under a `config` block setting
+`basePackage` lists both, and one declared `(inherit false)` lists only its own. Resolution follows the
+same rules the [SDK runner](sdk-runner.md) uses to build a command, implemented in the Kotlin libraries.
+The result can still differ from a run, which uses the SDK the user has installed; that is accepted. It is
+sent as a `MARKDOWN` representation ([MP-T2](#mp-t2)), written by `dsl-docs`
+([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). What is missing is
+[MP-T5](#mp-t5) and [MP-T6](#mp-t6).
+
+<a id="mp-r15"></a>
+**MP-R15 (proposed). A ZDL preview is a Markdown page from `dsl-docs`.** It holds the class diagram, a
+glossary, commands and events, as the `dsl-docs` domain page does, and replaces the lone class diagram of
+[MP-T1](#mp-t1). `dsl-docs` has a separate method for previews, so `generate` keeps returning a documentation
+folder. A ZFL preview stays as the list of Mermaid diagrams already agreed in [MP-R4](#mp-r4).
+
+<a id="mp-r16"></a>
+**MP-R16 (proposed). The server has its own catalogue, and a client can replace it.** The server ships its own copy
+of the catalogue. The client sends its copy at initialisation, and can send a newer one at any moment
+while the server runs. The server uses the last one it received, or its own if it has received none. So
+today's shipped JSON works from the start, and when the extension can get a current catalogue from the
+installed SDK ([task 002/11.7](../work/backlog.md)) it hands it over with no change to the server. The
+next preview uses the new catalogue. `dsl-docs` receives the chosen catalogue as an input. A plugin that isn't in it,
+such as a team's own, still shows its name and resolved configuration, without a description.
 
 ### Controls
 
@@ -155,6 +217,26 @@ the naming and grouping, not in a new feature.
 **MP-Q4. What happens for an untitled buffer, a model open in a diff, or a document open
 twice?** A custom editor sees these where a panel would not. Task 005/3.5 in the
 [backlog](../work/backlog.md).
+
+<a id="mp-q5"></a>
+**MP-Q5. Where does the button go while `editor/content` is closed to us?** Answered 2026-10-30: nowhere.
+A CodeLens at the top adds little, as the title bar is right there, so the title bar's preview buttons
+stay the route and the button remains an idea ([MP-R13](#mp-r13)).
+
+<a id="mp-q6"></a>
+**MP-Q6. What does the button open?** Left for when [MP-R13](#mp-r13) is reviewed. A ZFL document can open
+the EventFlow diagram today, and the preview once it exists, which is [MP-Q3](#mp-q3) again. A ZDL or `.zw`
+document has only the preview.
+
+<a id="mp-q7"></a>
+**MP-Q7. Who writes the `.zw` Markdown?** Answered 2026-10-30: `dsl-docs`, served by the language server. See
+[decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md).
+
+<a id="mp-q8"></a>
+**MP-Q8. How do plugin descriptions reach the server?** Answered 2026-10-30 by the owner: the server has its own copy
+and takes whichever the client last sent. See [MP-R16](#mp-r16). Still to define when it is built: the wire names, which
+is `initializationOptions` plus one notification, and how the server's copy is generated from a named SDK build.
+Whether IntelliJ sends a catalogue was not checked; if it doesn't, it gets the server's copy.
 
 ## Sources
 

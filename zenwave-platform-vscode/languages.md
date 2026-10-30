@@ -19,6 +19,10 @@ The extension SHALL register a `zdl` language for `.zdl` files, a `zw` language 
 ZenWave SDK files, and a `zfl` language for `.zfl` files. Each has its designated ZenWave file
 icon, and `.zw` files keep ZDL syntax and SDK authoring support.
 
+`.zw` and `.zdl` are the same language. A `.zw` file is generally used to configure plugins in the
+`config` block, while a `.zdl` may hold that and everything else. The separate language id gives
+it its icon, its name and [its own preview](model-preview.md#mp-r14).
+
 **Examples**
 
 - *Opening a ZDL file.* Given a file named `customer.zdl`, when the user opens it, then the editor reports the language as ZDL, and the file shows the orange-and-teal ZDL icon in the explorer.

@@ -107,6 +107,11 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [ ] **005/2.7** Content security policy: no remote content, no inline script beyond a nonce, sanitise server-provided HTML
 - [ ] **005/2.8** Theme from the editor's CSS variables; follow a theme change live
 - [ ] **005/2.9** Preserve scroll position and selected representation across re-renders
+- [ ] **005/2.12** `dsl-docs`: a method for previews, separate from `generate`, returning the Markdown for one document ([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). ZDL returns the domain page ([MP-R15](../zenwave-platform-vscode/model-preview.md#mp-r15)).
+- [ ] **005/2.13** `dsl-docs`: a Markdown preview for `.zw`, different from ZDL's: the global configuration with its description and, per plugin, what it will do, its configuration and the resolved sum of its properties ([MP-R14](../zenwave-platform-vscode/model-preview.md#mp-r14)). The resolution rules, inheritance and `(inherit false)`, go in Kotlin; today they are only in the client's `src/sdk/command.ts`.
+- [ ] **005/2.14** `zenwave-lsp`: depend on `dsl-docs`, serve those pages from `zenwave/preview` as `MARKDOWN`, and recognise `.zw` as ZDL ([MP-T5](../zenwave-platform-vscode/model-preview.md#mp-t5)). Measure generation time on the largest real model, on `lsp-js`.
+- [ ] **005/2.15** `zenwave-lsp`: ship a copy of the plugin catalogue, generated from a named SDK build, accept a replacement at initialisation and through a notification while running, and pass the last one received, or its own, to `dsl-docs` ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
+- [ ] **005/2.16** VS Code: send the shipped catalogue at initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)). Sending one refreshed from the installed SDK waits on 002/11.7.
 - [ ] **005/3.1** Name the previewed document in the editor's tab
 - [ ] **005/3.2** Bind the preview to its document; never re-point an open preview at a different one
 - [ ] **005/3.3** A helper resolving the model document from `window.tabGroups.activeTabGroup.activeTab.input`, handling both `TabInputText` and `TabInputCustom`, for the palette commands — shared with `004` and `006`
@@ -231,6 +236,12 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 
 - [ ] **001/6.4** Compare both IDEs on the same fixture and record any difference as a bug against one of them — expecting the trees to differ in presentation and the diagrams not to differ at all
 - [ ] **001/6.5** Make configuration-level CLI options effective in both IDE runners: inherit them with the enclosing configuration, exclude them for `(inherit false)`, and let a plugin-local CLI option replace a shared option with the same name. Use a fixture with `--force` in `config` and compare the complete commands emitted by both clients.
+
+## Ideas to review later
+
+Not to implement now.
+
+- **005/2.10** A button inside ZDL and ZFL text editors, at the bottom right, like Commit in `COMMIT_EDITMSG` ([MP-R13](../zenwave-platform-vscode/model-preview.md#mp-r13)). `editor/content` needs the proposed API `contribEditorContentMenu`, and only allowlisted extensions get it for ordinary users ([MP-T4](../zenwave-platform-vscode/model-preview.md#mp-t4)). Review if VS Code finalises it.
 
 ## Not yet tasks
 

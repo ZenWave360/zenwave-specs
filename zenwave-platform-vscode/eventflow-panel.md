@@ -29,6 +29,8 @@ opens as by default.
 - *The action is offered only where it means something.* Given a `.zdl` file or a plain text file in the active editor, when the user looks for the EventFlow action, then it is not offered for that file.
 - *Finding the ways to view a flow.* Given a ZFL document, which can be shown as text, as a preview, or as a diagram, when the user looks for those actions in the editor, then they are reachable together from one place, rather than each occupying its own control in the editor's title area.
 
+A button inside the text editor, as a further route, is an idea to review later: [MP-R13](model-preview.md#mp-r13).
+
 <a id="ep-r2"></a>
 ### EP-R2 (exists). A diagram editor belongs to one document
 
