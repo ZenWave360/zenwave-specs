@@ -17,4 +17,5 @@ long after the code was finished, because a change had to be archived to say oth
 ## What was kept from the changes
 
 Rules moved into the documents. Decisions with lasting reasons became files here. Open tasks became the backlog. Task histories and
-proposals are in git, under each repository's `openspec/`, and in git history.
+proposals are in git, under each repository's `openspec/`, and in git history. Every original integrated here, including the
+drafts that were never committed elsewhere, is under `_retired/` in commit `ab85572` of this repository.

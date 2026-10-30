@@ -13,11 +13,11 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const store = resolve(here, '..');
-const notDocs = new Set(['tools', 'openspec', 'node_modules', '_retired']);
+const notDocs = new Set(['tools', 'openspec', 'node_modules']);
 const docDirs = readdirSync(store, { withFileTypes: true })
   .filter((e) => e.isDirectory() && !e.name.startsWith('.') && !notDocs.has(e.name))
   .map((e) => e.name);
-const skip = new Set(['node_modules', '.git', 'build', 'dist', 'out', '.serena', 'openspec', '_retired']);
+const skip = new Set(['node_modules', '.git', 'build', 'dist', 'out', '.serena', 'openspec']);
 const textExt = /\.(md|ts|tsx|js|mjs|kt|java|json|yml|yaml)$/;
 
 function* walk(dir) {

@@ -67,8 +67,6 @@ the document is the spec, the [backlog](work/backlog.md) is the work, and
 [status](architecture/status.md) is the summary. When a rule flips, update the backlog,
 and status if the summary changed.
 
-`_retired/` is temporary and not current. Never link to it, and never edit it.
-
 ## When the blocker is upstream, write it down where the owner will read it
 
 Most of what blocks a repository is in another one. Writing "blocked on X" in a run

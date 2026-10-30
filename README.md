@@ -91,7 +91,6 @@ roadmap/          designed and not built
 work/             the backlog
 contracts/        message and data shapes, when one stops moving   (to come)
 tools/            check-refs.mjs
-_retired/         originals of what was integrated; safe to delete once reviewed
 ```
 
 What stays in each repository: `README`, `CHANGELOG`, `LICENSE`, `CONTRIBUTING`, `RELEASING`, release

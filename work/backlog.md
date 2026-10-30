@@ -241,6 +241,6 @@ Designed or implied, with no task list yet.
 - [Web Explorer](../roadmap/web-explorer.md): the gaps in VS Code web mode, starting with [WE-Q2](../roadmap/web-explorer.md#we-q2) and [WE-Q3](../roadmap/web-explorer.md#we-q3).
 - The rest of the [LSP adapter](../zenwave-lsp/lsp-adapter.md) build order, from step 3 on: staleness, deep links, `zenwave/*` pass-through requests.
 - Completion in the language server ([completion](../zenwave-lsp/completion-spec.md)).
-- Checking the old performance plan (git history of `zenwave-lsp`, `docs/performance-refactoring-plan.md`) against the code ([LS-Q2](../zenwave-lsp/server-architecture.md#ls-q2)).
+- Checking the old performance plan (`_retired/zenwave-lsp/performance-refactoring-plan.md` in commit `ab85572` of this repository) against the code ([LS-Q2](../zenwave-lsp/server-architecture.md#ls-q2)).
 - Documentation for `json-schema-ref-parser-kmp`.
 - Converting the rules' `SHALL` wording and given-when-then examples to plain prose, as [AGENTS.md](../AGENTS.md) asks, when each document is next edited.
