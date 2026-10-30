@@ -20,7 +20,7 @@ c003 VS Code LSP client               006  VS Code explorer         007  VS Code
 
 The packages are on npm (checked 2026-10-30): `@zenwave360/dsl` latest `1.10.0`, `@zenwave360/vistas-eventflow` and `vistas-eventflow-webview` latest `0.1.0`, and `@zenwave360/lsp-js` only pre-releases, latest `0.1.0-next.0`. The older task notes saying they are unpublished are out of date.
 
-- [ ] The VS Code extension still pins `@zenwave360/dsl` `1.9.0-SNAPSHOT` and `lsp-js` `0.1.0-SNAPSHOT` (`packages/extension/package.json`). Move them to published versions, and `lsp-js` to a real `devDependencies` entry as [decision 0006](../decisions/0006-one-javascript-server-in-the-extension.md) planned. Whether a clean checkout builds today was not tried.
+- [x] The VS Code extension still pins `@zenwave360/dsl` `1.9.0-SNAPSHOT` and `lsp-js` `0.1.0-SNAPSHOT` (`packages/extension/package.json`). Move them to published versions, and `lsp-js` to a real `devDependencies` entry as [decision 0006](../decisions/0006-one-javascript-server-in-the-extension.md) planned. **Done 2026-10-30** on zenwave-platform-vscode `feature/local-sibling-dependencies`: `dsl` 1.10.0, `lsp-js` 0.1.0-next.12.1, the page 0.1.0, all resolved by `npm ci` on a clean clone. Built sibling checkouts are linked over them during development, as the composite builds do in Gradle; see that package's README.
 - [ ] **008/1.1** Who owns the VS Code Marketplace publisher account, and the Open VSX namespace — the requirement cannot be met without both
 - [ ] **008/1.2** Tokens held as repository secrets, with a note of who can rotate them
 
@@ -116,7 +116,7 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [ ] **005/3.2** Bind the preview to its document; never re-point an open preview at a different one
 - [ ] **005/3.3** A helper resolving the model document from `window.tabGroups.activeTabGroup.activeTab.input`, handling both `TabInputText` and `TabInputCustom`, for the palette commands — shared with `004` and `006`
 - [ ] **005/3.4** Never move or re-position an editor after opening it — a preview the user dragged elsewhere stays there
-- [ ] **005/3.5** Decide what happens for an untitled buffer, a model open in a diff, and the same model open in two groups
+- [x] **005/3.5** Decide what happens for an untitled buffer, a model open in a diff, and the same model open in two groups: [MP-Q4](../zenwave-platform-vscode/model-preview.md#mp-q4)
 - [ ] **005/4.1** Request representations through `003`'s helper, keyed on document URI and version; coalesce document changes
 - [ ] **005/4.2** Render the representations in the order given, under the server's titles, starting on the server's default
 - [ ] **005/4.3** Hide the selector when there is only one representation

@@ -205,8 +205,8 @@ part" reliable across `ALT_BLOCKS` and `SEPARATE_VARIANTS`, or should the server
 dedicated stable identity?
 
 <a id="mp-q2"></a>
-**MP-Q2. First delivery scope.** ZFL only, or the ZDL class diagram in the same editor? The
-server already supports both.
+**MP-Q2. First delivery scope.** Answered 2026-10-30 by the owner: ZFL and ZDL in the first delivery. `.zw`
+follows with [MP-R14](#mp-r14).
 
 <a id="mp-q3"></a>
 **MP-Q3. What are preview and EventFlow each for?** A ZFL file has two diagram surfaces and
@@ -215,8 +215,10 @@ the naming and grouping, not in a new feature.
 
 <a id="mp-q4"></a>
 **MP-Q4. What happens for an untitled buffer, a model open in a diff, or a document open
-twice?** A custom editor sees these where a panel would not. Task 005/3.5 in the
-[backlog](../work/backlog.md).
+twice?** Answered 2026-10-30. An untitled buffer has no extension to match and is not offered a preview, and the
+palette command says to save it first. A diff editor is not offered one either: the title bar entry is hidden
+there, as the two sides are two documents. A document open in two groups is one document with one preview, so
+invoking the command reveals it ([MP-R1](#mp-r1)).
 
 <a id="mp-q5"></a>
 **MP-Q5. Where does the button go while `editor/content` is closed to us?** Answered 2026-10-30: nowhere.
