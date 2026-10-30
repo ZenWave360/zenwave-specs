@@ -7,8 +7,9 @@ representations the language server returns, so that the picture a VS Code user 
 the picture an IntelliJ user sees. No Mermaid source is generated, interpreted or
 reimplemented in the client.
 
-**Status:** proposed, 2026-10-30. **Nothing here is built in the client.** The server side
-exists ([LVR-R3](../flows/lsp-visualization-requests.md#lvr-r3)). This document merges the
+**Status:** 2026-10-30: the first delivery, ZDL and ZFL with what the server returns today, is built on the
+zenwave-platform-vscode branch `feature/preview-eventflow-storming`, not yet reviewed. Markdown and `.zw` are not. The server
+side exists ([LVR-R3](../flows/lsp-visualization-requests.md#lvr-r3)). This document merges the
 original preview spec with the later brief that agreed its controls; where they differed,
 the later brief wins and the rule says so. EventFlow is a different thing: interactive,
 not Mermaid. See [EventFlow](../flows/eventflow.md).
@@ -39,8 +40,9 @@ content }`, with `defaultRepresentationId` beside the list. Titles and order bel
 server. See [decision 0002](../decisions/0002-server-advertises-its-requests.md).
 
 <a id="mp-t3"></a>
-**MP-T3. VS Code.** A typed `requests.preview(uri, sequenceRenderMode?)` wrapper exists.
-There is no preview editor and no bundled Mermaid renderer.
+**MP-T3. VS Code.** A read-only custom editor, `zenwave.preview`, renders what
+`requests.preview(uri, sequenceRenderMode?)` returns, with Mermaid 12.2.0 bundled. It adds 1.6 MB to the VSIX, from 2.86 MB to 4.39 MB.
+Markdown and HTML representations show a message saying they aren't rendered yet.
 
 <a id="mp-t4"></a>
 **MP-T4. The Commit button's menu is not open to us.** Checked 2026-10-30 in the VS Code 1.144.0
@@ -71,20 +73,20 @@ are not in it ([task 002/11.7](../work/backlog.md)). `dsl-docs` has no page for 
 ### One preview, bound to its document
 
 <a id="mp-r1"></a>
-**MP-R1 (proposed). A model file can be previewed beside its text.** The extension offers a
+**MP-R1 (exists). A model file can be previewed beside its text.** The extension offers a
 preview action for ZDL and ZFL documents, from the editor's title bar and the palette, through
 `zenwave.preview.openToSide` and `zenwave.preview.open`, and opens it beside the editor
 without taking focus from the text. Invoking it again for a document with a preview reveals
 that preview rather than opening a second one. It is not offered for other files.
 
 <a id="mp-r2"></a>
-**MP-R2 (proposed). The preview can take the place of the text, and give it back.** The
+**MP-R2 (partial: restoring on window reload is not checked). The preview can take the place of the text, and give it back.** The
 preview can be shown in the same editor, in the same tab position, and there is an obvious
 way back to the text at the position it was left. Opening a model file continues to show its
 text by default, and a preview open when the window reloads is restored.
 
 <a id="mp-r3"></a>
-**MP-R3 (proposed). A preview belongs to one document.** It shows the document it was opened
+**MP-R3 (partial: a preview dragged to another group is not checked). A preview belongs to one document.** It shows the document it was opened
 for and no other, names it, never follows the active editor and is never re-pointed. Previews
 for `orders.zdl` and `customers.zdl` each keep their own. The extension does not move or
 re-position editors the user has arranged, so a preview dragged into another group stays
@@ -92,7 +94,7 @@ there across re-renders. *Why:* the built-in Markdown preview offers both behavi
 needs a locking command to reconcile them; binding from the start avoids inventing that.
 
 <a id="mp-r9"></a>
-**MP-R9 (proposed). Read-only.** Editing stays in the text editor.
+**MP-R9 (exists). Read-only.** Editing stays in the text editor.
 
 <a id="mp-r13"></a>
 **MP-R13 (proposed; an idea to review later, not to implement now). The text editor of a model shows a
@@ -135,14 +137,14 @@ such as a team's own, still shows its name and resolved configuration, without a
 ### Controls
 
 <a id="mp-r4"></a>
-**MP-R4 (proposed). The preview shows what the server provides.** Representations appear in
+**MP-R4 (exists). The preview shows what the server provides.** Representations appear in
 the order given, under the server's titles, and the first shown is
 `defaultRepresentationId`: for ZFL the first happy-path sequence, with the flowchart one
 selection away. The extension does not invent, reorder or omit any. Only `format` is
 inspected, never an id.
 
 <a id="mp-r10"></a>
-**MP-R10 (proposed). Two selectors in a compact header, inside the page.** *Render mode* and
+**MP-R10 (partial: the quick pick is not driven by a test). Two selectors in a compact header, inside the page.** *Render mode* and
 *Diagram*. A selector with no real choice is hidden, so a ZDL preview with one class diagram
 shows no selector. VS Code's title bar cannot show a dropdown with its current value, so this
 is HTML in the webview; a palette command with a quick pick is the keyboard route.
@@ -158,15 +160,15 @@ is HTML in the webview; a palette command with a quick pick is the keyboard rout
 ### After a change
 
 <a id="mp-r5"></a>
-**MP-R5 (proposed). The preview keeps step with the document.** It re-renders as the document
+**MP-R5 (exists). The preview keeps step with the document.** It re-renders as the document
 changes, after a short pause, without saving, and from disk changes such as a branch switch.
 The last good content stays visible while the new set is requested, so typing never blanks it.
 
 <a id="mp-r11"></a>
-**MP-R11 (proposed). Changing render mode asks the server again** with the chosen mode.
+**MP-R11 (exists). Changing render mode asks the server again** with the chosen mode.
 
 <a id="mp-r12"></a>
-**MP-R12 (proposed). The selection survives where it can.** When a response arrives, keep the
+**MP-R12 (exists). The selection survives where it can.** When a response arrives, keep the
 selected diagram if its exact id is present. If the id changed with the mode but the same
 outcome is still offered, keep that outcome, reading only the identifiers the server gave.
 Otherwise fall back to `defaultRepresentationId`. The same rule applies when an edit removes
@@ -176,18 +178,20 @@ the server's default.
 ### Rendering and safety
 
 <a id="mp-r6"></a>
-**MP-R6 (proposed). Diagrams render locally.** From assets shipped in the extension: no
+**MP-R6 (exists). Diagrams render locally.** From assets shipped in the extension: no
 network, no Java, no remote renderer, no other extension. Server content is data: it runs
 under a restrictive content security policy, nothing in it is executed or fetched, and future
 Markdown or HTML is sanitised first. A malformed diagram reports itself and leaves the rest
-readable. See [decision 0009](../decisions/0009-mermaid-not-plantuml.md).
+readable. See [decision 0009](../decisions/0009-mermaid-not-plantuml.md). This page allows `style-src 'unsafe-inline'`: Mermaid has no
+nonce option and measures text with styles it inserts, so without it the layouts change. Scripts stay under a nonce, and
+`default-src 'none'` keeps CSS from fetching anything.
 
 <a id="mp-r7"></a>
-**MP-R7 (proposed). The preview reads as part of the editor.** It follows the colour theme,
+**MP-R7 (partial: following a theme change is checked on desktop only). The preview reads as part of the editor.** It follows the colour theme,
 including a change while open, and allows ordinary text selection and copy.
 
 <a id="mp-r8"></a>
-**MP-R8 (proposed). The preview explains why it has nothing to show.** No language server, a
+**MP-R8 (exists). The preview explains why it has nothing to show.** No language server, a
 server that does not support previews, and an unreadable document are three different
 messages, with the detail in the output channel.
 

@@ -97,58 +97,58 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [ ] **005/1.1** `003-lsp-client` implemented
 - [ ] **005/1.2** `zenwave-lsp`: a request returning ordered preview representations for a ZDL or ZFL document, with titles, formats and a default (contract in `zenwave-specs`)
 - [ ] **005/1.3** `zenwave-lsp` / `dsl-kotlin`: ZDL class diagrams emitted as Mermaid, so both IDEs render from one implementation
-- [ ] **005/1.4** Decide the fate of `packages/preview-renderer` — repurpose or remove; do not leave it empty
-- [ ] **005/2.1** Register a custom editor for `.zdl` / `.zw` / `.zfl` with `priority: "option"` — verify that opening a model file still gives the text editor
-- [ ] **005/2.2** Open it in the adjacent column for the side-by-side gesture, focus staying in the text editor
-- [ ] **005/2.3** Open it in the current column for the in-place gesture, so the tab keeps its position
-- [ ] **005/2.4** Check what VS Code's own *Reopen Editor With…* switcher offers, and add a visible route back to the text only if that is not enough on its own
-- [ ] **005/2.5** Reveal an existing preview rather than opening a second one
-- [ ] **005/2.6** Confirm the preview is restored on window reload without a `WebviewPanelSerializer`
-- [ ] **005/2.7** Content security policy: no remote content, no inline script beyond a nonce, sanitise server-provided HTML
-- [ ] **005/2.8** Theme from the editor's CSS variables; follow a theme change live
-- [ ] **005/2.9** Preserve scroll position and selected representation across re-renders
+- [x] **005/1.4** Decide the fate of `packages/preview-renderer` — repurpose or remove; do not leave it empty
+- [ ] **005/2.1** Register a custom editor for `.zdl` / `.zw` / `.zfl` with `priority: "option"` — verify that opening a model file still gives the text editor. `.zdl` and `.zfl` done; `.zw` is left
+- [x] **005/2.2** Open it in the adjacent column for the side-by-side gesture, focus staying in the text editor
+- [x] **005/2.3** Open it in the current column for the in-place gesture, so the tab keeps its position
+- [x] **005/2.4** Check what VS Code's own *Reopen Editor With…* switcher offers, and add a visible route back to the text only if that is not enough on its own
+- [x] **005/2.5** Reveal an existing preview rather than opening a second one
+- [ ] **005/2.6** Manual check: confirm the preview is restored on window reload without a `WebviewPanelSerializer`
+- [x] **005/2.7** Content security policy: no remote content, no inline script beyond a nonce, sanitise server-provided HTML
+- [x] **005/2.8** Theme from the editor's CSS variables; follow a theme change live
+- [x] **005/2.9** Preserve scroll position and selected representation across re-renders
 - [ ] **005/2.12** `dsl-docs`: a method for previews, separate from `generate`, returning the Markdown for one document ([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). ZDL returns the domain page ([MP-R15](../zenwave-platform-vscode/model-preview.md#mp-r15)).
 - [ ] **005/2.13** `dsl-docs`: a Markdown preview for `.zw`, different from ZDL's: the global configuration with its description and, per plugin, what it will do, its configuration and the resolved sum of its properties ([MP-R14](../zenwave-platform-vscode/model-preview.md#mp-r14)). The resolution rules, inheritance and `(inherit false)`, go in Kotlin; today they are only in the client's `src/sdk/command.ts`.
 - [ ] **005/2.14** `zenwave-lsp`: depend on `dsl-docs`, serve those pages from `zenwave/preview` as `MARKDOWN`, and recognise `.zw` as ZDL ([MP-T5](../zenwave-platform-vscode/model-preview.md#mp-t5)). Measure generation time on the largest real model, on `lsp-js`.
 - [ ] **005/2.15** `zenwave-lsp`: ship a copy of the plugin catalogue, generated from a named SDK build, accept a replacement at initialisation and through a notification while running, and pass the last one received, or its own, to `dsl-docs` ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
 - [ ] **005/2.16** VS Code: send the shipped catalogue at initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)). Sending one refreshed from the installed SDK waits on 002/11.7.
-- [ ] **005/3.1** Name the previewed document in the editor's tab
-- [ ] **005/3.2** Bind the preview to its document; never re-point an open preview at a different one
-- [ ] **005/3.3** A helper resolving the model document from `window.tabGroups.activeTabGroup.activeTab.input`, handling both `TabInputText` and `TabInputCustom`, for the palette commands — shared with `004` and `006`
-- [ ] **005/3.4** Never move or re-position an editor after opening it — a preview the user dragged elsewhere stays there
+- [x] **005/3.1** Name the previewed document in the editor's tab
+- [x] **005/3.2** Bind the preview to its document; never re-point an open preview at a different one
+- [x] **005/3.3** A helper resolving the model document from `window.tabGroups.activeTabGroup.activeTab.input`, handling both `TabInputText` and `TabInputCustom`, for the palette commands — shared with `004` and `006`
+- [x] **005/3.4** Never move or re-position an editor after opening it — a preview the user dragged elsewhere stays there
 - [x] **005/3.5** Decide what happens for an untitled buffer, a model open in a diff, and the same model open in two groups: [MP-Q4](../zenwave-platform-vscode/model-preview.md#mp-q4)
-- [ ] **005/4.1** Request representations through `003`'s helper, keyed on document URI and version; coalesce document changes
-- [ ] **005/4.2** Render the representations in the order given, under the server's titles, starting on the server's default
-- [ ] **005/4.3** Hide the selector when there is only one representation
-- [ ] **005/4.4** Keep the last good render on screen while a new one is in flight
-- [ ] **005/4.5** Re-render when the document changes on disk, not only in the editor
+- [x] **005/4.1** Request representations through `003`'s helper, keyed on document URI and version; coalesce document changes
+- [x] **005/4.2** Render the representations in the order given, under the server's titles, starting on the server's default
+- [x] **005/4.3** Hide the selector when there is only one representation
+- [x] **005/4.4** Keep the last good render on screen while a new one is in flight
+- [x] **005/4.5** Re-render when the document changes on disk, not only in the editor
 - [ ] **005/5.1** Markdown to HTML, with fenced Mermaid blocks rendered as diagrams
-- [ ] **005/5.2** Mermaid representations rendered directly
+- [x] **005/5.2** Mermaid representations rendered directly
 - [ ] **005/5.3** HTML representations inserted sanitised
-- [ ] **005/5.4** Bundle Mermaid; load it on first diagram rather than on panel open
-- [ ] **005/5.5** A malformed diagram reports itself and leaves the rest readable
-- [ ] **005/5.6** Mermaid themed for light and dark
-- [ ] **005/6.1** Distinct states: no server, unsupported by this server, document unreadable, loading
-- [ ] **005/6.2** `contributes.customEditors` entry, and `zenwave.preview.openToSide` / `zenwave.preview.open` commands for the two gestures
-- [ ] **005/6.3** Contribute into the shared ZenWave submenu `004` establishes — not a title-bar icon of its own — plus palette entries; reuse the existing preview icons in `resources/` for the submenu items
-- [ ] **005/6.4** A command opening a quick pick of representations, as a keyboard route to the in-webview selector
-- [ ] **005/6.5** Keybinding matching the platform's preview convention, if it does not collide with the built-in Markdown preview
-- [ ] **005/7.1** `npm run typecheck`, `npm run lint`, `npm run build`
-- [ ] **005/7.2** Opening a `.zdl` file from the explorer still gives the text editor
-- [ ] **005/7.3** Desktop: preview both fixtures; ZFL shows a flowchart and one representation per outcome
-- [ ] **005/7.4** The in-place gesture keeps the tab's position; *Reopen Editor With…* gets back to the text
-- [ ] **005/7.5** Two models previewed at once: each keeps its own document
-- [ ] **005/7.6** Reload the window with a preview open: it comes back
-- [ ] **005/7.7** Drag the preview to another group: it stays put across re-renders
-- [ ] **005/7.8** Invoke the preview command while a diagram has focus — the tab-group lookup has to find the document with no active text editor
-- [ ] **005/7.9** Edit a fixture: the preview follows without blanking
-- [ ] **005/7.10** Switch representation, keep editing: the choice holds
-- [ ] **005/7.11** Switch theme with the preview open: it follows
-- [ ] **005/7.12** Clean VS Code profile with no other extensions: diagrams render
-- [ ] **005/7.13** Network disabled: diagrams render
-- [ ] **005/7.14** With the server stopped: the preview explains
-- [ ] **005/7.15** Compare with IntelliJ's preview on the same fixtures
-- [ ] **005/7.16** Measure the VSIX size against `004`'s bundle and record it
+- [x] **005/5.4** Bundle Mermaid; load it on first diagram rather than on panel open
+- [x] **005/5.5** A malformed diagram reports itself and leaves the rest readable
+- [x] **005/5.6** Mermaid themed for light and dark
+- [x] **005/6.1** Distinct states: no server, unsupported by this server, document unreadable, loading
+- [x] **005/6.2** `contributes.customEditors` entry, and `zenwave.preview.openToSide` / `zenwave.preview.open` commands for the two gestures
+- [x] **005/6.3** Contribute into the shared ZenWave submenu `004` establishes — not a title-bar icon of its own — plus palette entries; reuse the existing preview icons in `resources/` for the submenu items
+- [x] **005/6.4** A command opening a quick pick of representations, as a keyboard route to the in-webview selector
+- [x] **005/6.5** Keybinding matching the platform's preview convention, if it does not collide with the built-in Markdown preview
+- [x] **005/7.1** `npm run typecheck`, `npm run lint`, `npm run build`
+- [x] **005/7.2** Opening a `.zdl` file from the explorer still gives the text editor
+- [x] **005/7.3** Desktop: preview both fixtures; ZFL shows a flowchart and one representation per outcome
+- [x] **005/7.4** The in-place gesture keeps the tab's position; *Reopen Editor With…* gets back to the text
+- [x] **005/7.5** Two models previewed at once: each keeps its own document
+- [ ] **005/7.6** Manual check: reload the window with a preview open: it comes back
+- [ ] **005/7.7** Manual check: drag the preview to another group: it stays put across re-renders
+- [x] **005/7.8** Invoke the preview command while a diagram has focus — the tab-group lookup has to find the document with no active text editor
+- [x] **005/7.9** Edit a fixture: the preview follows without blanking
+- [x] **005/7.10** Switch representation, keep editing: the choice holds
+- [ ] **005/7.11** Switch theme with the preview open: it follows. Checked on desktop; on the browser host the setting did not reach the webview in the smoke, and that is not explained yet
+- [x] **005/7.12** Clean VS Code profile with no other extensions: diagrams render
+- [ ] **005/7.13** Manual check: network disabled: diagrams render
+- [x] **005/7.14** With the server stopped: the preview explains
+- [ ] **005/7.15** Manual check: compare with IntelliJ's preview on the same fixtures
+- [x] **005/7.16** Measure the VSIX size against `004`'s bundle and record it: [MP-T3](../zenwave-platform-vscode/model-preview.md#mp-t3)
 
 ### LSP client
 
