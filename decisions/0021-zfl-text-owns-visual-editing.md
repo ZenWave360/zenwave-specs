@@ -33,3 +33,5 @@ validated edits over original text.
   selection when ambiguous, policies occurrence-specific
   ([ZVE-R13](../flows/zfl-visual-editing.md#zve-r13)). Forms, invalid-text display
   and durable layout remain questions; their proposed defaults are not owner-confirmed.
+- Identifiers stay ASCII and the ZFL and ZDL grammars do not change for them, by owner
+  decision of 2026-10-31 ([ZVE-R5](../flows/zfl-visual-editing.md#zve-r5)).

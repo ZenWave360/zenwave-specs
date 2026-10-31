@@ -41,7 +41,8 @@ Start with adding an emission, changing a policy trigger and renaming a command.
 Fixtures cover equal names in two flows, repeated command bodies, equal policy
 endpoints with different conditions, mixed trigger groups, actor starts, ordered
 calls and handlers, response/emits/emits-response, comments and annotations,
-parallel edges, CRLF and Unicode.
+parallel edges, CRLF and Unicode in strings and comments. Identifiers stay ASCII
+([ZVE-R5](../flows/zfl-visual-editing.md#zve-r5)).
 
 **Exit:** minimal edits produce valid ZFL; unrelated text remains byte-for-byte
 unchanged; identity reconciliation preserves rename continuity. Record unsupported

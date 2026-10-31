@@ -104,6 +104,9 @@ rather than inventing one. A new event is introduced through a valid construct,
 such as an emission from a selected command; the grammar has no disconnected
 event declaration. Create a policy with triggers and one target command atomically.
 No placeholder semantics or grammar changes are required for the first release.
+Identifiers stay ASCII, as the ZFL and ZDL grammars define them, by owner decision
+of 2026-10-31: an edit that introduces a non-ASCII identifier is rejected. Unicode
+is supported in strings and comments.
 
 <a id="zve-r6"></a>
 **ZVE-R6 (proposed). Connections express specific relationships.** Initial intents
