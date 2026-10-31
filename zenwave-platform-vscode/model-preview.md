@@ -2,13 +2,13 @@
 
 <a id="model-preview"></a>
 
-A read-only preview of a ZDL or ZFL document inside VS Code, rendered from the
+A read-only preview of a ZDL, `.zw` or ZFL document inside VS Code, rendered from the
 representations the language server returns, so that the picture a VS Code user sees is
 the picture an IntelliJ user sees. No Mermaid source is generated, interpreted or
 reimplemented in the client.
 
-**Status:** 2026-10-30: the first delivery, ZDL and ZFL with what the server returns today, is built on the
-zenwave-platform-vscode branch `feature/preview-eventflow-storming`, not yet reviewed. Markdown and `.zw` are not. The server
+**Status:** 2026-10-31: built on the `feature/preview-eventflow-storming` branches of `dsl-kotlin`, `zenwave-lsp` and
+`zenwave-platform-vscode`. ZDL and ZFL reviewed; Markdown, `.zw` and the catalogue not yet. The server
 side exists ([LVR-R3](../flows/lsp-visualization-requests.md#lvr-r3)). This document merges the
 original preview spec with the later brief that agreed its controls; where they differed,
 the later brief wins and the rule says so. EventFlow is a different thing: interactive,
@@ -31,8 +31,9 @@ not Mermaid. See [EventFlow](../flows/eventflow.md).
 ordered list: a `flowchart`, then one `sequence:<outcome>:<index>` per end outcome. It
 accepts `sequenceRenderMode` of `ALT_BLOCKS`, `SEPARATE_VARIANTS` or `AUTO`; the default is
 `ALT_BLOCKS`. `defaultRepresentationId` is the first sequence when one exists, otherwise the
-flowchart. For ZDL it returns one Mermaid `classDiagram`. The content comes from
-`dsl-kotlin`'s `dsl-views`.
+flowchart, with the content from `dsl-kotlin`'s `dsl-views`. For ZDL it returned one Mermaid `classDiagram` until
+[MP-R15](#mp-r15); on the preview branch it returns one `MARKDOWN` page, id `domain`, and for `.zw` one with id `configuration`,
+both from `dsl-docs`.
 
 <a id="mp-t2"></a>
 **MP-T2. Representation shape.** `{ id, title, format: "MARKDOWN" | "MERMAID" | "HTML",
@@ -42,7 +43,9 @@ server. See [decision 0002](../decisions/0002-server-advertises-its-requests.md)
 <a id="mp-t3"></a>
 **MP-T3. VS Code.** A read-only custom editor, `zenwave.preview`, renders what
 `requests.preview(uri, sequenceRenderMode?)` returns, with Mermaid 12.2.0 bundled. It adds 1.6 MB to the VSIX, from 2.86 MB to 4.39 MB.
-Markdown and HTML representations show a message saying they aren't rendered yet.
+Markdown
+and HTML go through markdown-it 14.3.2 (raw HTML disabled) and DOMPurify 3.4.17, in a separate bundle loaded only for those formats, and the VSIX is 4.53 MB
+with everything in this document. Only `#fragment` links survive; other links are plain text.
 
 <a id="mp-t4"></a>
 **MP-T4. The Commit button's menu is not open to us.** Checked 2026-10-30 in the VS Code 1.144.0
@@ -55,18 +58,18 @@ not get the button. The allowlist has `ms-python.python`, `GitHub.vscode-pull-re
 extension declares no proposed APIs today. Whether a Marketplace publish would also refuse it was not tried.
 
 <a id="mp-t5"></a>
-**MP-T5. The server does not seem to know `.zw`.** Read in `zenwave-lsp` on 2026-10-30, not run. The ZDL
-module declares only `.zdl`, the client sends the language id `zw`, and `zenwave/preview` answers only
-`zdl` and `zfl`, rejecting anything else as unsupported. So a `.zw` document would get no preview today.
+**MP-T5. The server did not know `.zw`.** Confirmed by failing tests on 2026-10-31. On the preview branch a second instance of the ZDL
+module serves language id `zw` and the `.zw` extension, with the same features as ZDL. Diagnostics and symbols of a `.zw` still say `language: "zdl"` in their data.
+A `.zw` takes part in cross-references only when open, imported or named by a manifest.
 
 <a id="mp-t6"></a>
 **MP-T6. What a `.zw` preview would be built from.** The parser reads the `config` block and the plugins.
 The rules that combine them, inheritance and `(inherit false)`, are applied in the VS Code client when
 it builds a command ([sdk-runner](sdk-runner.md)). Plugin titles and option descriptions are in the
 [catalogue](../flows/sdk-plugin-catalogue.md) shipped with the extension
-([decision 0012](../decisions/0012-plugin-catalogue-is-shipped.md)). The server has neither. The catalogue
-is 116 KB for 19 plugins. The extension never asks the installed SDK for it, so a workspace's own plugins
-are not in it ([task 002/11.7](../work/backlog.md)). `dsl-docs` has no page for configuration or plugins.
+([decision 0012](../decisions/0012-plugin-catalogue-is-shipped.md)). On the preview branch `dsl-docs` has the page, its own port of those rules, and the server a copy of the
+catalogue. The catalogue is 116 KB for 19 plugins, 79 KB minified. The extension never asks the installed SDK for it, so a workspace's own plugins
+are not in it ([task 002/11.7](../work/backlog.md)).
 
 ## Rules
 
@@ -107,7 +110,7 @@ finalises `contribEditorContentMenu`. Until then the route is the title bar
 ([EP-R1](eventflow-panel.md#ep-r1)).
 
 <a id="mp-r14"></a>
-**MP-R14 (proposed). A `.zw` file has its own preview, in Markdown.** `.zw` and `.zdl` are the same
+**MP-R14 (exists). A `.zw` file has its own preview, in Markdown.** `.zw` and `.zdl` are the same
 language, but a `.zw` file is generally used to configure plugins, so its preview is different. A ZDL preview shows
 classes, aggregates, commands and events. A `.zw` preview shows the global configuration, with a
 description of it, and for each plugin what it is going to do, its own configuration and the resolved sum
@@ -116,17 +119,17 @@ of its properties. For example, a plugin that sets `targetFolder` under a `confi
 same rules the [SDK runner](sdk-runner.md) uses to build a command, implemented in the Kotlin libraries.
 The result can still differ from a run, which uses the SDK the user has installed; that is accepted. It is
 sent as a `MARKDOWN` representation ([MP-T2](#mp-t2)), written by `dsl-docs`
-([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). What is missing is
-[MP-T5](#mp-t5) and [MP-T6](#mp-t6).
+([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). The port is tested against the cases of the client's `command.test.ts` and `model.test.ts`. Both inherit the whole `config` map, `id` and `title` included, and a plugin that is still being typed is absent.
 
 <a id="mp-r15"></a>
-**MP-R15 (proposed). A ZDL preview is a Markdown page from `dsl-docs`.** It holds the class diagram, a
+**MP-R15 (exists). A ZDL preview is a Markdown page from `dsl-docs`.** It holds the class diagram, a
 glossary, commands and events, as the `dsl-docs` domain page does, and replaces the lone class diagram of
 [MP-T1](#mp-t1). `dsl-docs` has a separate method for previews, so `generate` keeps returning a documentation
 folder. A ZFL preview stays as the list of Mermaid diagrams already agreed in [MP-R4](#mp-r4).
 
 <a id="mp-r16"></a>
-**MP-R16 (proposed). The server has its own catalogue, and a client can replace it.** The server ships its own copy
+**MP-R16 (partial: VS Code sends only its shipped copy, at initialisation, because a refresh waits on task 002/11.7; the server's copy comes from the extension's file, naming SDK 2.8.0-SNAPSHOT, and nothing checks it against the SDK).
+The server has its own catalogue, and a client can replace it.** The server ships its own copy
 of the catalogue. The client sends its copy at initialisation, and can send a newer one at any moment
 while the server runs. The server uses the last one it received, or its own if it has received none. So
 today's shipped JSON works from the start, and when the extension can get a current catalogue from the
@@ -180,7 +183,7 @@ the server's default.
 <a id="mp-r6"></a>
 **MP-R6 (exists). Diagrams render locally.** From assets shipped in the extension: no
 network, no Java, no remote renderer, no other extension. Server content is data: it runs
-under a restrictive content security policy, nothing in it is executed or fetched, and future
+under a restrictive content security policy, nothing in it is executed or fetched, and
 Markdown or HTML is sanitised first. A malformed diagram reports itself and leaves the rest
 readable. See [decision 0009](../decisions/0009-mermaid-not-plantuml.md). This page allows `style-src 'unsafe-inline'`: Mermaid has no
 nonce option and measures text with styles it inserts, so without it the layouts change. Scripts stay under a nonce, and
@@ -240,9 +243,9 @@ document has only the preview.
 
 <a id="mp-q8"></a>
 **MP-Q8. How do plugin descriptions reach the server?** Answered 2026-10-30 by the owner: the server has its own copy
-and takes whichever the client last sent. See [MP-R16](#mp-r16). Still to define when it is built: the wire names, which
-is `initializationOptions` plus one notification, and how the server's copy is generated from a named SDK build.
-Whether IntelliJ sends a catalogue was not checked; if it doesn't, it gets the server's copy.
+and takes whichever the client last sent. See [MP-R16](#mp-r16). Wire names: `initializationOptions.pluginCatalogue` and the notification `zenwave/pluginCatalogue`, in the
+[wire reference](../flows/lsp-visualization-requests.md#wire-reference). The server's copy is written by `scripts/generate-plugin-catalogue.mjs --from <catalogue.json>` in `zenwave-lsp`,
+from the output of the extension's `scripts/generate-sdk-catalogue.mjs`, which runs the SDK. Whether IntelliJ sends a catalogue was not checked; if it doesn't, it gets the server's copy.
 
 ## Sources
 

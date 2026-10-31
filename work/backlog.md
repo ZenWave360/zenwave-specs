@@ -97,7 +97,7 @@ Node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R4 to EF-R9), w
 
 ## zenwave-platform-vscode
 
-### Model preview (not started)
+### Model preview
 
 Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 
@@ -105,7 +105,7 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [ ] **005/1.2** `zenwave-lsp`: a request returning ordered preview representations for a ZDL or ZFL document, with titles, formats and a default (contract in `zenwave-specs`)
 - [ ] **005/1.3** `zenwave-lsp` / `dsl-kotlin`: ZDL class diagrams emitted as Mermaid, so both IDEs render from one implementation
 - [x] **005/1.4** Decide the fate of `packages/preview-renderer` — repurpose or remove; do not leave it empty
-- [ ] **005/2.1** Register a custom editor for `.zdl` / `.zw` / `.zfl` with `priority: "option"` — verify that opening a model file still gives the text editor. `.zdl` and `.zfl` done; `.zw` is left
+- [x] **005/2.1** Register a custom editor for `.zdl` / `.zw` / `.zfl` with `priority: "option"` — verify that opening a model file still gives the text editor
 - [x] **005/2.2** Open it in the adjacent column for the side-by-side gesture, focus staying in the text editor
 - [x] **005/2.3** Open it in the current column for the in-place gesture, so the tab keeps its position
 - [x] **005/2.4** Check what VS Code's own *Reopen Editor With…* switcher offers, and add a visible route back to the text only if that is not enough on its own
@@ -114,11 +114,11 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [x] **005/2.7** Content security policy: no remote content, no inline script beyond a nonce, sanitise server-provided HTML
 - [x] **005/2.8** Theme from the editor's CSS variables; follow a theme change live
 - [x] **005/2.9** Preserve scroll position and selected representation across re-renders
-- [ ] **005/2.12** `dsl-docs`: a method for previews, separate from `generate`, returning the Markdown for one document ([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). ZDL returns the domain page ([MP-R15](../zenwave-platform-vscode/model-preview.md#mp-r15)).
-- [ ] **005/2.13** `dsl-docs`: a Markdown preview for `.zw`, different from ZDL's: the global configuration with its description and, per plugin, what it will do, its configuration and the resolved sum of its properties ([MP-R14](../zenwave-platform-vscode/model-preview.md#mp-r14)). The resolution rules, inheritance and `(inherit false)`, go in Kotlin; today they are only in the client's `src/sdk/command.ts`.
-- [ ] **005/2.14** `zenwave-lsp`: depend on `dsl-docs`, serve those pages from `zenwave/preview` as `MARKDOWN`, and recognise `.zw` as ZDL ([MP-T5](../zenwave-platform-vscode/model-preview.md#mp-t5)). Measure generation time on the largest real model, on `lsp-js`.
-- [ ] **005/2.15** `zenwave-lsp`: ship a copy of the plugin catalogue, generated from a named SDK build, accept a replacement at initialisation and through a notification while running, and pass the last one received, or its own, to `dsl-docs` ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
-- [ ] **005/2.16** VS Code: send the shipped catalogue at initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)). Sending one refreshed from the installed SDK waits on 002/11.7.
+- [x] **005/2.12** `dsl-docs`: a method for previews, separate from `generate`, returning the Markdown for one document ([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). ZDL returns the domain page ([MP-R15](../zenwave-platform-vscode/model-preview.md#mp-r15)).
+- [x] **005/2.13** `dsl-docs`: a Markdown preview for `.zw`, different from ZDL's: the global configuration with its description and, per plugin, what it will do, its configuration and the resolved sum of its properties ([MP-R14](../zenwave-platform-vscode/model-preview.md#mp-r14)). The resolution rules, inheritance and `(inherit false)`, go in Kotlin; today they are only in the client's `src/sdk/command.ts`.
+- [x] **005/2.14** `zenwave-lsp`: depend on `dsl-docs`, serve those pages from `zenwave/preview` as `MARKDOWN`, and recognise `.zw` as ZDL ([MP-T5](../zenwave-platform-vscode/model-preview.md#mp-t5)). Measure generation time on the largest real model, on `lsp-js`.
+- [x] **005/2.15** `zenwave-lsp`: ship a copy of the plugin catalogue, generated from a named SDK build, accept a replacement at initialisation and through a notification while running, and pass the last one received, or its own, to `dsl-docs` ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
+- [x] **005/2.16** VS Code: send the shipped catalogue at initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)). Sending one refreshed from the installed SDK waits on 002/11.7.
 - [x] **005/3.1** Name the previewed document in the editor's tab
 - [x] **005/3.2** Bind the preview to its document; never re-point an open preview at a different one
 - [x] **005/3.3** A helper resolving the model document from `window.tabGroups.activeTabGroup.activeTab.input`, handling both `TabInputText` and `TabInputCustom`, for the palette commands — shared with `004` and `006`
@@ -129,9 +129,9 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [x] **005/4.3** Hide the selector when there is only one representation
 - [x] **005/4.4** Keep the last good render on screen while a new one is in flight
 - [x] **005/4.5** Re-render when the document changes on disk, not only in the editor
-- [ ] **005/5.1** Markdown to HTML, with fenced Mermaid blocks rendered as diagrams
+- [x] **005/5.1** Markdown to HTML, with fenced Mermaid blocks rendered as diagrams
 - [x] **005/5.2** Mermaid representations rendered directly
-- [ ] **005/5.3** HTML representations inserted sanitised
+- [x] **005/5.3** HTML representations inserted sanitised
 - [x] **005/5.4** Bundle Mermaid; load it on first diagram rather than on panel open
 - [x] **005/5.5** A malformed diagram reports itself and leaves the rest readable
 - [x] **005/5.6** Mermaid themed for light and dark

@@ -56,7 +56,7 @@ same file means.
 <a id="lvr-r3"></a>
 ### LVR-R3 (exists). A client can request rendered representations of a model document
 
-The server SHALL, for an open ZDL or ZFL document, return an ordered list of
+The server SHALL, for an open ZDL, `.zw` or ZFL document, return an ordered list of
 representations of that document. Each SHALL carry a stable identifier, a title
 fit to show the user, the content, and the format that content is in. The server
 SHALL nominate which representation a client should show first.
@@ -330,6 +330,11 @@ failure where it has no result.
 server stops every view and every language feature in every document, and to the
 user it reads as the editor being broken rather than one file being unreadable.
 
+**Measured 2026-10-31,** packaged `lsp-js` over Node IPC on one thread, on Windows, with `bookings-domain-model.zdl` (17 KB) and a
+`zenwave-scripts.zw` (12 KB). A preview takes about 105 to 120 ms warm and about 0.6 s as the first request of a process. Meanwhile the thread blocks: a
+`documentSymbol` that takes 2 ms alone waits for the preview, about 140 ms warm and up to about 270 ms cold. That is fine with the preview's 300 ms debounce and
+one request at a time, and a much shorter debounce would keep the server busy while typing.
+
 <a id="lvr-r16"></a>
 ### LVR-R16 (proposed). A client can restrict content resolution to one declared source
 
@@ -368,6 +373,9 @@ The names the rules above deliberately don't fix. See [decision 0007](../decisio
 | `zenwave/preview` | `{ textDocument: { uri }, sequenceRenderMode? }` | `{ representations: [{ id, title, format, content }], defaultRepresentationId }` |
 | `zenwave/symbolAt` | `{ textDocument: { uri }, position }` | `{ uri, semanticId, range? }` or `null` |
 | `zenwave/conceptAt` `zenwave/workspaceStatus` | | **`lsp-jvm` only**, see [ST-Q1](../architecture/status.md#st-q1) |
+
+The plugin catalogue is not a request: a client sends `initializationOptions.pluginCatalogue`, the catalogue as a JSON object beside `zenwave`, or the notification
+`zenwave/pluginCatalogue` with `{ catalogue }`, listed in `capabilities.experimental.customNotifications`. The server uses the last valid one, or its own. A malformed one is ignored with a warning, and never fails initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
 
 `zenwave/credential` goes the other way, server to client, and is not sent yet: [decision 0008](../decisions/0008-credentials-are-handed-over-per-request.md).
 
