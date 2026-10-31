@@ -119,7 +119,7 @@ of its properties. For example, a plugin that sets `targetFolder` under a `confi
 same rules the [SDK runner](sdk-runner.md) uses to build a command, implemented in the Kotlin libraries.
 The result can still differ from a run, which uses the SDK the user has installed; that is accepted. It is
 sent as a `MARKDOWN` representation ([MP-T2](#mp-t2)), written by `dsl-docs`
-([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). The port is tested against the cases of the client's `command.test.ts` and `model.test.ts`. Both inherit the whole `config` map, `id` and `title` included, and a plugin that is still being typed is absent.
+([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). The port is tested against the cases of the client's `command.test.ts` and `model.test.ts`. Both inherit the whole `config` map, `id` and `title` included, and a plugin that is still being typed is absent. An integer outside JavaScript's safe range is shown as its exact string, as the client passes it to the SDK.
 
 <a id="mp-r15"></a>
 **MP-R15 (exists). A ZDL preview is a Markdown page from `dsl-docs`.** It holds the class diagram, a
@@ -191,7 +191,9 @@ nonce option and measures text with styles it inserts, so without it the layouts
 
 <a id="mp-r7"></a>
 **MP-R7 (partial: following a theme change is checked on desktop only). The preview reads as part of the editor.** It follows the colour theme,
-including a change while open, and allows ordinary text selection and copy.
+including a change while open, and allows ordinary text selection and copy. The page and its diagrams follow it, except
+for class and state diagrams from `dsl-views`, which keep a deliberate light look with their own colours and must stay readable on a dark page. Measured in Chromium on 2026-10-31, on a stand-in page with Dark and Light Modern
+colours: text at least 4.5:1 and lines at least 3:1 in both, except sequence actor text in dark, at 4.49:1. Multiplicity labels sit directly on the page, so the page's CSS colours them.
 
 <a id="mp-r8"></a>
 **MP-R8 (exists). The preview explains why it has nothing to show.** No language server, a
