@@ -86,7 +86,13 @@ Decisions are in [0013](../decisions/0013-platform-capabilities-are-asked-for.md
 
 - [ ] **001/5.3** Confirm JCEF is unaffected by both Evidence, not conclusive without running IntelliJ: `ZflJcefDiagramHost` (ZenWaveDomainModelEditor 9417bf8) registers only the assets `index.html` names as `src`/`href="./…"`, treats CEF `onLoadEnd` as ready and posts with `executeJavaScript("window.postMessage(…)")`; it never listens for `webviewReady`. The page still references only `./assets/*` from `index.html`, with the bootstrap in the entry chunk. The JCEF-like scenario in `browser.test.mjs` serves only those assets, posts `renderBundle` and `setViewMode` after load and renders cleanly. Open: needs a human run of the IntelliJ tool window after `pnpm sync:intellij`
 
-The in-page toolbar and node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R3 to EF-R10), with no task list yet.
+Node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R4 to EF-R9), with no task list yet.
+
+- [ ] **EF-R3/1** Extract the state, the view switch and the waiting states to a private `packages/eventflow-page`; `apps/eventflow-webview` stays the same page for IntelliJ
+- [ ] **EF-R3/2** `apps/eventflow-toolbar-webview` embeds that component with a Flow and Systems selector, and sends `viewModeChanged`
+- [ ] **EF-R3/3** `@zenwave360/vistas-eventflow-webview` also publishes `webview-toolbar/`, keeping `webview/` where it is
+- [ ] **EF-R3/4** The VS Code extension packages `webview-toolbar/` when the package has it, and records `viewModeChanged`
+- [ ] **EF-R3/5** Manual check: run the IntelliJ tool window after `pnpm sync:intellij` and see no selector
 
 ## zenwave-platform-vscode
 

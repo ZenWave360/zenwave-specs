@@ -7,8 +7,10 @@
 ## Purpose
 
 Define how an embedding IDE — IntelliJ through JCEF, VS Code through a webview —
-drives the EventFlow visualizer bundle, so the same built page works in both
-hosts and neither host has to know how a flow is drawn.
+drives the EventFlow visualizer bundle, so one protocol works in both hosts and
+neither host has to know how a flow is drawn. There are two built pages that speak
+it, one with the host's controls left to the host and one with a view selector
+([EF-R3](eventflow.md#ef-r3)); both implement every rule here.
 
 ## Rules
 
@@ -118,6 +120,7 @@ becoming a blank panel.
 | host → page | `setDisplaySettings` | `displaySettings`, e.g. `humanizeLabels` |
 | host → page | `highlightNode` | `nodeId`, or `null` to clear |
 | page → host | `webviewReady` | `{ protocol: "zenwave.eventflow.webview", protocolVersion: 1 }` |
+| page → host | `viewModeChanged` | `viewMode`: `flow` or `services`. Proposed: only the page with a selector sends it, and only for the user's own change ([EF-R3](eventflow.md#ef-r3)). A host may ignore it, so the version stays 1 |
 
 Versioning is [decision 0003](../decisions/0003-protocol-version-is-separate-from-package-version.md). What is being proposed on top is in [EventFlow](eventflow.md#ef-r4).
 

@@ -30,8 +30,8 @@ the Event Storming whiteboard.
 | --- | --- | --- |
 | View models and layout | `dsl-kotlin` | `FlowViewModel`, `ServiceViewModel`, positions, node ids, source references |
 | Requests and destinations | `zenwave-lsp` | `zenwave/eventFlowViews`, hierarchy, `zenwave/symbolAt`, resolving *where a node's code is* |
-| Renderer | `zenwave-architectural-vistas`, `packages/eventflow` | React Flow drawing, node components, the context menu, the toolbar |
-| Page | `zenwave-architectural-vistas`, `apps/eventflow-webview` and `packages/eventflow-webview` | The built page, its message protocol, its version |
+| Renderer | `zenwave-architectural-vistas`, `packages/eventflow` | React Flow drawing, node components, the context menu, zoom and fit |
+| Page | `zenwave-architectural-vistas`, `packages/eventflow-page`, `apps/eventflow-webview`, `apps/eventflow-toolbar-webview` and `packages/eventflow-webview` | The component both pages embed, the built pages and their controls, the message protocol, its version |
 | VS Code host | `zenwave-platform-vscode`, `src/eventflow/` | Hosting the page, forwarding view models, performing the actions the page asks for |
 | IntelliJ host | `ZenWaveDomainModelEditor` | Same role, over JCEF |
 
@@ -94,10 +94,23 @@ ignores messages it does not know. The version changes only for changes a host
 cannot ignore. See [decision 0003](../decisions/0003-protocol-version-is-separate-from-package-version.md).
 
 <a id="ef-r3"></a>
-**EF-R3 (proposed). The page owns its controls.** View (Flow, Systems), zoom,
-fit and focus live in a toolbar inside the page, so IntelliJ and VS Code show the
-same thing. A host may still send `setViewMode` for its own commands; both routes
-end in the same state.
+**EF-R3 (proposed). The application that embeds the diagram owns the controls.**
+The diagram is one component, with no control for choosing a view. Each application
+embeds that component and adds the controls its host lacks, so no host shows a
+control twice:
+
+- The minimal page has no selector. It is for a host with its own controls, as
+  IntelliJ has a Swing toolbar.
+- The page with a selector adds Flow and Systems. It is for a host without such a
+  toolbar inside the editor, as VS Code.
+
+Zoom and fit are the controls the visualizers already draw inside the diagram, so
+both pages have them. Focus is not part of this rule (EF-Q1).
+
+A host may still send `setViewMode` for its own commands, and both routes end in the
+same state: when the user changes the view in the selector, the page sends
+`viewModeChanged` and the host records it. The page does not send `viewModeChanged`
+for a change the host asked for, and the minimal page never sends it.
 
 ### Acting on a node
 
