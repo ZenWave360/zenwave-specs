@@ -120,11 +120,11 @@ becoming a blank panel.
 | host → page | `setDisplaySettings` | `displaySettings`, e.g. `humanizeLabels` |
 | host → page | `highlightNode` | `nodeId`, or `null` to clear |
 | page → host | `webviewReady` | `{ protocol: "zenwave.eventflow.webview", protocolVersion: 1 }` |
-| page → host | `viewModeChanged` | `viewMode`: `flow` or `services`. Proposed: only the page with a selector sends it, and only for the user's own change ([EF-R3](eventflow.md#ef-r3)). A host may ignore it, so the version stays 1 |
+| page → host | `viewModeChanged` | `viewMode`: `flow` or `services`. Only the page with a selector sends it, and only for the user's own change ([EF-R3](eventflow.md#ef-r3)). A host may ignore it, so the version stays 1 |
 
 Versioning is [decision 0003](../decisions/0003-protocol-version-is-separate-from-package-version.md). What is being proposed on top is in [EventFlow](eventflow.md#ef-r4).
 
-**How the readiness signal picks a channel**, in `apps/eventflow-webview/src/bootstrap.ts`: `window.__zenwaveHost` if a host injected one, otherwise `acquireVsCodeApi()`, called once
+**How the readiness signal picks a channel**, in `packages/eventflow-page/src/bootstrap.ts`: `window.__zenwaveHost` if a host injected one, otherwise `acquireVsCodeApi()`, called once
 and cached on `window.__zenwaveVsCodeApi` because it may only be called once per webview, otherwise `window.parent` when framed. A top frame such as JCEF has nothing to address, and it
 treats CEF `onLoadEnd` as ready.
 

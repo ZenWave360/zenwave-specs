@@ -9,7 +9,7 @@ One document covers the whole chain on purpose: the visual app, the language
 server and the IDE host each own a piece, and the interesting rules are the ones
 that cross the seams.
 
-**Status:** draft, 2026-10-29, checked again 2026-10-30: the page still has no toolbar and no outbound node messages. Rules marked *exists* describe verified current
+**Status:** draft, 2026-10-29, checked again 2026-10-31: the view selector is built on the `feature/preview-eventflow-storming` branches, not yet reviewed, and the page has no outbound node messages. Rules marked *exists* describe verified current
 behaviour. Rules marked *proposed* are what we want and have not agreed or built.
 
 ## 1. Scope
@@ -47,7 +47,7 @@ document with `{ flowGraph, serviceGraph }`, already laid out. The host forwards
 both unchanged in a `renderBundle` message.
 
 <a id="ef-t2"></a>
-**Messages.** (Full wording in [eventflow-webview-protocol](eventflow-webview-protocol.md).) Page to host: `webviewReady` with the protocol name and version.
+**Messages.** (Full wording in [eventflow-webview-protocol](eventflow-webview-protocol.md).) Page to host: `webviewReady` with the protocol name and version, and `viewModeChanged` from the page with a selector.
 Host to page: `renderBundle`, `setViewMode`, `setDisplaySettings`, `highlightNode`,
 and a legacy `renderGraph`. Unknown messages are ignored. Messages sent before the
 renderer starts are queued. Full table in the package README of
@@ -94,15 +94,17 @@ ignores messages it does not know. The version changes only for changes a host
 cannot ignore. See [decision 0003](../decisions/0003-protocol-version-is-separate-from-package-version.md).
 
 <a id="ef-r3"></a>
-**EF-R3 (proposed). The application that embeds the diagram owns the controls.**
+**EF-R3 (partial: the IntelliJ tool window, arrow keys and a pointer click on the selector are not checked).
+The application that embeds the diagram owns the controls.**
 The diagram is one component, with no control for choosing a view. Each application
-embeds that component and adds the controls its host lacks, so no host shows a
-control twice:
+embeds that component and adds the controls its host lacks, so IntelliJ does not
+show a control twice:
 
 - The minimal page has no selector. It is for a host with its own controls, as
   IntelliJ has a Swing toolbar.
 - The page with a selector adds Flow and Systems. It is for a host without such a
-  toolbar inside the editor, as VS Code.
+  toolbar inside the editor, as VS Code. VS Code keeps its title bar icon as well,
+  because that is the route its commands and keybindings use.
 
 Zoom and fit are the controls the visualizers already draw inside the diagram, so
 both pages have them. Focus is not part of this rule (EF-Q1).
@@ -157,7 +159,7 @@ asked (the file is gone, the server is down), the user is told by the host. The
 page does not retry and does not assume success.
 
 <a id="ef-r10"></a>
-**EF-R10 (proposed). Additions keep the protocol version.** New message types and
+**EF-R10 (exists). Additions keep the protocol version.** New message types and
 new optional fields do not change `protocolVersion`. A host that has not been
 updated simply never sends the new messages, and the page behaves as today.
 

@@ -88,11 +88,12 @@ Decisions are in [0013](../decisions/0013-platform-capabilities-are-asked-for.md
 
 Node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R4 to EF-R9), with no task list yet.
 
-- [ ] **EF-R3/1** Extract the state, the view switch and the waiting states to a private `packages/eventflow-page`; `apps/eventflow-webview` stays the same page for IntelliJ
-- [ ] **EF-R3/2** `apps/eventflow-toolbar-webview` embeds that component with a Flow and Systems selector, and sends `viewModeChanged`
-- [ ] **EF-R3/3** `@zenwave360/vistas-eventflow-webview` also publishes `webview-toolbar/`, keeping `webview/` where it is
-- [ ] **EF-R3/4** The VS Code extension packages `webview-toolbar/` when the package has it, and records `viewModeChanged`
+- [x] **EF-R3/1** Extract the state, the view switch and the waiting states to a private `packages/eventflow-page`; `apps/eventflow-webview` stays the same page for IntelliJ
+- [x] **EF-R3/2** `apps/eventflow-toolbar-webview` embeds that component with a Flow and Systems selector, and sends `viewModeChanged`
+- [x] **EF-R3/3** `@zenwave360/vistas-eventflow-webview` also publishes `webview-toolbar/`, keeping `webview/` where it is
+- [x] **EF-R3/4** The VS Code extension packages `webview-toolbar/` when the package has it, and records `viewModeChanged`
 - [ ] **EF-R3/5** Manual check: run the IntelliJ tool window after `pnpm sync:intellij` and see no selector
+- [ ] **EF-R3/6** Manual check in VS Code, with the page linked locally: click the selector with a pointer, move it with the arrow keys, and see how it looks in a light and a dark theme
 
 ## zenwave-platform-vscode
 
