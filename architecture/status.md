@@ -31,7 +31,7 @@ at the time*, not re-tested today. Treat it as a dated snapshot.
 | VS Code: publishing | **Pipeline built** | Marketplace accounts, tokens, a first release; the extension still pins snapshot versions of packages now on npm | [release](../zenwave-platform-vscode/release.md) |
 | Transitions without id (SDK, ZDL) | **Works** | Optional AsyncAPI adapter case | [flow](../flows/transitions-without-id.md) |
 | Resource discovery | **Designed** | Everything | [roadmap](../README.md#part-vi-what-comes-next) |
-| Visual ZFL editor (Event Storming whiteboard) | **Specified and planned**, 2026-10-31; not built | KMP source-edit operations, standalone component, transport and both VS Code hosts | [spec](../flows/zfl-visual-editing.md), [plan](../roadmap/event-storming-whiteboard.md) |
+| Visual ZFL editor (Event Storming whiteboard) | **ES-P1 KMP prototype on a branch**, 2026-10-31 (`dsl-kotlin` `feature/zfl-visual-editing`); rest not built | Full KMP operations and editing contract (ES-P2), standalone component, transport and both VS Code hosts. The prototype proves three source-targeted edits (add emission, change policy trigger, rename command); it is not the specified rules end-to-end | [spec](../flows/zfl-visual-editing.md), [plan](../roadmap/event-storming-whiteboard.md) |
 
 ## Where documents and code disagreed
 
