@@ -29,5 +29,7 @@ validated edits over original text.
 - Visual identity differs from source location and architectural identity.
 - Free-form notes and simultaneous collaboration are outside the first release.
 - Source targeting, valid atomic edits and revision checks precede UI delivery.
-- Repeated appearances, forms, invalid-text display and durable layout remain
-  questions in the spec; their proposed defaults are not owner-confirmed answers.
+- Appearance identity is owner-confirmed: one symbol per flow with explicit origin
+  selection when ambiguous, policies occurrence-specific
+  ([ZVE-R13](../flows/zfl-visual-editing.md#zve-r13)). Forms, invalid-text display
+  and durable layout remain questions; their proposed defaults are not owner-confirmed.

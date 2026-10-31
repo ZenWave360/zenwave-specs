@@ -157,12 +157,26 @@ contracts before implementing consumers. Missing support yields a read-only view
 with a reason. Desktop and browser use the same semantics. Existing read-only
 consumers do not have to adopt mutation support.
 
+<a id="zve-r13"></a>
+**ZVE-R13 (proposed; appearance identity confirmed by the owner, 2026-10-31).
+A symbol appears once per flow, and an ambiguous relationship selects its origin.**
+Each command and event is drawn once within a selected flow, however many times it
+occurs in that flow's source. When a displayed relationship could come from more
+than one source occurrence, an operation targeting it requires explicit origin
+selection before it proceeds; the editor does not guess. Policies stay
+occurrence-specific: each policy keeps its own triggers, condition and target
+command and is never merged with another by name. For example, a command emitted in
+two different `when` blocks shows one command node with one emission edge, but
+removing that emission asks which block it came from. This resolves
+[ZVE-Q1](#zve-q1) and governs how [ZVE-R3](#zve-r3) freezes editable targets.
+
 ## Open questions
 
 <a id="zve-q1"></a>
 **ZVE-Q1.** One command/event appearance per flow, or separate occurrences?
-Proposed first release: one symbol appearance, explicit origin selection when
-ambiguous, and occurrence-specific policies. Resolve before freezing target IDs.
+Resolved by the owner, 2026-10-31: one symbol appearance per flow, explicit origin
+selection when a relationship is ambiguous, and occurrence-specific policies. The
+behaviour is now a rule, [ZVE-R13](#zve-r13).
 
 <a id="zve-q2"></a>
 **ZVE-Q2.** Confirm a name-and-service form before inserting a command. Proposed
