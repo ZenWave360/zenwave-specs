@@ -30,7 +30,8 @@ at the time*, not re-tested today. Treat it as a dated snapshot.
 | VS Code: Mermaid preview | **Partial** | ZDL and ZFL built on a branch, not reviewed. Markdown and `.zw` are left | [model preview](../zenwave-platform-vscode/model-preview.md) |
 | VS Code: publishing | **Pipeline built** | Marketplace accounts, tokens, a first release; the extension still pins snapshot versions of packages now on npm | [release](../zenwave-platform-vscode/release.md) |
 | Transitions without id (SDK, ZDL) | **Works** | Optional AsyncAPI adapter case | [flow](../flows/transitions-without-id.md) |
-| Resource discovery, Event Storming whiteboard | **Designed** | Everything | [roadmap](../README.md#part-vi-what-comes-next) |
+| Resource discovery | **Designed** | Everything | [roadmap](../README.md#part-vi-what-comes-next) |
+| Visual ZFL editor (Event Storming whiteboard) | **Specified and planned**, 2026-10-31; not built | KMP source-edit operations, standalone component, transport and both VS Code hosts | [spec](../flows/zfl-visual-editing.md), [plan](../roadmap/event-storming-whiteboard.md) |
 
 ## Where documents and code disagreed
 

@@ -41,6 +41,8 @@ Agents took these to keep work moving. The code follows them; confirm or change 
 
 ## zenwave-lsp
 
+- [ ] **ZVE/3** Expose revision-checked visual-edit projection and edit preparation over unsaved documents, advertise capabilities, and document the wire contract. [Spec](../flows/zfl-visual-editing.md#zve-r12), [gate ES-P4](../roadmap/event-storming-whiteboard.md#es-p4). Evidence, checked 2026-10-31: the message table in `flows/eventflow-webview-protocol.md` defines rendering but no semantic mutations; the existing view model has no revision/edit-target contract. Without this, VS Code cannot safely turn canvas intents into edits against current text. Requires KMP operations below.
+
 Written by the clients that hit each problem, with the file and line.
 
 - [ ] **001/2.9** Take up configuration and manifest changes on a running server — `didChangeConfiguration` and `didChangeWatchedFiles` are empty today Evidence (zenwave-lsp d7156e7): `lsp-jvm/.../ZenwaveLspServer.kt:281,284` are empty overrides; `lsp-js/.../ZenwaveJsLanguageServer.kt` registers no handler for either notification (the `connection.on…` block ending at line 176). What zenwave-platform-vscode sends since vscode-platform/client-003: the standard `workspace/didChangeWatchedFiles` for each folder's `.zenwave/config.yml` and the resolved manifest file, and a restart with new `initializationOptions.zenwave` when the resolved `configUri`/`projectManifestUri` change. Without this task a saved edit to a manifest that is not open is not taken up until a restart (003 task 4.6). No payload is defined for `didChangeConfiguration`; the client sends none **Checked 2026-10-30:** still empty on `lsp-jvm`.
@@ -54,6 +56,10 @@ Written by the clients that hit each problem, with the file and line.
 - [ ] **001/2.20** Reference results carry the place in the target document (same requirement). Evidence: every `CrossReferenceContribution` is built with `targetRange = null` (`ZflCrossReferenceContributor.kt:18,38,53`, `ZdlCrossReferenceContributor.kt:22,66,95`), so forwardReferences from `when CheckoutStarted do createOrder` answers `[{"targetKind":"reference","label":"createOrder","uri":"…/orders/model.zdl","relationType":"uses"}]` with no `range`; zenwave-platform-vscode opens the ZDL at its first line
 - [ ] **001/2.21** `zenwave/symbolAt` resolves the name of a ZDL entity declaration (requirement "A client can resolve a position to the concept declared there", scenario "Asking about what is under the cursor", and "A declaration resolved by its name"). Evidence (lsp-js d7156e7, `lsp/orders.zdl` open): `entity Customer {` at 0:8 and `entity CustomerOrder {` at 4:10 answer `null`; 5:6 inside the body answers `#entities.CustomerOrder`; 5:15 on the field type `Customer` answers `#entities.CustomerOrder.name` with range 4:7–4:20 (the enclosing entity's name, not the referenced entity)
 - [ ] **001/2.22** A client learns from the server where the workspace's architecture manifest is (requirement "A client can request the conceptual hierarchy of a document", scenario "Finding what to ask about"). Evidence (zenwave-lsp d7156e7): no `zenwave/workspaceStatus` or other request reports the manifest in use — `ZenwaveCustomRequests.ALL` (`lsp-core/.../visualization/Visualizations.kt:20`) is [hierarchy, forwardReferences, reverseReferences, organizeZflServices, eventFlowViews, preview, symbolAt], and no `workspaceStatus` appears anywhere in zenwave-lsp. zenwave-platform-vscode therefore reads `.zenwave/config.yml` itself, mirroring `ZenwaveWorkspaceConfig.parseScalar` (`src/lsp/manifest-resolution.ts:33`), and its architecture tree (006 task 4.1) asks about the manifest the client resolved rather than the one the server reports working against **Checked 2026-10-30:** `zenwave/workspaceStatus` now exists on `lsp-jvm`, not on `lsp-js`, so the VS Code client still resolves the manifest itself.
+
+## dsl-kotlin: visual ZFL editing
+
+- [ ] **ZVE/1** Prove source-targeted edits, then implement the versioned editing projection and operations in KMP. [Spec](../flows/zfl-visual-editing.md), [gates ES-P1 and ES-P2](../roadmap/event-storming-whiteboard.md#es-p1). Evidence, checked 2026-10-31, under `dsl-kotlin/src/commonMain/kotlin/io/zenwave360/language/`: `eventflow/application/GenerateFlowViewFromZfl.kt:16` is a one-way pipeline; `eventflow/view/ZflToFlowGraphTransformer.kt:90,294-301` elides policies and derives IDs from names/endpoints; `source/SourceRef.kt:11` has no end range/revision. Reversing the projection loses source semantics and cannot safely update text. Preserve trigger grouping, occurrences, response semantics and comments; cover JVM/JS, CRLF and Unicode. Resolve appearance identity before freezing contracts.
 
 ## Language stack: browser support
 
@@ -84,6 +90,8 @@ Decisions are in [0013](../decisions/0013-platform-capabilities-are-asked-for.md
 
 ## zenwave-architectural-vistas
 
+- [ ] **ZVE/2** Build the standalone React visual ZFL editor and browser harness, then publish an embeddable page and editing adapter protocol. [Spec](../flows/zfl-visual-editing.md#zve-r11), [gate ES-P3](../roadmap/event-storming-whiteboard.md#es-p3). Evidence, checked 2026-10-31: `packages/eventflow/src/EventFlowVisualizer.tsx:608` supplies the canvas, with `nodesConnectable={false}` and no semantic editing transport. Without this, users cannot create/connect/delete language elements. Keep KMP prerequisites unchecked until available; preserve read-only consumers.
+
 - [ ] **001/5.3** Confirm JCEF is unaffected by both Evidence, not conclusive without running IntelliJ: `ZflJcefDiagramHost` (ZenWaveDomainModelEditor 9417bf8) registers only the assets `index.html` names as `src`/`href="./…"`, treats CEF `onLoadEnd` as ready and posts with `executeJavaScript("window.postMessage(…)")`; it never listens for `webviewReady`. The page still references only `./assets/*` from `index.html`, with the bootstrap in the entry chunk. The JCEF-like scenario in `browser.test.mjs` serves only those assets, posts `renderBundle` and `setViewMode` after load and renders cleanly. Open: needs a human run of the IntelliJ tool window after `pnpm sync:intellij`
 
 Node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R4 to EF-R9), with no task list yet.
@@ -96,6 +104,8 @@ Node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R4 to EF-R9), w
 - [ ] **EF-R3/6** Manual check in VS Code, with the page linked locally: click the selector with a pointer, move it with the arrow keys, and see how it looks in a light and a dark theme
 
 ## zenwave-platform-vscode
+
+- [ ] **ZVE/4** Embed the reusable visual ZFL editor over the authoritative text document, using guarded edits and native undo/save in both hosts. [Spec](../flows/zfl-visual-editing.md#zve-r4), [gate ES-P5](../roadmap/event-storming-whiteboard.md#es-p5). Upstream prerequisites are phrased and tracked as availability checkboxes in the plan. Verify stale operations, text/canvas refresh, external changes and webview recreation before enabling mutations.
 
 ### Model preview (not started)
 
@@ -255,7 +265,7 @@ Not to implement now.
 Designed or implied, with no task list yet.
 
 - ZenWave MCP: the runnable server ([MCP-T2](../zenwave-architecture/mcp-adapter.md#mcp-t2)).
-- [Resource discovery](../roadmap/resource-discovery.md), [Event Storming whiteboard](../roadmap/event-storming-whiteboard.md).
+- [Resource discovery](../roadmap/resource-discovery.md). Visual ZFL editing now has tasks ZVE/1 through ZVE/4 above.
 - [Web Explorer](../roadmap/web-explorer.md): the gaps in VS Code web mode, starting with [WE-Q2](../roadmap/web-explorer.md#we-q2) and [WE-Q3](../roadmap/web-explorer.md#we-q3).
 - The rest of the [LSP adapter](../zenwave-lsp/lsp-adapter.md) build order, from step 3 on: staleness, deep links, `zenwave/*` pass-through requests.
 - Completion in the language server ([completion](../zenwave-lsp/completion-spec.md)).

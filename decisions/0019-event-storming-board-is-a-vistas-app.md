@@ -2,6 +2,11 @@
 
 **Status:** accepted by owner, 2026-10-30. **Used by:** [Event Storming whiteboard](../roadmap/event-storming-whiteboard.md)
 
+**Amended 2026-10-31:** [decision 0021](0021-zfl-text-owns-visual-editing.md)
+supersedes the separate board file and one-way ZFL export. Vistas ownership and
+reuse of visualization components remain. The editor is now a reusable component
+developed in a standalone browser harness, then embedded in VS Code.
+
 ## Decision
 
 The whiteboard is neither a separate extension nor a separate tool. It is an app inside
@@ -17,7 +22,7 @@ already knows how to embed a page from that repository in an IDE. A separate too
 ## Consequences
 
 - The original brief's own extension, packaging and licensing plan no longer applies.
-- The board does not break the rule that editing the architecture goes through Git: it edits its own file in
-  the repository, and reaches the model only by a one-way export to ZFL.
+- The original board-file/one-way-export consequence is superseded by 0021: the
+  canvas edits the authoritative ZFL document through validated text operations.
 - [The vistas' package rule](../zenwave-architectural-vistas/REPOSITORY_SCOPE.md) applies: code the two share
   is extracted once both need it. What exactly is shared is [ES-Q7](../roadmap/event-storming-whiteboard.md#es-q7).
