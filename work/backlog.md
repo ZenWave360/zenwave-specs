@@ -252,6 +252,19 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [ ] **008/6.4** Confirm switching back to stable works
 - [ ] **008/6.5** Break the browser bundle deliberately on a branch and confirm the release checks catch it Local probe on deleted branch `codex/browser-node-api-probe`: importing `node:fs` in `src/activate.ts` makes `npm run build` exit 1 with the browser Node API diagnostic (`tmp/browser-node-api-probe.log`); CI evidence still needed.
 
+### Release pipelines, proposed 2026-11-01
+
+Spec: [R-R7 to R-R13](../zenwave-platform-vscode/release.md#r-r7), [decision 0023](../decisions/0023-pre-releases-pin-next-kotlin-moves-on-git-snapshots.md).
+
+- [ ] **REL/1** One reusable verifying workflow with the checks now in `ci.yml`, used by pull requests, `main`, pre-release and stable. Move it to `develop` too; today a push to `develop` runs nothing. It takes no registry token ([R-R13](../zenwave-platform-vscode/release.md#r-r13)).
+- [ ] **REL/2** The version and changelog stamp, the odd-minor check and the pin checks, as tested scripts: [R-R8](../zenwave-platform-vscode/release.md#r-r8), [R-R9](../zenwave-platform-vscode/release.md#r-r9), [R-R10](../zenwave-platform-vscode/release.md#r-r10). Decide with the code what `package.mjs` does with a `-pre` tag now.
+- [ ] **REL/3** The script that raises `@zenwave360/*` pins from npm `next` ([R-R9](../zenwave-platform-vscode/release.md#r-r9)).
+- [ ] **REL/4** `pre-release.yml`, on a push to `develop`: [R-R7](../zenwave-platform-vscode/release.md#r-r7), [R-R10](../zenwave-platform-vscode/release.md#r-r10), [R-R12](../zenwave-platform-vscode/release.md#r-r12), [R-R13](../zenwave-platform-vscode/release.md#r-r13). Nothing can be proved without a remote run: the implementer leaves a dry run and the owner runs the first one.
+- [ ] **REL/5** `release.yml`, on a stable tag, taking the publishing out of `ci.yml`: [R-R11](../zenwave-platform-vscode/release.md#r-r11), [R-R12](../zenwave-platform-vscode/release.md#r-r12), [R-R13](../zenwave-platform-vscode/release.md#r-r13).
+- [ ] **REL/6** Owner: environments `vscode-prerelease` and `vscode-release`, and `VSCE_PAT` and `OVSX_PAT` in them (the repository has neither today; see 008/1.1 and 008/1.2). Merge `release-workflows` `feature/git-snapshots` to `main` and move the callers back to it. Push in the order in [Packages a pre-release needs](../zenwave-platform-vscode/release.md#packages-a-pre-release-needs), then raise the pins.
+- [ ] **REL/7** Answer [R-Q1](../zenwave-platform-vscode/release.md#r-q1) before the first stable.
+- [ ] **REL/8** The desktop smoke `modelActions` failed once with "One undo did not restore the document exactly" and passed on the re-run, on merged `develop`, 2026-11-01. A flaky smoke test blocks every pre-release, so find the cause before REL/4 runs for real. Evidence: `packages/extension/.vscode-test/sdk-smoke-zI1dmT`.
+
 ### Comparing the two IDEs
 
 - [ ] **001/6.4** Compare both IDEs on the same fixture and record any difference as a bug against one of them — expecting the trees to differ in presentation and the diagrams not to differ at all

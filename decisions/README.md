@@ -30,3 +30,4 @@ The code follows it, and the owner has not confirmed it. Those are the ones to r
 | [0020](0020-previews-come-from-dsl-docs-through-the-server.md) | Markdown previews come from dsl-docs, through the language server | accepted |
 | [0021](0021-zfl-text-owns-visual-editing.md) | ZFL text owns bidirectional visual editing | direction accepted; implementation proposed |
 | [0022](0022-saved-positions-are-a-file-beside-the-model.md) | Saved positions are a file beside the model | accepted |
+| [0023](0023-pre-releases-pin-next-kotlin-moves-on-git-snapshots.md) | Pre-releases pin `next`, and Kotlin moves on Git snapshots | direction accepted; pipelines not built |
