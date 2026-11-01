@@ -190,9 +190,14 @@ A registry failure SHALL NOT stop the attempt at the other registry, and the run
 <a id="r-r13"></a>
 ### R-R13 (proposed). Publishing credentials reach only the publishing step
 
-The build and test job SHALL run with no registry token. A separate job SHALL download the verified VSIX, run nothing from the repository's dependencies, and publish it. Tokens SHALL be held in GitHub environments of this repository, `vscode-prerelease` limited to `develop` and `vscode-release` limited to `v*` tags with a required reviewer. Third-party actions in these workflows SHALL be pinned by commit hash, as [`release-workflows`](https://github.com/ZenWave360/release-workflows) does.
+The build and test job SHALL run with no registry credential. A separate job SHALL download the verified VSIX, run nothing from the repository's dependencies, and publish it. Publishing SHALL run in GitHub environments of this repository, `vscode-prerelease` limited to `develop` and `vscode-release` limited to `v*` tags with a required reviewer. Third-party actions in these workflows SHALL be pinned by commit hash, as [`release-workflows`](https://github.com/ZenWave360/release-workflows) does.
+
+Both registries SHALL be reached through trusted publishing (`vsce publish --oidc`, `ovsx publish --trusted-publishing`) as soon as they accept it, and no long-lived token SHALL stay in the repository after that. Until then a token MAY be held in those environments, for the first version only. Azure DevOps retires global personal access tokens on 2026-12-01, and Open VSX requires an owned namespace and one active version before it accepts a trusted publisher.
 
 **Examples**
+
+- *First publication.* Given an extension with no version on Open VSX, when the first pre-release runs, then it publishes with `OVSX_PAT`. Once the namespace is owned and the trusted publisher registered, the secret is deleted, because a token takes priority over trusted publishing while it is there.
+- *Failing to fall back.* Given `--oidc` that cannot get or exchange its token, when the job runs, then it fails, rather than trying a stored token.
 
 - *A hostile dependency.* Given a compromised build dependency that reads the environment during tests, when the pipeline runs, then it finds no registry token.
 - *What gets published.* Given a verified VSIX, when the publishing job runs, then it publishes those exact bytes rather than building again.
@@ -221,3 +226,6 @@ A push to `dsl-kotlin` does not start `zenwave-lsp`: its run has to come after t
 
 <a id="r-q1"></a>
 **R-Q1. What does the first stable release need from upstream?** Open, and it decides when [R-R11](#r-r11) can first succeed. `@zenwave360/lsp-js` has never had a stable version (npm `latest` is `0.1.0-next.0`), and `zenwave-lsp` depends on `-SNAPSHOT` versions of three Kotlin projects. A stable server may therefore use up to four Maven Central releases at once (`json-schema-ref-parser-kmp`, `dsl-kotlin`, `zenwave-architecture`, `zenwave-lsp`) out of the eight the owner can publish in a month. Decide this before the first stable, not for each one.
+
+<a id="r-q2"></a>
+**R-Q2. Does a trusted publisher accept two workflows?** Open. Open VSX matches a workflow by file name and environment, and its documentation does not say whether one extension can have two registrations, or how a reusable workflow is matched. If it allows only one, `pre-release.yml` and `release.yml` become one workflow file with two triggers, keeping the environment per channel if the registration allows it. Find out in the registry's Trusted Publishers dialog, before REL/4. The same applies to a Marketplace policy.
