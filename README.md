@@ -73,9 +73,8 @@ A capability followed end to end. Breaking one of these breaks another repositor
 
 - [Backlog](work/backlog.md): everything still open, by repository.
 - [Resource discovery](roadmap/resource-discovery.md): reaching the documents around an architecture.
-- [Event Storming whiteboard](roadmap/event-storming-whiteboard.md): from the workshop to ZFL.
+- [Event Storming whiteboard](roadmap/event-storming-whiteboard.md): from the workshop to ZFL: standalone visual ZFL editor, then VS Code integration.
 - [Navigation brief](roadmap/navigation-brief.md): what to decide about clicking through models, for an interview.
-- [Event Storming whiteboard plan](roadmap/event-storming-whiteboard.md): standalone visual ZFL editor, then VS Code integration.
 - [Web Explorer](roadmap/web-explorer.md).
 
 ### Decisions
