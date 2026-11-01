@@ -1,6 +1,6 @@
 # 0023. Pre-releases pin `next`, and Kotlin moves on Git snapshots
 
-**Status:** direction from the owner, 2026-11-01; pipelines not built. **Used by:** [R-R7](../zenwave-platform-vscode/release.md#r-r7), [R-R8](../zenwave-platform-vscode/release.md#r-r8), [R-R9](../zenwave-platform-vscode/release.md#r-r9), [R-R11](../zenwave-platform-vscode/release.md#r-r11)
+**Status:** direction from the owner, 2026-11-01; pipelines built on a branch, never run. **Used by:** [R-R7](../zenwave-platform-vscode/release.md#r-r7), [R-R8](../zenwave-platform-vscode/release.md#r-r8), [R-R9](../zenwave-platform-vscode/release.md#r-r9), [R-R11](../zenwave-platform-vscode/release.md#r-r11)
 
 ## Decision
 
