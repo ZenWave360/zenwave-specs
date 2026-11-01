@@ -104,12 +104,12 @@ user's keyboard. A release is the last place it can still be caught cheaply.
 
 ## The two pipelines
 
-Asked for by the owner and built 2026-11-01; never run on GitHub. [Decision 0023](../decisions/0023-pre-releases-pin-next-kotlin-moves-on-git-snapshots.md) says why.
+Asked for by the owner and built 2026-11-01; never run on GitHub. [Decision 0023](../decisions/0023-pre-releases-pin-next-kotlin-moves-on-git-snapshots.md) says why. The owner then changed how versions and notes work, [decision 0024](../decisions/0024-pre-releases-follow-the-last-release.md): [R-R8](#r-r8), the notes in [R-R10](#r-r10) and the tag and notes of [R-R11](#r-r11) describe that change, which is not built yet.
 
 | | Pre-release | Stable |
 |---|---|---|
-| Starts on | a push to `develop` | a tag `vX.EVEN.Z` on a commit of `main` |
-| Version | `X.ODD.<run number>`, stamped by CI, not committed | the version committed in the manifest |
+| Starts on | a push to `develop` | a tag `vX.Y.Z` on a commit of `main` |
+| Version | `X.Y.<run number>` of the last release, stamped by CI, not committed | the version committed in the manifest on `main` |
 | `@zenwave360/*` dependencies | exact versions, `next` allowed | exact versions, stable only |
 | Approval | none | required reviewer |
 | Registries | Marketplace and Open VSX, as pre-release | Marketplace and Open VSX |
@@ -133,16 +133,19 @@ Every push to `develop` that changes the extension SHALL run the same checks as 
 
 *State: Built on `zenwave-platform-vscode` `feature/release-pipelines`, 2026-11-01, not reviewed; no workflow has run on GitHub.*
 
-The Marketplace accepts only `major.minor.patch` and no semver pre-release suffix, so the channel is carried by the minor number: odd is pre-release and even is stable, as `packages/extension/scripts/package.mjs` already enforces. The manifest on `develop` SHALL hold an odd minor. CI SHALL replace the patch with the workflow's run number in its own checkout, before building, and SHALL NOT commit the result. The minor on `develop` SHALL always be above that of the latest stable release, so a user who opted in is not moved back to an older build.
+The Marketplace accepts only `major.minor.patch`, with no pre-release suffix and no leading zeros (`vsce` refuses `0.0.0057`). A pre-release is therefore the patch of the last release: the manifest on `develop` SHALL hold the `major.minor` of the last stable release, `0.0` before the first one. CI SHALL replace the patch with the workflow's run number in its own checkout, before building, and SHALL NOT commit the result. The version is raised only for a stable release, on `main`, and `develop` gets it by merging `main` back. The stamped version SHALL be above the highest stable tag, so a user who opted in is not moved back.
+
+A user on a pre-release moves to a stable release when it is published, because its minor is higher, and stays eligible for the pre-releases that follow it.
 
 **Examples**
 
-- *Normal build.* Given `0.1.0` in the manifest and run 57, when the pipeline runs, then the extension is `0.1.57`, and its package and `build-info.json` both say so.
-- *Wrong channel.* Given an even minor in the manifest on `develop`, when the pipeline runs, then it fails before building, and says to raise the minor.
-- *After a stable release.* Given a stable `0.2.0`, when the release is complete, then `develop` moves to `0.3.0`; until it does, the pipeline fails rather than publishing a version below stable.
+- *Before the first stable.* Given `0.0.0` in the manifest and run 57, when the pipeline runs, then the extension is `0.0.57`, and its package and `build-info.json` both say so.
+- *After a stable release.* Given `0.1.0` on `main` and merged back, and run 58, when the pipeline runs, then the extension is `0.1.58`.
+- *Not merged back.* Given a tag `v0.1.0` and `0.0.0` still on `develop`, when the pipeline runs, then it fails before building, and says to merge `main` back.
+- *A hotfix.* Given `0.1.0` and pre-releases up to `0.1.70`, when `v0.1.1` is released from `main`, then users on stable get it and users on pre-releases stay on `0.1.70`, which is newer. A hotfix numbered above the run number, such as `v0.1.1057`, would make every later pre-release of that minor lower than stable, so the pipeline fails until the next minor.
 - *No commit from CI.* Given any pre-release, when it finishes, then `develop` has no new commit from the pipeline.
 
-**Note:** "above stable" is checked against the even-minor `v*` tags of the repository, not against what the registries hold. The stamped changelog date is the date of the commit, not of the run, so running the build again gives the same content. The first run of the workflow gives `0.1.1`, so the changelog's `0.1.0` is a version that was never published. The run number restarts if the workflow file is renamed. Do not rename it; if it ever has to be, raise the minor in the same commit.
+**Note:** "above stable" is checked against the stable-shaped `v*` tags of the repository, not against what the registries hold. The date in the notes is the date of the commit, not of the run, so running the build again gives the same content. The first run of the workflow gives `0.0.1`. The run number restarts if the workflow file is renamed. Do not rename it; if it ever has to be, raise the minor in the same commit.
 
 <a id="r-r9"></a>
 ### R-R9 (partial). A pre-release may ship `next` packages, pinned exactly
@@ -165,24 +168,26 @@ Raising a pin is an ordinary commit. A repository script SHALL read each package
 
 *State: Built on `zenwave-platform-vscode` `feature/release-pipelines`, 2026-11-01, not reviewed; no workflow has run on GitHub.*
 
-Once the registries have been tried, the pipeline SHALL create the tag `vX.ODD.Z-pre` on the built commit and a GitHub pre-release with the VSIX attached ([R-R3](#r-r3)). Its release notes SHALL come from `## [Unreleased]` in `CHANGELOG.md`: in its own checkout, CI SHALL turn that heading into the stamped version and date, so the listing shows them. Looking the tag up SHALL tell an absent tag from a failed request: only the first goes on to create it. A tag created this way does not start a publication, and packaging does not accept a `-pre` tag: the channel comes from `ZENWAVE_RELEASE_CHANNEL`.
+Once the registries have been tried, the pipeline SHALL create the tag `vX.Y.Z-pre` on the built commit and a GitHub pre-release with the VSIX attached ([R-R3](#r-r3)).
+
+Release notes live in `packages/extension/release-notes/`, as in `zenwave-sdk`: `next.md` for what is on `develop`, and `release-notes.vX.Y.Z.md` for each stable release. `CHANGELOG.md` SHALL be generated from those files when packaging, with their full content, newest first, and SHALL NOT be committed, so the listing and the files cannot disagree. In a pre-release, `next.md` is the section of the stamped version and date, and the GitHub pre-release has the same text. Looking the tag up SHALL tell an absent tag from a failed request: only the first goes on to create it. A tag created this way does not start a publication, and packaging does not accept a `-pre` tag: the channel comes from `ZENWAVE_RELEASE_CHANNEL`.
 
 **Examples**
 
 - *Diagnosing a report.* Given a report from `0.1.57`, when a maintainer looks it up, then the tag `v0.1.57-pre` and the GitHub pre-release name the commit, and the VSIX is there to install.
 - *A manual tag.* Given someone pushing `v0.1.99-pre` by hand, when GitHub runs the workflows, then nothing is published: pre-releases come only from `develop`.
-- *No Unreleased section.* Given a changelog without `## [Unreleased]`, when the pipeline runs, then it fails before publishing.
+- *No notes file.* Given no `release-notes/next.md`, when the pipeline runs, then it fails before publishing. An empty one is allowed: right after a stable release there is nothing to say yet.
 
 <a id="r-r11"></a>
 ### R-R11 (partial). A stable release needs a version tag, an approval and stable dependencies
 
 *State: Built on `zenwave-platform-vscode` `feature/release-pipelines`, 2026-11-01, not reviewed; no workflow has run on GitHub.*
 
-A tag `vX.EVEN.Z` SHALL publish a stable release only when the tag's commit is on `main`, the tag matches the manifest, `CHANGELOG.md` has that section, the SDK catalogue is current, every `@zenwave360/*` dependency is a stable version, and a reviewer approves. Creating a GitHub release that creates this tag counts as creating it. A pre-release never becomes a stable release; a stable release is a new build from its own tag.
+A tag `vX.Y.Z` SHALL publish a stable release only when the tag's commit is on `main`, the tag matches the manifest, `release-notes.vX.Y.Z.md` exists, has content and is not marked as a draft, no pre-release tag `vX.Y.Z-pre` exists, the SDK catalogue is current, every `@zenwave360/*` dependency is a stable version, and a reviewer approves. Creating a GitHub release that creates this tag counts as creating it. A pre-release never becomes a stable release; a stable release is a new build from its own tag. To prepare one on `main`, a repository script SHALL set the manifest version, rename `next.md` to `release-notes.vX.Y.Z.md` and leave an empty `next.md`.
 
 **Examples**
 
-- *Cutting a release.* Given `0.2.0` in the manifest on `main`, stable pins and a changelog section, when `v0.2.0` is created and approved, then both registries carry `0.2.0` as stable.
+- *Cutting a release.* Given `0.2.0` in the manifest on `main`, stable pins and its notes file, when `v0.2.0` is created and approved, then both registries carry `0.2.0` as stable.
 - *A `next` pin left behind.* Given `@zenwave360/lsp-js` still at `0.1.0-next.14.1`, when `v0.2.0` is created, then the release fails before publishing and names the package.
 - *A tag off main.* Given `v0.2.0` on a commit that is not on `main`, when the pipeline runs, then nothing is published.
 - *The catalogue.* Given a pre-release whose SDK catalogue is out of date, when it runs, then the summary warns and it goes on; the same state fails a stable release.
