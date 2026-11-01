@@ -193,6 +193,9 @@ text in ZVE-R9. This does not permit saving incomplete workshop models via canva
 **ZVE-Q4.** Should manual positions survive reopening, and where are they stored?
 Proposed first release: session persistence. A later sidecar could store placement
 without becoming another semantic source. Do not add layout annotations by default.
+Direction from the owner, 2026-11-01: EventFlow variants come first, then a saved positions
+file beside the model (EF-R12 and EF-R14 in `flows/eventflow.md`, decision 0022, on branch
+`feature/preview-eventflow-storming`). This editor's placement is designed on what those leave.
 
 <a id="zve-q5"></a>
 **ZVE-Q5.** Choose exact projection/operation schemas after the KMP prototype.
