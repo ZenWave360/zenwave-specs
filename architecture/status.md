@@ -30,7 +30,8 @@ at the time*, not re-tested today. Treat it as a dated snapshot.
 | VS Code: model preview | **Partial** | ZFL, ZDL and `.zw` built on branches across `dsl-kotlin`, `zenwave-lsp` and the client, not published. Markdown, `.zw` and the catalogue are not reviewed. Modes, ZDL Diagrams and page changes are agreed and not built (backlog PX) | [model preview](../zenwave-platform-vscode/model-preview.md) |
 | VS Code: publishing | **Pipeline built** | Marketplace accounts, tokens, a first release; the extension still pins snapshot versions of packages now on npm | [release](../zenwave-platform-vscode/release.md) |
 | Transitions without id (SDK, ZDL) | **Works** | Optional AsyncAPI adapter case | [flow](../flows/transitions-without-id.md) |
-| Resource discovery, Event Storming whiteboard | **Designed** | Everything | [roadmap](../README.md#part-vi-what-comes-next) |
+| Resource discovery | **Designed** | Everything | [roadmap](../README.md#part-vi-what-comes-next) |
+| Visual ZFL editor (Event Storming whiteboard) | **ES-P1 KMP prototype on a branch**, 2026-10-31 (`dsl-kotlin` `feature/zfl-visual-editing`); rest not built | Full KMP operations and editing contract (ES-P2), standalone component, transport and both VS Code hosts. The prototype proves three source-targeted edits (add emission, change policy trigger, rename command); it is not the specified rules end-to-end | [spec](../flows/zfl-visual-editing.md), [plan](../roadmap/event-storming-whiteboard.md) |
 
 ## Where documents and code disagreed
 

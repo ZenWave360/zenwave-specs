@@ -46,6 +46,7 @@ you need.
 A capability followed end to end. Breaking one of these breaks another repository.
 
 - [EventFlow](flows/eventflow.md): from a ZFL file to an interactive diagram and back to the code.
+- [Bidirectional ZFL visual editing](flows/zfl-visual-editing.md): proposed text-authoritative canvas editing, source preservation and host boundaries.
 - [Webview protocol](flows/eventflow-webview-protocol.md): how a host drives the page.
 - [Visualization requests](flows/lsp-visualization-requests.md): the `zenwave/*` requests, and their [wire reference](flows/lsp-visualization-requests.md#wire-reference).
 - [DSL parser output](flows/dsl-parser-output.md): what a consumer can rely on.
@@ -74,6 +75,7 @@ A capability followed end to end. Breaking one of these breaks another repositor
 - [Resource discovery](roadmap/resource-discovery.md): reaching the documents around an architecture.
 - [Event Storming whiteboard](roadmap/event-storming-whiteboard.md): from the workshop to ZFL.
 - [Navigation brief](roadmap/navigation-brief.md): what to decide about clicking through models, for an interview.
+- [Event Storming whiteboard plan](roadmap/event-storming-whiteboard.md): standalone visual ZFL editor, then VS Code integration.
 - [Web Explorer](roadmap/web-explorer.md).
 
 ### Decisions

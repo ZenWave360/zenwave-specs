@@ -28,4 +28,5 @@ The code follows it, and the owner has not confirmed it. Those are the ones to r
 | [0018](0018-vscode-web-mode-is-the-web-explorer.md) | VS Code in web mode is the Web Explorer and the portal | accepted |
 | [0019](0019-event-storming-board-is-a-vistas-app.md) | The Event Storming board is an app in the vistas | accepted |
 | [0020](0020-previews-come-from-dsl-docs-through-the-server.md) | Markdown previews come from dsl-docs, through the language server | accepted |
+| [0021](0021-zfl-text-owns-visual-editing.md) | ZFL text owns bidirectional visual editing | direction accepted; implementation proposed |
 | [0022](0022-saved-positions-are-a-file-beside-the-model.md) | Saved positions are a file beside the model | accepted |
