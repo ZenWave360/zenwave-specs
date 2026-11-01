@@ -2,7 +2,7 @@
 
 <a id="model-actions"></a>
 
-**Status:** 2026-10-30: 1 partial, 1 proposed, 2 exists. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
+**Status:** 2026-11-01: 1 partial, 2 proposed, 2 exists. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
 
 ## Purpose
 
@@ -53,6 +53,9 @@ The extension SHALL offer, for a ZFL document, `zenwave.zfl.organizeServices`,
 which replaces its services with the arrangement the server produces. The replacement SHALL be a
 single undoable edit, and SHALL leave the document untouched if it fails.
 
+That arrangement is destructive, which its name doesn't say: checked 2026-11-01 in `ZflSystemsOrganizer` and `organizeSystems_rebuilds_systems_from_policy_services`, it rebuilds the block from the flows, so systems, services,
+commands and aggregates that no flow uses are removed. IntelliJ's action calls the same `organizeZflServices` through its LSP service. [MA-R5](#ma-r5) adds the mode that only adds.
+
 **Examples**
 
 - *Organising a flow.* Given a `.zfl` document whose services are declared in the order they were written, when the user invokes the organise command, then the document is rewritten with the server's arrangement.
@@ -73,6 +76,20 @@ them, and SHALL say which of those is the case if one is invoked anyway.
 - *No server.* Given a host with no language server, when the user looks for these commands, then they are not offered.
 - *A server that does not support one of them.* Given a connected server that supports some ZenWave requests and not others, when the user looks for these commands, then only those the server supports are offered.
 - *Invoked anyway.* Given a command invoked programmatically while the server is unavailable, when it runs, then it changes nothing and reports that the feature needs the ZenWave language server.
+
+<a id="ma-r5"></a>
+### MA-R5 (proposed). The systems block can be reconciled by adding or in full, from above it
+
+The editor SHALL show two CodeLens actions above a ZFL document's `systems` block. *Add missing* adds what the flows use and the block lacks, and removes nothing. *Full* also removes what no flow uses, which is what
+[MA-R3](#ma-r3) does today, and SHALL ask for confirmation first. Neither SHALL change a Javadoc comment of anything that stays, and every other rule of MA-R3 applies to both. The palette keeps both as commands, which also serve a document with no `systems` block yet.
+
+**Examples**
+
+- *A new command.* Given a flow calling `cancelOrder` that the block doesn't list, and a listed command that no flow uses, when the user chooses *Add missing*, then `cancelOrder` is added and the other stays.
+- *Comments stay.* Given a service with a Javadoc comment, when either action runs and the service stays, then the comment is byte for byte what it was.
+- *Today's code loses some.* Comments before an element are kept, and comments inside a service's body are not, by reading `renderService` on 2026-11-01. Both modes SHALL keep them.
+
+The wire change is [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19). What IntelliJ's action does by default is its own choice to make, now that it can have both.
 
 ## Design notes
 

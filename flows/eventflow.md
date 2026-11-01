@@ -9,7 +9,7 @@ One document covers the whole chain on purpose: the visual app, the language
 server and the IDE host each own a piece, and the interesting rules are the ones
 that cross the seams.
 
-**Status:** draft, 2026-10-29, checked again 2026-10-31: the view selector is built on the `feature/preview-eventflow-storming` branches, not yet reviewed, and the page has no outbound node messages. Rules marked *exists* describe verified current
+**Status:** draft, 2026-10-29, checked again 2026-10-31: the view selector is built on the `feature/preview-eventflow-storming` branches, not yet reviewed, and the page has no outbound node messages. EF-R11 to EF-R14 were agreed with the owner on 2026-11-01 and are not built. Rules marked *exists* describe verified current
 behaviour. Rules marked *proposed* are what we want and have not agreed or built.
 
 ## 1. Scope
@@ -19,7 +19,7 @@ actions a user can take on a node (select, open its code, show it elsewhere); th
 messages between page and host; the data the language server supplies.
 
 Out of scope: how a flow is *laid out* (the server does it, see
-[decision 0001](../decisions/0001-layout-stays-on-the-server.md)); how Mermaid
+[decision 0001](../decisions/0001-layout-stays-on-the-server.md), and [EF-R14](#ef-r14) for saved positions); how Mermaid
 previews work (see [model preview](../zenwave-platform-vscode/model-preview.md)); editing a model
 from the diagram (a round trip into ZFL is its own contract and not wanted yet);
 the Event Storming whiteboard.
@@ -76,6 +76,10 @@ sourceRef)` callback, but the built page registers nothing and sends nothing to
 the host on a click. The `editable` flag defaults to true, so nodes can be dragged
 today; what happens to a moved position is undefined (see EF-Q7).
 
+<a id="ef-t7"></a>
+**What the DSL has for positions (read 2026-11-01).** `FlowNode.position`, `hasLayout()`, `withoutLayout()`, and `toJson`/`fromJson` of a whole view model, in `dsl-kotlin`. There is no way to apply positions: `GenerateFlowViewFromZfl` always runs ELK. So exporting a full model
+works, and importing positions in place of ELK does not exist yet. Whether edges carry routes from ELK that would go stale was not checked.
+
 ## 4. Rules
 
 ### Reading the diagram
@@ -113,6 +117,26 @@ A host may still send `setViewMode` for its own commands, and both routes end in
 same state: when the user changes the view in the selector, the page sends
 `viewModeChanged` and the host records it. The page does not send `viewModeChanged`
 for a change the host asked for, and the minimal page never sends it.
+
+<a id="ef-r11"></a>
+**EF-R11 (proposed). The toolbar's controls sit on the right.** This applies to the page with a selector, and includes the variant selector of [EF-R12](#ef-r12).
+
+<a id="ef-r12"></a>
+**EF-R12 (proposed). A dropdown shows one variant of the flow.** It lists the full diagram and each variant, as the Sequence Diagrams selector does. Choosing a variant hides the others and shows that one with automatic layout, which the server computes
+([decision 0001](../decisions/0001-layout-stays-on-the-server.md), [LVR-R18](lsp-visualization-requests.md#lvr-r18)). It never reads or changes saved positions, and a node moved in a variant is not saved. For example, after choosing the `OrderCancelled` variant and going back to the full
+diagram, the user's positions are as they were. It applies to the Flow view, not to Systems. As in [EF-R3](#ef-r3), the minimal page has no selector, and its host sends the choice. This is built first, and the visual ZFL editor is designed on top of what results.
+
+<a id="ef-r13"></a>
+**EF-R13 (proposed). A diagram opens as far out as it can with the first start in view.** It opens at the zoom that fits the whole diagram, down to the renderer's minimum zoom, anchored to the left rather than centred, and with the first `start` node on screen and vertically centred. For example, a
+flow too wide to fit at the minimum zoom opens at that zoom with its first `start` near the left edge. Systems has no `start`, and keeps fitting the whole diagram.
+
+<a id="ef-r14"></a>
+**EF-R14 (proposed; defined, and left to implement after [EF-R12](#ef-r12)). The user can save the positions of a full diagram.** A *Save positions* control appears once the user has moved something in the full diagram. It writes a file beside the model: `checkout.zfl` saves to `checkout.positions.json`,
+in the workspace, so it can be committed. Reopening the diagram uses that file if it exists and applies; otherwise the diagram has automatic layout and says why, and the file is left alone. Only saving ever writes it. See
+[decision 0022](../decisions/0022-saved-positions-are-a-file-beside-the-model.md).
+
+The file holds, by node id: `{ "schema": "zfl.eventflow.positions@1", "flow": { "command:ReserveCopy": { "x": 120, "y": 40 } } }`, with sorted keys and whole numbers, so diffs stay small. A file applies when it parses, its schema is known and every node of the
+current diagram has a position; ids it has beyond those are ignored. The rename problem of [EF-Q8](#ef-q8) therefore falls back to automatic layout, not to a wrong picture. The host reads and writes it, so this works on every host with a writable workspace, and the server applies it, so both IDEs draw the same picture.
 
 ### Acting on a node
 
@@ -256,14 +280,16 @@ same in both IDEs. VS Code's native menu (`data-vscode-context`, `webview/contex
 looks right there and nowhere else. The draft assumes page-rendered.
 
 <a id="ef-q7"></a>
-**EF-Q7. Moving and resizing.** The server owns layout. If a user drags a node,
-the new position is presentation only: kept for the session, lost on refresh, or
-saved somewhere? Decide before anyone promises "move things around".
+**EF-Q7. Moving and resizing.** Answered 2026-11-01 by the owner: saved by the user's explicit action, in a file beside the model, for the full diagram only ([EF-R14](#ef-r14)). Resizing stays open.
 
 <a id="ef-q8"></a>
 **EF-Q8. Are node ids stable across edits?** Ids like `command:<name>` change when
 a name changes. For selection and `highlightNode` that is fine; for any stored
 state (EF-Q2, EF-Q7) it is not.
+
+<a id="ef-q9"></a>
+**EF-Q9. What should a partly matching positions file do?** [EF-R14](#ef-r14) applies a file only when every node has a position, so one new command loses the whole arrangement until the user saves again. The alternative is to keep what matches and place the new nodes, as
+the visual ZFL editor's ZVE-R10 wants, on branch `feature/zfl-visual-editing`. Decide when EF-R14 is built, using what the variants work leaves. How to get back to automatic layout once a file applies also belongs here.
 
 ## 9. Sources
 

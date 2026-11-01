@@ -270,6 +270,13 @@ In both cases the reason SHALL be discoverable.
 - *A model in a restricted workspace.* Given a workspace the user has opened in Restricted Mode, when the user triggers a Run action, then nothing is executed, and the user is told the workspace must be trusted to run code generation.
 - *Finding out why the Run action is missing.* Given a user who expected a Run action and does not see one, when they open the ZenWave output channel, then they can see whether this host can run the SDK at all.
 
+<a id="sr-r14"></a>
+### SR-R14 (proposed). The rules that build a command live in the Kotlin libraries
+
+`dsl-kotlin` SHALL own what the arguments of a plugin are: inheritance, overrides, dependencies, `zdlFile` and their order, which today exist twice, in `command.ts` and in `dsl-docs` ([MP-T6](model-preview.md#mp-t6)).
+Each caller SHALL add what only it knows. The VS Code client keeps the configured SDK command, the extra arguments, and quoting for the shell a run uses ([SR-R5](#sr-r5)). `dsl-docs` writes the page of
+[MP-R22](model-preview.md#mp-r22) for Bash. The behaviour of Run SHALL NOT change, so the client's existing tests pass against the Kotlin rules. Whether IntelliJ has a builder of its own was not checked.
+
 ## Design notes
 
 The runner is [decision 0011](../decisions/0011-sdk-runner-is-a-task-with-quoted-values.md) and the catalogue is

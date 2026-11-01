@@ -244,6 +244,55 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [ ] **001/6.4** Compare both IDEs on the same fixture and record any difference as a bug against one of them — expecting the trees to differ in presentation and the diagrams not to differ at all
 - [ ] **001/6.5** Make configuration-level CLI options effective in both IDE runners: inherit them with the enclosing configuration, exclude them for `(inherit false)`, and let a plugin-local CLI option replace a shared option with the same name. Use a fixture with `--force` in `config` and compare the complete commands emitted by both clients.
 
+## Previews, diagrams and navigation, agreed 2026-11-01
+
+Not built, and to start only after the phase 3 reviews of `feature/preview-eventflow-storming` pass. In this order, each group depending on the one before only where it says.
+
+**1. `zenwave-platform-vscode`, needing nothing new from the server:**
+
+- [ ] **PX/1.1** Copy as Mermaid on every diagram, through the host's clipboard. [MP-R19](../zenwave-platform-vscode/model-preview.md#mp-r19)
+- [ ] **PX/1.2** The file's own icon on the title bar's preview button, one entry per language. [MP-R18](../zenwave-platform-vscode/model-preview.md#mp-r18)
+- [ ] **PX/1.3** The modes named per file, with Sequence Diagrams and EventFlow Diagrams for ZFL. [MP-R17](../zenwave-platform-vscode/model-preview.md#mp-r17)
+- [ ] **PX/1.4** Inline Go to Definition and Go to References on the Model tree's items. [ME-R9](../zenwave-platform-vscode/model-explorer.md#me-r9)
+
+**2. `zenwave-architectural-vistas`:**
+
+- [ ] **PX/2.1** Toolbar controls on the right. [EF-R11](../flows/eventflow.md#ef-r11)
+- [ ] **PX/2.2** Open as far out as fits, anchored left, with the first `start` in view. `fitView` is at `EventFlowVisualizer.tsx:612`. [EF-R13](../flows/eventflow.md#ef-r13)
+
+**3. `dsl-kotlin` (`dsl-docs`, `dsl-views`), then `zenwave-lsp` and the client:**
+
+- [ ] **PX/3.1** Move the rules that build a command's arguments into `dsl-kotlin`, and have `command.ts` and `dsl-docs` use them, with Run unchanged. [SR-R14](../zenwave-platform-vscode/sdk-runner.md#sr-r14)
+- [ ] **PX/3.2** Scripts Docs: three sections per plugin, with Inherited configuration and the Bash command. Needs PX/3.1. [MP-R22](../zenwave-platform-vscode/model-preview.md#mp-r22)
+- [ ] **PX/3.3** The client accepts only the exact `details` and `summary` lines. [MP-R21](../zenwave-platform-vscode/model-preview.md#mp-r21)
+- [ ] **PX/3.4** Model Docs: the `apis` block at the top and aggregate policies as text. Needs PX/3.5 for its links. [MP-R23](../zenwave-platform-vscode/model-preview.md#mp-r23)
+- [ ] **PX/3.5** The client follows workspace and `http(s)` links through the host. [MP-R20](../zenwave-platform-vscode/model-preview.md#mp-r20)
+- [ ] **PX/3.6** Javadoc as CommonMark with hard line breaks, rechecking LVR-R14. `safeJavadoc` is in `dsl-docs`, `internal/Markdown.kt`. [MP-R24](../zenwave-platform-vscode/model-preview.md#mp-r24)
+
+**4. ZDL Diagrams, across `dsl-kotlin`, `zenwave-lsp` and the client:**
+
+- [ ] **PX/4.1** A `dsl-views` transformer for a command: signature, input and output. [MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)
+- [ ] **PX/4.2** `zenwave/preview` by mode, with grouped representations, measuring the cost on `lsp-js`. [LVR-R17](../flows/lsp-visualization-requests.md#lvr-r17)
+- [ ] **PX/4.3** The Show and Element selectors, in the same preview editor. [MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)
+
+**5. Reconciling the systems block:**
+
+- [ ] **PX/5.1** `dsl-kotlin`: an additive mode in `ZflSystemsOrganizer`, and keep comments inside a service's body in both modes. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
+- [ ] **PX/5.2** `zenwave-lsp`: the request's mode and its capability. [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19)
+- [ ] **PX/5.3** VS Code: CodeLens above `systems` and two palette commands, with *Full* asking first. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
+- [ ] **PX/5.4** IntelliJ: choose what its action does by default. It removes unused elements today, and the owner understood it not to.
+
+**6. EventFlow variants, then saved positions:**
+
+- [ ] **PX/6.1** `dsl-kotlin` and `zenwave-lsp`: list a flow's variants and lay out one on request. Measure ELK on `lsp-js`. [LVR-R18](../flows/lsp-visualization-requests.md#lvr-r18)
+- [ ] **PX/6.2** Page and host: the variant dropdown, with additive messages. [EF-R12](../flows/eventflow.md#ef-r12)
+- [ ] **PX/6.3** Saved positions: applying them in `dsl-kotlin`, the file in the host, the control in the page, and answering EF-Q9. Defined, pending implementation. [EF-R14](../flows/eventflow.md#ef-r14)
+- [ ] **PX/6.4** Design the visual ZFL editor's placement on what PX/6.1 to 6.3 leave.
+
+**7. Navigation:**
+
+- [ ] **PX/7.1** Hold the interview from the [navigation brief](../roadmap/navigation-brief.md), and turn its answers into rules in [navigation](../zenwave-lsp/navigation-spec.md).
+
 ## Ideas to review later
 
 Not to implement now.

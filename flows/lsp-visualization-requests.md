@@ -357,6 +357,25 @@ nothing.
 this choice inside zenwave-architecture, but no request or initialization option
 reaches it, so an IDE client offering the choice has nothing to send.
 
+<a id="lvr-r17"></a>
+### LVR-R17 (proposed). A preview can be asked for by mode, and its representations can be grouped
+
+A client SHALL be able to ask `zenwave/preview` for a ZDL document's diagrams rather than its page, and the server SHALL produce only what was asked for, so that a page does not pay for every diagram. A representation MAY name a group, so a
+client can offer two selectors ([MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)) without reading ids. A server SHALL advertise this, so a client does not offer it to one that lacks it. Provisional names: param `mode`, `docs` by default or `diagrams`;
+representation field `group`; capability `experimental.previewModes`.
+
+<a id="lvr-r18"></a>
+### LVR-R18 (proposed). A flow's view can be asked for by variant, or with saved positions
+
+`zenwave/eventFlowViews` SHALL list the flow's variants, with the same outcomes and titles as its sequence diagrams, and SHALL return the laid-out graph of one variant when asked. That graph always comes from automatic layout. Separately, the client MAY send the positions of a saved file for the
+full diagram, and the server SHALL use them instead of automatic layout when they apply ([EF-R14](eventflow.md#ef-r14)). A request for a variant ignores them. With neither, the answer is what it is today. Provisional names: params `variant` and `positions`, result field `variants: [{ id, title }]`.
+
+<a id="lvr-r19"></a>
+### LVR-R19 (proposed). Organising a flow's services has a mode
+
+`zenwave/organizeZflServices` SHALL accept a mode: `full`, which is what it does today and stays the default so older clients see no change, or `additive` ([MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)). A server SHALL advertise it, so a client does not
+offer *Add missing* to one that would remove things instead. Provisional names: param `mode`, capability `experimental.organizeModes`.
+
 <a id="wire-reference"></a>
 ## Wire reference
 

@@ -8,7 +8,7 @@ the picture an IntelliJ user sees. No Mermaid source is generated, interpreted o
 reimplemented in the client.
 
 **Status:** 2026-10-31: built on the `feature/preview-eventflow-storming` branches of `dsl-kotlin`, `zenwave-lsp` and
-`zenwave-platform-vscode`. ZDL and ZFL reviewed; Markdown, `.zw` and the catalogue not yet. The server
+`zenwave-platform-vscode`. ZDL and ZFL reviewed; Markdown, `.zw` and the catalogue not yet. [MP-R17](#mp-r17) to [MP-R25](#mp-r25) were agreed with the owner on 2026-11-01 and are not built. The server
 side exists ([LVR-R3](../flows/lsp-visualization-requests.md#lvr-r3)). This document merges the
 original preview spec with the later brief that agreed its controls; where they differed,
 the later brief wins and the rule says so. EventFlow is a different thing: interactive,
@@ -23,6 +23,7 @@ not Mermaid. See [EventFlow](../flows/eventflow.md).
 | **Preview here** | The same preview in the current group, replacing the text tab |
 | **Render mode** | How the server renders ZFL sequence variants: `Alt blocks` or `Separate variants` |
 | **Diagram** | One representation: the flowchart, or a sequence for one outcome |
+| **Preview mode** | What a document offers to show, by name: see [MP-R17](#mp-r17) |
 
 ## What exists (verified 2026-10-29)
 
@@ -119,7 +120,7 @@ of its properties. For example, a plugin that sets `targetFolder` under a `confi
 same rules the [SDK runner](sdk-runner.md) uses to build a command, implemented in the Kotlin libraries.
 The result can still differ from a run, which uses the SDK the user has installed; that is accepted. It is
 sent as a `MARKDOWN` representation ([MP-T2](#mp-t2)), written by `dsl-docs`
-([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). The port is tested against the cases of the client's `command.test.ts` and `model.test.ts`. Both inherit the whole `config` map, `id` and `title` included, and a plugin that is still being typed is absent. An integer outside JavaScript's safe range is shown as its exact string, as the client passes it to the SDK.
+([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). The port is tested against the cases of the client's `command.test.ts` and `model.test.ts`. Both inherit the whole `config` map, `id` and `title` included, and a plugin that is still being typed is absent. An integer outside JavaScript's safe range is shown as its exact string, as the client passes it to the SDK. [MP-R22](#mp-r22) changes how a plugin is presented, and replaces the resolved sum with what is inherited.
 
 <a id="mp-r15"></a>
 **MP-R15 (exists). A ZDL preview is a Markdown page from `dsl-docs`.** It holds the class diagram, a
@@ -187,7 +188,7 @@ under a restrictive content security policy, nothing in it is executed or fetche
 Markdown or HTML is sanitised first. A malformed diagram reports itself and leaves the rest
 readable. See [decision 0009](../decisions/0009-mermaid-not-plantuml.md). This page allows `style-src 'unsafe-inline'`: Mermaid has no
 nonce option and measures text with styles it inserts, so without it the layouts change. Scripts stay under a nonce, and
-`default-src 'none'` keeps CSS from fetching anything.
+`default-src 'none'` keeps CSS from fetching anything. [MP-R20](#mp-r20) and [MP-R21](#mp-r21) widen, narrowly, what a page may carry.
 
 <a id="mp-r7"></a>
 **MP-R7 (partial: following a theme change is checked on desktop only). The preview reads as part of the editor.** It follows the colour theme,
@@ -199,6 +200,80 @@ colours: text at least 4.5:1 and lines at least 3:1 in both, except sequence act
 **MP-R8 (exists). The preview explains why it has nothing to show.** No language server, a
 server that does not support previews, and an unreadable document are three different
 messages, with the detail in the output channel.
+
+### Preview modes and their pages
+
+<a id="mp-r17"></a>
+**MP-R17 (proposed). Each kind of file offers its modes by name.** The title bar's menu and the palette use these names.
+
+| File | Mode | Opens |
+| --- | --- | --- |
+| `.zfl` | EventFlow Diagrams | The React Flow diagram ([EventFlow](../flows/eventflow.md)) |
+| `.zfl` | Sequence Diagrams | The Mermaid diagrams of [MP-R4](#mp-r4), including the flowchart, even though the name does not quite fit it |
+| `.zdl` | Model Docs | The page of [MP-R15](#mp-r15) |
+| `.zdl` | ZDL Diagrams | [MP-R25](#mp-r25) |
+| `.zw` | Scripts Docs | The page of [MP-R14](#mp-r14) and [MP-R22](#mp-r22) |
+
+A document keeps one preview editor, so [MP-R1](#mp-r1) and [MP-R3](#mp-r3) still hold: choosing Model Docs or ZDL Diagrams reveals that
+editor in that mode. EventFlow Diagrams stays a separate editor, as it is today.
+
+<a id="mp-r18"></a>
+**MP-R18 (proposed). The title bar's preview button is the file's own icon.** A `.zfl` shows the rounded wave logo, and `.zdl` and `.zw` the icons
+they already declare as languages. A submenu has one icon, so this needs one entry per language with its own `when`. Whether going back to text gets a
+button of its own is left open ([MP-Q9](#mp-q9)).
+
+<a id="mp-r19"></a>
+**MP-R19 (proposed). Every Mermaid diagram has a "Copy as Mermaid" button.** That covers each diagram in Sequence Diagrams, Model Docs and ZDL Diagrams,
+including every fenced diagram of a Markdown page. It copies the source the server sent, unchanged, through the host's clipboard, so it works the same on
+desktop and in the browser. The client generates nothing, and needs nothing new from the server. The React Flow diagram is not Mermaid and has no such button.
+
+<a id="mp-r20"></a>
+**MP-R20 (proposed). A preview page may link out, and the host follows the link.** A `#fragment` scrolls the page. A path resolved inside the workspace
+opens in an editor. An `http` or `https` link opens through the host's external opener, which asks the user as it does elsewhere. Any other link stays plain text.
+Nothing is fetched to display the page, so [LVR-R14](../flows/lsp-visualization-requests.md#lvr-r14) holds, and images stay forbidden. For example, the
+`apis` block of [MP-R23](#mp-r23) links `asyncapi.yml` to that file in an editor. `classpath:` locations stay plain text.
+
+<a id="mp-r21"></a>
+**MP-R21 (proposed). A page may have collapsible sections, and no other HTML.** The renderer keeps `html: false`. It accepts only `<details>`, `<details open>`,
+`<summary>` with its text, and their closing tags, each exactly as `dsl-docs` writes them. Any other HTML stays text, and the sanitiser remains behind it. GitHub renders
+the same Markdown as collapsible sections too. For example, `<details onclick="x">` is shown as text.
+
+<a id="mp-r22"></a>
+**MP-R22 (proposed). Each plugin in Scripts Docs has three sections.** Under the plugin's name:
+
+- *Description*, from the catalogue.
+- *Command to run*, expanded by default.
+- *Configuration*, collapsed by default, with two tables: *Own configuration*, and *Inherited configuration*.
+
+*Inherited configuration* replaces the resolved sum: it lists only what the plugin takes from `config` and has not overridden, so each value appears in one table. `id` and `title` appear
+there, because a plugin really does inherit them ([MP-R14](#mp-r14)). The page is written for Bash, as Git Bash on Windows and Bash on Linux and macOS read it the same way, because
+only the client knows the shell a run will use. Its arguments come from [SR-R14](sdk-runner.md#sr-r14). The page uses the default SDK command, not the user's settings, so it can differ from what Run
+executes; that is accepted, as in [MP-R14](#mp-r14).
+
+<a id="mp-r23"></a>
+**MP-R23 (proposed). Model Docs opens with its APIs, and states each aggregate's policies.** An `apis` block sits at the top of the page, listing each API with its
+kind, role and location, linked as in [MP-R20](#mp-r20). The `policies` of an aggregate are text, before its class diagram: name and value, one per line. A `policies` block naming no aggregate is listed at the start of the
+Aggregates section. The parser stores them under `policies` (`ZdlListenerImpl`, read 2026-11-01); `dsl-docs` does not use them yet.
+
+<a id="mp-r24"></a>
+**MP-R24 (proposed). The Javadoc of a top-level object is CommonMark, and keeps its line breaks.** OpenAPI and AsyncAPI use CommonMark in `description` too, so a text moves between them unchanged. A line break in the
+Javadoc is a line break on the page, so `dsl-docs` writes it as a hard break, and every CommonMark renderer shows the same thing. Raw HTML and images stay text, and links follow [MP-R20](#mp-r20). Headings stay text as
+well, because a heading from a Javadoc would shift the page's anchors. A Javadoc inside a table cell stays on one line. This relaxes `safeJavadoc`, so [LVR-R14](../flows/lsp-visualization-requests.md#lvr-r14) is rechecked when it is built.
+
+<a id="mp-r25"></a>
+**MP-R25 (proposed). ZDL Diagrams shows one diagram at a time, chosen with two selectors.** *Show* picks the kind and *Element* picks one of that kind, as the Sequence Diagrams selector does. A kind with no elements is not offered,
+and a selector with no real choice is hidden ([MP-R10](#mp-r10)).
+
+| Show | Element | Diagram |
+| --- | --- | --- |
+| Services | Each service | Its Event Storming flowchart |
+| Aggregates | Each aggregate, and each lifecycle | Its class diagram, or its state diagram |
+| Events | Each event | Its class diagram |
+| Commands | Each service method | Three classes: the signature, with the input and the output hanging from it |
+| Other entities | The one diagram | Entities and enums that no aggregate reaches, as Model Docs titles them today |
+
+A command with no input or no output draws only the classes it has. For example, `placeOrder(PlaceOrderInput) Order` draws `placeOrder`, `PlaceOrderInput` and `Order`. Same-named methods in two
+services are told apart by their service. Commands need a new transformer in `dsl-views`; the others exist. The wire change is [LVR-R17](../flows/lsp-visualization-requests.md#lvr-r17).
 
 ## Not in scope
 
@@ -218,9 +293,8 @@ dedicated stable identity?
 follows with [MP-R14](#mp-r14).
 
 <a id="mp-q3"></a>
-**MP-Q3. What are preview and EventFlow each for?** A ZFL file has two diagram surfaces and
-nothing says which to open. Left to emerge from use; when the answer is known it belongs in
-the naming and grouping, not in a new feature.
+**MP-Q3. What are preview and EventFlow each for?** Answered 2026-11-01 by the owner, in the naming of [MP-R17](#mp-r17): EventFlow Diagrams is
+React Flow, and Sequence Diagrams is Mermaid, including the flowchart.
 
 <a id="mp-q4"></a>
 **MP-Q4. What happens for an untitled buffer, a model open in a diff, or a document open
@@ -248,6 +322,12 @@ document has only the preview.
 and takes whichever the client last sent. See [MP-R16](#mp-r16). Wire names: `initializationOptions.pluginCatalogue` and the notification `zenwave/pluginCatalogue`, in the
 [wire reference](../flows/lsp-visualization-requests.md#wire-reference). The server's copy is written by `scripts/generate-plugin-catalogue.mjs --from <catalogue.json>` in `zenwave-lsp`,
 from the output of the extension's `scripts/generate-sdk-catalogue.mjs`, which runs the SDK. Whether IntelliJ sends a catalogue was not checked; if it doesn't, it gets the server's copy.
+
+<a id="mp-q9"></a>
+**MP-Q9. Does going back to text get its own button?** Left open by the owner on 2026-11-01, to design later with [MP-R18](#mp-r18). `zenwave.preview.showText` keeps working until then.
+
+<a id="mp-q10"></a>
+**MP-Q10. Can a preview have an outline?** Answered 2026-11-01: not the built-in one, which follows the active text editor, so a virtual document would not help. The Model tree is that view ([ME-R9](model-explorer.md#me-r9)).
 
 ## Sources
 
