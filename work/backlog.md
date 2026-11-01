@@ -254,7 +254,7 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 
 ### Release pipelines, built 2026-11-01, never run
 
-Spec: [R-R7 to R-R13](../zenwave-platform-vscode/release.md#r-r7), [decision 0023](../decisions/0023-pre-releases-pin-next-kotlin-moves-on-git-snapshots.md). REL/1 to REL/5 are on `zenwave-platform-vscode` `feature/release-pipelines`, tip `69f7c7c`, review round 1 applied.
+Spec: [R-R7 to R-R13](../zenwave-platform-vscode/release.md#r-r7), [decision 0023](../decisions/0023-pre-releases-pin-next-kotlin-moves-on-git-snapshots.md). REL/1 to REL/5 are on `zenwave-platform-vscode` `feature/release-pipelines`, tip `3b68326`, review rounds 1 and 2 applied.
 
 - [x] **REL/1** One reusable verifying workflow with the checks now in `ci.yml`, used by pull requests, `main`, pre-release and stable. Move it to `develop` too; today a push to `develop` runs nothing. It takes no registry token ([R-R13](../zenwave-platform-vscode/release.md#r-r13)).
 - [x] **REL/2** The version and changelog stamp, the odd-minor check and the pin checks, as tested scripts: [R-R8](../zenwave-platform-vscode/release.md#r-r8), [R-R9](../zenwave-platform-vscode/release.md#r-r9), [R-R10](../zenwave-platform-vscode/release.md#r-r10). Decide with the code what `package.mjs` does with a `-pre` tag now.
