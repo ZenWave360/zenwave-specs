@@ -289,6 +289,10 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 - [ ] **PX/6.3** Saved positions: applying them in `dsl-kotlin`, the file in the host, the control in the page, and answering EF-Q9. Defined, pending implementation. [EF-R14](../flows/eventflow.md#ef-r14)
 - [ ] **PX/6.4** Design the visual ZFL editor's placement on what PX/6.1 to 6.3 leave.
 
+**Test reliability, any time:**
+
+- [ ] **PX/8.1** `dsl-kotlin` and `zenwave-lsp`: JS tests fail intermittently in full builds and pass when rerun, which would fail CI with no real error. On 2026-11-01, 8 tests of `dsl-views` `jsNodeTest` hit Mocha's 2000 ms limit in one build and all 91 passed alone. `GenerateMermaidFromZflTest`, `ArcadiaSnapshotTest` and `lsp-core`'s `HierarchyRequestTest` also failed once each; the first was that limit, and the cause of the other two was not read. Raise the limit for the tests that run the parser and ELK, or make them lighter.
+
 **7. Navigation:**
 
 - [ ] **PX/7.1** Hold the interview from the [navigation brief](../roadmap/navigation-brief.md), and turn its answers into rules in [navigation](../zenwave-lsp/navigation-spec.md).
