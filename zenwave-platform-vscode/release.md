@@ -142,7 +142,7 @@ The Marketplace accepts only `major.minor.patch` and no semver pre-release suffi
 - *After a stable release.* Given a stable `0.2.0`, when the release is complete, then `develop` moves to `0.3.0`; until it does, the pipeline fails rather than publishing a version below stable.
 - *No commit from CI.* Given any pre-release, when it finishes, then `develop` has no new commit from the pipeline.
 
-**Note:** "above stable" is checked against the git tags of the repository, not against what the registries hold. The first run of the workflow gives `0.1.1`, so the changelog's `0.1.0` is a version that was never published. The run number restarts if the workflow file is renamed. Do not rename it; if it ever has to be, raise the minor in the same commit.
+**Note:** "above stable" is checked against the even-minor `v*` tags of the repository, not against what the registries hold. The stamped changelog date is the date of the commit, not of the run, so running the build again gives the same content. The first run of the workflow gives `0.1.1`, so the changelog's `0.1.0` is a version that was never published. The run number restarts if the workflow file is renamed. Do not rename it; if it ever has to be, raise the minor in the same commit.
 
 <a id="r-r9"></a>
 ### R-R9 (partial). A pre-release may ship `next` packages, pinned exactly
@@ -165,7 +165,7 @@ Raising a pin is an ordinary commit. A repository script SHALL read each package
 
 *State: Built on `zenwave-platform-vscode` `feature/release-pipelines`, 2026-11-01, not reviewed; no workflow has run on GitHub.*
 
-Once the registries have been tried, the pipeline SHALL create the tag `vX.ODD.Z-pre` on the built commit and a GitHub pre-release with the VSIX attached ([R-R3](#r-r3)). Its release notes SHALL come from `## [Unreleased]` in `CHANGELOG.md`: in its own checkout, CI SHALL turn that heading into the stamped version and date, so the listing shows them. A tag created this way does not start a publication, and packaging does not accept a `-pre` tag: the channel comes from `ZENWAVE_RELEASE_CHANNEL`.
+Once the registries have been tried, the pipeline SHALL create the tag `vX.ODD.Z-pre` on the built commit and a GitHub pre-release with the VSIX attached ([R-R3](#r-r3)). Its release notes SHALL come from `## [Unreleased]` in `CHANGELOG.md`: in its own checkout, CI SHALL turn that heading into the stamped version and date, so the listing shows them. Looking the tag up SHALL tell an absent tag from a failed request: only the first goes on to create it. A tag created this way does not start a publication, and packaging does not accept a `-pre` tag: the channel comes from `ZENWAVE_RELEASE_CHANNEL`.
 
 **Examples**
 
@@ -207,6 +207,8 @@ A registry failure SHALL NOT stop the attempt at the other registry, and the run
 The build and test job SHALL run with no registry credential. A separate job SHALL download the verified VSIX, run nothing from the repository's dependencies, and publish it. Publishing SHALL run in GitHub environments of this repository, `vscode-prerelease` limited to `develop` and `vscode-release` limited to `v*` tags with a required reviewer. Third-party actions in these workflows SHALL be pinned by commit hash, as [`release-workflows`](https://github.com/ZenWave360/release-workflows) does.
 
 Both registries SHALL be reached through trusted publishing (`vsce publish --oidc`, `ovsx publish --trusted-publishing`) as soon as they accept it, and no long-lived token SHALL stay in the repository after that. Until then a token MAY be held in those environments, for the first version only. Azure DevOps retires global personal access tokens on 2026-12-01, and Open VSX requires an owned namespace and one active version before it accepts a trusted publisher. The publishing step uses the token when its secret is present and trusted publishing when it is not, so deleting the secret is the whole migration and neither falls back to the other. `--oidc` needs `vsce` 4.1.0 or later.
+
+The publishing tools come from `packages/extension/publish-tools`, a private package with a lockfile, because an exact version in `npx` still leaves its dependencies floating, with the token in the environment. The verified artifact carries that package, hashed, and the publishing job installs it with `--ignore-scripts` in a step with no repository secret, so it still needs no checkout. `@vscode/vsce-sign` is the one dependency with an install script, and it is not needed because the pipeline does not sign. A job with `id-token: write` exposes its OIDC request variables to every step, this one too, so after the move to trusted publishing what that step can reach is a short-lived credential.
 
 **Examples**
 
