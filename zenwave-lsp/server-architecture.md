@@ -95,7 +95,7 @@ holds `project-manifest: <path>`, relative to the workspace root, not to `.zenwa
 
 <a id="ls-t6"></a>
 **LS-T6 (exists). Capabilities.** `initialize` returns the standard capabilities the modules
-support, plus `capabilities.experimental`: `moduleSelectors` and `customRequests`. See
+support, plus `capabilities.experimental`: `moduleSelectors`, `customRequests` and `customNotifications`. See
 [decision 0002](../decisions/0002-server-advertises-its-requests.md). A client branches on this,
 not on a version.
 

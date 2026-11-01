@@ -26,7 +26,7 @@ double-clicking.
   `window.tabGroups`.
 - Controls: two-valued ones go in the title bar as one flipping icon. Anything that needs to show a current
   value from a dynamic list goes inside the page. See also
-  [EF-R3](../flows/eventflow.md#ef-r3), which proposes moving EventFlow's into the page.
+  [EF-R3](../flows/eventflow.md#ef-r3), which leaves EventFlow's to the application that embeds the diagram: VS Code gets a page with a selector, and its title bar commands keep working.
 - One submenu holds the ways to view a model, rather than one icon per editor.
 - A webview is kept per open diagram. Retaining state while hidden costs memory, dropping it costs a re-render.
   It retains for now.

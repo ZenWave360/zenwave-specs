@@ -112,7 +112,7 @@ Treat it as an intention, not as specified behaviour.
 | EventFlow diagram | [eventflow-panel](eventflow-panel.md) | exists |
 | Architecture and Model trees | [model-explorer](model-explorer.md) | exists |
 | Semantic commands | [model-actions](model-actions.md) | partial |
-| Mermaid preview | [model-preview](model-preview.md) | proposed: not started |
+| Model preview | [model-preview](model-preview.md) | partial: on branches, not published |
 | Build and publish | [release](release.md) | pipeline built, nothing published |
 
 The evidence and what is missing are in [status](../architecture/status.md).

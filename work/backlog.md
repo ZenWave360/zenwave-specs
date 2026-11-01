@@ -20,7 +20,7 @@ c003 VS Code LSP client               006  VS Code explorer         007  VS Code
 
 The packages are on npm (checked 2026-10-30): `@zenwave360/dsl` latest `1.10.0`, `@zenwave360/vistas-eventflow` and `vistas-eventflow-webview` latest `0.1.0`, and `@zenwave360/lsp-js` only pre-releases, latest `0.1.0-next.0`. The older task notes saying they are unpublished are out of date.
 
-- [ ] The VS Code extension still pins `@zenwave360/dsl` `1.9.0-SNAPSHOT` and `lsp-js` `0.1.0-SNAPSHOT` (`packages/extension/package.json`). Move them to published versions, and `lsp-js` to a real `devDependencies` entry as [decision 0006](../decisions/0006-one-javascript-server-in-the-extension.md) planned. Whether a clean checkout builds today was not tried.
+- [x] The VS Code extension still pins `@zenwave360/dsl` `1.9.0-SNAPSHOT` and `lsp-js` `0.1.0-SNAPSHOT` (`packages/extension/package.json`). Move them to published versions, and `lsp-js` to a real `devDependencies` entry as [decision 0006](../decisions/0006-one-javascript-server-in-the-extension.md) planned. **Done 2026-10-30** on zenwave-platform-vscode `feature/local-sibling-dependencies`: `dsl` 1.10.0, `lsp-js` 0.1.0-next.12.1, the page 0.1.0, all resolved by `npm ci` on a clean clone. Built sibling checkouts are linked over them during development, as the composite builds do in Gradle; see that package's README.
 - [ ] **008/1.1** Who owns the VS Code Marketplace publisher account, and the Open VSX namespace — the requirement cannot be met without both
 - [ ] **008/1.2** Tokens held as repository secrets, with a note of who can rotate them
 
@@ -86,69 +86,76 @@ Decisions are in [0013](../decisions/0013-platform-capabilities-are-asked-for.md
 
 - [ ] **001/5.3** Confirm JCEF is unaffected by both Evidence, not conclusive without running IntelliJ: `ZflJcefDiagramHost` (ZenWaveDomainModelEditor 9417bf8) registers only the assets `index.html` names as `src`/`href="./…"`, treats CEF `onLoadEnd` as ready and posts with `executeJavaScript("window.postMessage(…)")`; it never listens for `webviewReady`. The page still references only `./assets/*` from `index.html`, with the bootstrap in the entry chunk. The JCEF-like scenario in `browser.test.mjs` serves only those assets, posts `renderBundle` and `setViewMode` after load and renders cleanly. Open: needs a human run of the IntelliJ tool window after `pnpm sync:intellij`
 
-The in-page toolbar and node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R3 to EF-R10), with no task list yet.
+Node actions are rules in [EventFlow](../flows/eventflow.md) (EF-R4 to EF-R9), with no task list yet.
+
+- [x] **EF-R3/1** Extract the state, the view switch and the waiting states to a private `packages/eventflow-page`; `apps/eventflow-webview` stays the same page for IntelliJ
+- [x] **EF-R3/2** `apps/eventflow-toolbar-webview` embeds that component with a Flow and Systems selector, and sends `viewModeChanged`
+- [x] **EF-R3/3** `@zenwave360/vistas-eventflow-webview` also publishes `webview-toolbar/`, keeping `webview/` where it is
+- [x] **EF-R3/4** The VS Code extension packages `webview-toolbar/` when the package has it, and records `viewModeChanged`
+- [ ] **EF-R3/5** Manual check: run the IntelliJ tool window after `pnpm sync:intellij` and see no selector
+- [ ] **EF-R3/6** Manual check in VS Code, with the page linked locally: click the selector with a pointer, move it with the arrow keys, and see how it looks in a light and a dark theme
 
 ## zenwave-platform-vscode
 
-### Model preview (not started)
+### Model preview
 
 Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 
 - [ ] **005/1.1** `003-lsp-client` implemented
 - [ ] **005/1.2** `zenwave-lsp`: a request returning ordered preview representations for a ZDL or ZFL document, with titles, formats and a default (contract in `zenwave-specs`)
 - [ ] **005/1.3** `zenwave-lsp` / `dsl-kotlin`: ZDL class diagrams emitted as Mermaid, so both IDEs render from one implementation
-- [ ] **005/1.4** Decide the fate of `packages/preview-renderer` — repurpose or remove; do not leave it empty
-- [ ] **005/2.1** Register a custom editor for `.zdl` / `.zw` / `.zfl` with `priority: "option"` — verify that opening a model file still gives the text editor
-- [ ] **005/2.2** Open it in the adjacent column for the side-by-side gesture, focus staying in the text editor
-- [ ] **005/2.3** Open it in the current column for the in-place gesture, so the tab keeps its position
-- [ ] **005/2.4** Check what VS Code's own *Reopen Editor With…* switcher offers, and add a visible route back to the text only if that is not enough on its own
-- [ ] **005/2.5** Reveal an existing preview rather than opening a second one
-- [ ] **005/2.6** Confirm the preview is restored on window reload without a `WebviewPanelSerializer`
-- [ ] **005/2.7** Content security policy: no remote content, no inline script beyond a nonce, sanitise server-provided HTML
-- [ ] **005/2.8** Theme from the editor's CSS variables; follow a theme change live
-- [ ] **005/2.9** Preserve scroll position and selected representation across re-renders
-- [ ] **005/2.12** `dsl-docs`: a method for previews, separate from `generate`, returning the Markdown for one document ([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). ZDL returns the domain page ([MP-R15](../zenwave-platform-vscode/model-preview.md#mp-r15)).
-- [ ] **005/2.13** `dsl-docs`: a Markdown preview for `.zw`, different from ZDL's: the global configuration with its description and, per plugin, what it will do, its configuration and the resolved sum of its properties ([MP-R14](../zenwave-platform-vscode/model-preview.md#mp-r14)). The resolution rules, inheritance and `(inherit false)`, go in Kotlin; today they are only in the client's `src/sdk/command.ts`.
-- [ ] **005/2.14** `zenwave-lsp`: depend on `dsl-docs`, serve those pages from `zenwave/preview` as `MARKDOWN`, and recognise `.zw` as ZDL ([MP-T5](../zenwave-platform-vscode/model-preview.md#mp-t5)). Measure generation time on the largest real model, on `lsp-js`.
-- [ ] **005/2.15** `zenwave-lsp`: ship a copy of the plugin catalogue, generated from a named SDK build, accept a replacement at initialisation and through a notification while running, and pass the last one received, or its own, to `dsl-docs` ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
-- [ ] **005/2.16** VS Code: send the shipped catalogue at initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)). Sending one refreshed from the installed SDK waits on 002/11.7.
-- [ ] **005/3.1** Name the previewed document in the editor's tab
-- [ ] **005/3.2** Bind the preview to its document; never re-point an open preview at a different one
-- [ ] **005/3.3** A helper resolving the model document from `window.tabGroups.activeTabGroup.activeTab.input`, handling both `TabInputText` and `TabInputCustom`, for the palette commands — shared with `004` and `006`
-- [ ] **005/3.4** Never move or re-position an editor after opening it — a preview the user dragged elsewhere stays there
-- [ ] **005/3.5** Decide what happens for an untitled buffer, a model open in a diff, and the same model open in two groups
-- [ ] **005/4.1** Request representations through `003`'s helper, keyed on document URI and version; coalesce document changes
-- [ ] **005/4.2** Render the representations in the order given, under the server's titles, starting on the server's default
-- [ ] **005/4.3** Hide the selector when there is only one representation
-- [ ] **005/4.4** Keep the last good render on screen while a new one is in flight
-- [ ] **005/4.5** Re-render when the document changes on disk, not only in the editor
-- [ ] **005/5.1** Markdown to HTML, with fenced Mermaid blocks rendered as diagrams
-- [ ] **005/5.2** Mermaid representations rendered directly
-- [ ] **005/5.3** HTML representations inserted sanitised
-- [ ] **005/5.4** Bundle Mermaid; load it on first diagram rather than on panel open
-- [ ] **005/5.5** A malformed diagram reports itself and leaves the rest readable
-- [ ] **005/5.6** Mermaid themed for light and dark
-- [ ] **005/6.1** Distinct states: no server, unsupported by this server, document unreadable, loading
-- [ ] **005/6.2** `contributes.customEditors` entry, and `zenwave.preview.openToSide` / `zenwave.preview.open` commands for the two gestures
-- [ ] **005/6.3** Contribute into the shared ZenWave submenu `004` establishes — not a title-bar icon of its own — plus palette entries; reuse the existing preview icons in `resources/` for the submenu items
-- [ ] **005/6.4** A command opening a quick pick of representations, as a keyboard route to the in-webview selector
-- [ ] **005/6.5** Keybinding matching the platform's preview convention, if it does not collide with the built-in Markdown preview
-- [ ] **005/7.1** `npm run typecheck`, `npm run lint`, `npm run build`
-- [ ] **005/7.2** Opening a `.zdl` file from the explorer still gives the text editor
-- [ ] **005/7.3** Desktop: preview both fixtures; ZFL shows a flowchart and one representation per outcome
-- [ ] **005/7.4** The in-place gesture keeps the tab's position; *Reopen Editor With…* gets back to the text
-- [ ] **005/7.5** Two models previewed at once: each keeps its own document
-- [ ] **005/7.6** Reload the window with a preview open: it comes back
-- [ ] **005/7.7** Drag the preview to another group: it stays put across re-renders
-- [ ] **005/7.8** Invoke the preview command while a diagram has focus — the tab-group lookup has to find the document with no active text editor
-- [ ] **005/7.9** Edit a fixture: the preview follows without blanking
-- [ ] **005/7.10** Switch representation, keep editing: the choice holds
-- [ ] **005/7.11** Switch theme with the preview open: it follows
-- [ ] **005/7.12** Clean VS Code profile with no other extensions: diagrams render
-- [ ] **005/7.13** Network disabled: diagrams render
-- [ ] **005/7.14** With the server stopped: the preview explains
-- [ ] **005/7.15** Compare with IntelliJ's preview on the same fixtures
-- [ ] **005/7.16** Measure the VSIX size against `004`'s bundle and record it
+- [x] **005/1.4** Decide the fate of `packages/preview-renderer` — repurpose or remove; do not leave it empty
+- [x] **005/2.1** Register a custom editor for `.zdl` / `.zw` / `.zfl` with `priority: "option"` — verify that opening a model file still gives the text editor
+- [x] **005/2.2** Open it in the adjacent column for the side-by-side gesture, focus staying in the text editor
+- [x] **005/2.3** Open it in the current column for the in-place gesture, so the tab keeps its position
+- [x] **005/2.4** Check what VS Code's own *Reopen Editor With…* switcher offers, and add a visible route back to the text only if that is not enough on its own
+- [x] **005/2.5** Reveal an existing preview rather than opening a second one
+- [ ] **005/2.6** Manual check: confirm the preview is restored on window reload without a `WebviewPanelSerializer`
+- [x] **005/2.7** Content security policy: no remote content, no inline script beyond a nonce, sanitise server-provided HTML
+- [x] **005/2.8** Theme from the editor's CSS variables; follow a theme change live
+- [x] **005/2.9** Preserve scroll position and selected representation across re-renders
+- [x] **005/2.12** `dsl-docs`: a method for previews, separate from `generate`, returning the Markdown for one document ([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). ZDL returns the domain page ([MP-R15](../zenwave-platform-vscode/model-preview.md#mp-r15)).
+- [x] **005/2.13** `dsl-docs`: a Markdown preview for `.zw`, different from ZDL's: the global configuration with its description and, per plugin, what it will do, its configuration and the resolved sum of its properties ([MP-R14](../zenwave-platform-vscode/model-preview.md#mp-r14)). The resolution rules, inheritance and `(inherit false)`, go in Kotlin; today they are only in the client's `src/sdk/command.ts`.
+- [x] **005/2.14** `zenwave-lsp`: depend on `dsl-docs`, serve those pages from `zenwave/preview` as `MARKDOWN`, and recognise `.zw` as ZDL ([MP-T5](../zenwave-platform-vscode/model-preview.md#mp-t5)). Measure generation time on the largest real model, on `lsp-js`.
+- [x] **005/2.15** `zenwave-lsp`: ship a copy of the plugin catalogue, generated from a named SDK build, accept a replacement at initialisation and through a notification while running, and pass the last one received, or its own, to `dsl-docs` ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
+- [x] **005/2.16** VS Code: send the shipped catalogue at initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)). Sending one refreshed from the installed SDK waits on 002/11.7.
+- [x] **005/3.1** Name the previewed document in the editor's tab
+- [x] **005/3.2** Bind the preview to its document; never re-point an open preview at a different one
+- [x] **005/3.3** A helper resolving the model document from `window.tabGroups.activeTabGroup.activeTab.input`, handling both `TabInputText` and `TabInputCustom`, for the palette commands — shared with `004` and `006`
+- [x] **005/3.4** Never move or re-position an editor after opening it — a preview the user dragged elsewhere stays there
+- [x] **005/3.5** Decide what happens for an untitled buffer, a model open in a diff, and the same model open in two groups: [MP-Q4](../zenwave-platform-vscode/model-preview.md#mp-q4)
+- [x] **005/4.1** Request representations through `003`'s helper, keyed on document URI and version; coalesce document changes
+- [x] **005/4.2** Render the representations in the order given, under the server's titles, starting on the server's default
+- [x] **005/4.3** Hide the selector when there is only one representation
+- [x] **005/4.4** Keep the last good render on screen while a new one is in flight
+- [x] **005/4.5** Re-render when the document changes on disk, not only in the editor
+- [x] **005/5.1** Markdown to HTML, with fenced Mermaid blocks rendered as diagrams
+- [x] **005/5.2** Mermaid representations rendered directly
+- [x] **005/5.3** HTML representations inserted sanitised
+- [x] **005/5.4** Bundle Mermaid; load it on first diagram rather than on panel open
+- [x] **005/5.5** A malformed diagram reports itself and leaves the rest readable
+- [x] **005/5.6** Mermaid themed for light and dark
+- [x] **005/6.1** Distinct states: no server, unsupported by this server, document unreadable, loading
+- [x] **005/6.2** `contributes.customEditors` entry, and `zenwave.preview.openToSide` / `zenwave.preview.open` commands for the two gestures
+- [x] **005/6.3** Contribute into the shared ZenWave submenu `004` establishes — not a title-bar icon of its own — plus palette entries; reuse the existing preview icons in `resources/` for the submenu items
+- [x] **005/6.4** A command opening a quick pick of representations, as a keyboard route to the in-webview selector
+- [x] **005/6.5** Keybinding matching the platform's preview convention, if it does not collide with the built-in Markdown preview
+- [x] **005/7.1** `npm run typecheck`, `npm run lint`, `npm run build`
+- [x] **005/7.2** Opening a `.zdl` file from the explorer still gives the text editor
+- [x] **005/7.3** Desktop: preview both fixtures; ZFL shows a flowchart and one representation per outcome
+- [x] **005/7.4** The in-place gesture keeps the tab's position; *Reopen Editor With…* gets back to the text
+- [x] **005/7.5** Two models previewed at once: each keeps its own document
+- [ ] **005/7.6** Manual check: reload the window with a preview open: it comes back
+- [ ] **005/7.7** Manual check: drag the preview to another group: it stays put across re-renders
+- [x] **005/7.8** Invoke the preview command while a diagram has focus — the tab-group lookup has to find the document with no active text editor
+- [x] **005/7.9** Edit a fixture: the preview follows without blanking
+- [x] **005/7.10** Switch representation, keep editing: the choice holds
+- [ ] **005/7.11** Switch theme with the preview open: it follows. Checked on desktop; on the browser host the setting did not reach the webview in the smoke, and that is not explained yet
+- [x] **005/7.12** Clean VS Code profile with no other extensions: diagrams render
+- [ ] **005/7.13** Manual check: network disabled: diagrams render
+- [x] **005/7.14** With the server stopped: the preview explains
+- [ ] **005/7.15** Manual check: compare with IntelliJ's preview on the same fixtures
+- [x] **005/7.16** Measure the VSIX size against `004`'s bundle and record it: [MP-T3](../zenwave-platform-vscode/model-preview.md#mp-t3)
 
 ### LSP client
 
@@ -236,6 +243,59 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 
 - [ ] **001/6.4** Compare both IDEs on the same fixture and record any difference as a bug against one of them — expecting the trees to differ in presentation and the diagrams not to differ at all
 - [ ] **001/6.5** Make configuration-level CLI options effective in both IDE runners: inherit them with the enclosing configuration, exclude them for `(inherit false)`, and let a plugin-local CLI option replace a shared option with the same name. Use a fixture with `--force` in `config` and compare the complete commands emitted by both clients.
+
+## Previews, diagrams and navigation, agreed 2026-11-01
+
+Not built, and to start only after the phase 3 reviews of `feature/preview-eventflow-storming` pass. In this order, each group depending on the one before only where it says.
+
+**1. `zenwave-platform-vscode`, needing nothing new from the server:**
+
+- [ ] **PX/1.1** Copy as Mermaid on every diagram, through the host's clipboard. [MP-R19](../zenwave-platform-vscode/model-preview.md#mp-r19)
+- [ ] **PX/1.2** The file's own icon on the title bar's preview button, one entry per language. [MP-R18](../zenwave-platform-vscode/model-preview.md#mp-r18)
+- [ ] **PX/1.3** The modes named per file, with Sequence Diagrams and EventFlow Diagrams for ZFL. [MP-R17](../zenwave-platform-vscode/model-preview.md#mp-r17)
+- [ ] **PX/1.4** Inline Go to Definition and Go to References on the Model tree's items. [ME-R9](../zenwave-platform-vscode/model-explorer.md#me-r9)
+
+**2. `zenwave-architectural-vistas`:**
+
+- [ ] **PX/2.1** Toolbar controls on the right. [EF-R11](../flows/eventflow.md#ef-r11)
+- [ ] **PX/2.2** Open as far out as fits, anchored left, with the first `start` in view. `fitView` is at `EventFlowVisualizer.tsx:612`. [EF-R13](../flows/eventflow.md#ef-r13)
+
+**3. `dsl-kotlin` (`dsl-docs`, `dsl-views`), then `zenwave-lsp` and the client:**
+
+- [ ] **PX/3.1** Move the rules that build a command's arguments into `dsl-kotlin`, and have `command.ts` and `dsl-docs` use them, with Run unchanged. [SR-R14](../zenwave-platform-vscode/sdk-runner.md#sr-r14)
+- [ ] **PX/3.2** Scripts Docs: three sections per plugin, with Inherited configuration and the Bash command. Needs PX/3.1. [MP-R22](../zenwave-platform-vscode/model-preview.md#mp-r22)
+- [ ] **PX/3.3** The client accepts only the exact `details` and `summary` lines. [MP-R21](../zenwave-platform-vscode/model-preview.md#mp-r21)
+- [ ] **PX/3.4** Model Docs: the `apis` block at the top and aggregate policies as text. Needs PX/3.5 for its links. [MP-R23](../zenwave-platform-vscode/model-preview.md#mp-r23)
+- [ ] **PX/3.5** The client follows workspace and `http(s)` links through the host. [MP-R20](../zenwave-platform-vscode/model-preview.md#mp-r20)
+- [ ] **PX/3.6** Javadoc as CommonMark with hard line breaks, rechecking LVR-R14. `safeJavadoc` is in `dsl-docs`, `internal/Markdown.kt`. [MP-R24](../zenwave-platform-vscode/model-preview.md#mp-r24)
+
+**4. ZDL Diagrams, across `dsl-kotlin`, `zenwave-lsp` and the client:**
+
+- [ ] **PX/4.1** A `dsl-views` transformer for a command: signature, input and output. [MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)
+- [ ] **PX/4.2** `zenwave/preview` by mode, with grouped representations, measuring the cost on `lsp-js`. [LVR-R17](../flows/lsp-visualization-requests.md#lvr-r17)
+- [ ] **PX/4.3** The Show and Element selectors, in the same preview editor. [MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)
+
+**5. Reconciling the systems block:**
+
+- [ ] **PX/5.1** `dsl-kotlin`: an additive mode in `ZflSystemsOrganizer`. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
+- [ ] **PX/5.2** `zenwave-lsp`: the request's mode and its capability. [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19)
+- [ ] **PX/5.3** VS Code: CodeLens above `systems` and two palette commands, with *Full* asking first. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
+- [ ] **PX/5.4** IntelliJ: choose what its action does by default. It removes unused elements today, and the owner understood it not to.
+
+**6. EventFlow variants, then saved positions:**
+
+- [ ] **PX/6.1** `dsl-kotlin` and `zenwave-lsp`: list a flow's variants and lay out one on request. Measure ELK on `lsp-js`. [LVR-R18](../flows/lsp-visualization-requests.md#lvr-r18)
+- [ ] **PX/6.2** Page and host: the variant dropdown, with additive messages. [EF-R12](../flows/eventflow.md#ef-r12)
+- [ ] **PX/6.3** Saved positions: applying them in `dsl-kotlin`, the file in the host, the control in the page, and answering EF-Q9. Defined, pending implementation. [EF-R14](../flows/eventflow.md#ef-r14)
+- [ ] **PX/6.4** Design the visual ZFL editor's placement on what PX/6.1 to 6.3 leave.
+
+**Test reliability, any time:**
+
+- [ ] **PX/8.1** `dsl-kotlin` and `zenwave-lsp`: JS tests fail intermittently in full builds and pass when rerun, which would fail CI with no real error. On 2026-11-01, 8 tests of `dsl-views` `jsNodeTest` hit Mocha's 2000 ms limit in one build and all 91 passed alone. `GenerateMermaidFromZflTest`, `ArcadiaSnapshotTest` and `lsp-core`'s `HierarchyRequestTest` also failed once each; the first was that limit, and the cause of the other two was not read. Raise the limit for the tests that run the parser and ELK, or make them lighter.
+
+**7. Navigation:**
+
+- [ ] **PX/7.1** Hold the interview from the [navigation brief](../roadmap/navigation-brief.md), and turn its answers into rules in [navigation](../zenwave-lsp/navigation-spec.md).
 
 ## Ideas to review later
 

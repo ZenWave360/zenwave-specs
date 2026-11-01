@@ -142,6 +142,17 @@ it, the tree SHALL offer the action.
 - *Nothing open yet.* Given a workspace with no model document open, when the user looks at the model tree, then it invites them to open a model file.
 - *Diagnosing an empty tree.* Given a tree that is unexpectedly empty, when the user opens the ZenWave output channel, then the reason is recorded there.
 
+<a id="me-r9"></a>
+### ME-R9 (proposed). The model tree is the outline of a preview, and its items can navigate
+
+The built-in Outline follows the active text editor and offers no buttons per item, so it shows nothing while a preview or a diagram has focus. The model tree already follows those ([ME-R3](#me-r3)), and SHALL be
+the view to use for them. Each of its items that stands for a declaration SHALL offer inline buttons for *Go to Definition* and *Go to References*, with the same results as those commands in a text editor. A button the server cannot answer SHALL be absent.
+
+**Examples**
+
+- *A preview in focus.* Given `orders.zdl` shown as Model Docs, when the user looks at the model tree, then it lists the document's concepts and each can open its definition without returning to the text first.
+- *Nothing to reference.* Given a server that does not advertise references, when the user looks at an item, then it has no *Go to References* button.
+
 ## Design notes
 
 **Why the tree does not simply follow the focused file.** A flow's tree contains systems declared in the

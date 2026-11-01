@@ -56,7 +56,7 @@ same file means.
 <a id="lvr-r3"></a>
 ### LVR-R3 (exists). A client can request rendered representations of a model document
 
-The server SHALL, for an open ZDL or ZFL document, return an ordered list of
+The server SHALL, for an open ZDL, `.zw` or ZFL document, return an ordered list of
 representations of that document. Each SHALL carry a stable identifier, a title
 fit to show the user, the content, and the format that content is in. The server
 SHALL nominate which representation a client should show first.
@@ -330,6 +330,11 @@ failure where it has no result.
 server stops every view and every language feature in every document, and to the
 user it reads as the editor being broken rather than one file being unreadable.
 
+**Measured 2026-10-31,** packaged `lsp-js` over Node IPC on one thread, on Windows, with `bookings-domain-model.zdl` (17 KB) and a
+`zenwave-scripts.zw` (12 KB). A preview takes about 105 to 120 ms warm and about 0.6 s as the first request of a process. Meanwhile the thread blocks: a
+`documentSymbol` that takes 2 ms alone waits for the preview, about 140 ms warm and up to about 270 ms cold. That is fine with the preview's 300 ms debounce and
+one request at a time, and a much shorter debounce would keep the server busy while typing.
+
 <a id="lvr-r16"></a>
 ### LVR-R16 (proposed). A client can restrict content resolution to one declared source
 
@@ -352,6 +357,25 @@ nothing.
 this choice inside zenwave-architecture, but no request or initialization option
 reaches it, so an IDE client offering the choice has nothing to send.
 
+<a id="lvr-r17"></a>
+### LVR-R17 (proposed). A preview can be asked for by mode, and its representations can be grouped
+
+A client SHALL be able to ask `zenwave/preview` for a ZDL document's diagrams rather than its page, and the server SHALL produce only what was asked for, so that a page does not pay for every diagram. A representation MAY name a group, so a
+client can offer two selectors ([MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)) without reading ids. A server SHALL advertise this, so a client does not offer it to one that lacks it. Provisional names: param `mode`, `docs` by default or `diagrams`;
+representation field `group`; capability `experimental.previewModes`.
+
+<a id="lvr-r18"></a>
+### LVR-R18 (proposed). A flow's view can be asked for by variant, or with saved positions
+
+`zenwave/eventFlowViews` SHALL list the flow's variants, with the same outcomes and titles as its sequence diagrams, and SHALL return the laid-out graph of one variant when asked. That graph always comes from automatic layout. Separately, the client MAY send the positions of a saved file for the
+full diagram, and the server SHALL use them instead of automatic layout when they apply ([EF-R14](eventflow.md#ef-r14)). A request for a variant ignores them. With neither, the answer is what it is today. Provisional names: params `variant` and `positions`, result field `variants: [{ id, title }]`.
+
+<a id="lvr-r19"></a>
+### LVR-R19 (proposed). Organising a flow's services has a mode
+
+`zenwave/organizeZflServices` SHALL accept a mode: `full`, which is what it does today and stays the default so older clients see no change, or `additive` ([MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)). A server SHALL advertise it, so a client does not
+offer *Add missing* to one that would remove things instead. Provisional names: param `mode`, capability `experimental.organizeModes`.
+
 <a id="wire-reference"></a>
 ## Wire reference
 
@@ -368,6 +392,9 @@ The names the rules above deliberately don't fix. See [decision 0007](../decisio
 | `zenwave/preview` | `{ textDocument: { uri }, sequenceRenderMode? }` | `{ representations: [{ id, title, format, content }], defaultRepresentationId }` |
 | `zenwave/symbolAt` | `{ textDocument: { uri }, position }` | `{ uri, semanticId, range? }` or `null` |
 | `zenwave/conceptAt` `zenwave/workspaceStatus` | | **`lsp-jvm` only**, see [ST-Q1](../architecture/status.md#st-q1) |
+
+The plugin catalogue is not a request: a client sends `initializationOptions.pluginCatalogue`, the catalogue as a JSON object beside `zenwave`, or the notification
+`zenwave/pluginCatalogue` with `{ catalogue }`, listed in `capabilities.experimental.customNotifications`. The server uses the last valid one, or its own. A malformed one is ignored with a warning, and never fails initialisation ([MP-R16](../zenwave-platform-vscode/model-preview.md#mp-r16)).
 
 `zenwave/credential` goes the other way, server to client, and is not sent yet: [decision 0008](../decisions/0008-credentials-are-handed-over-per-request.md).
 

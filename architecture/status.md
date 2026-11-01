@@ -25,9 +25,9 @@ at the time*, not re-tested today. Treat it as a dated snapshot.
 | Live configuration, open-document overlay | **Not built** | Server ignores changes; editing a remote-resolved file shows the committed version | [LVR-R4](../flows/lsp-visualization-requests.md#lvr-r4), [LVR-R12](../flows/lsp-visualization-requests.md#lvr-r12) |
 | Credentials | **Client built, server not** | The server never asks | [decision 0008](../decisions/0008-credentials-are-handed-over-per-request.md) |
 | Cross-document references | **Partial** | Reverse references always empty; results have no target range | [LVR-R9](../flows/lsp-visualization-requests.md#lvr-r9) |
-| EventFlow page and renderer | **Works** | In-page toolbar and node actions ([EF-R3 to EF-R10](../flows/eventflow.md#ef-r3)) | [EventFlow](../flows/eventflow.md) |
+| EventFlow page and renderer | **Works** | Node actions ([EF-R4 to EF-R9](../flows/eventflow.md#ef-r4)). The view selector ([EF-R3](../flows/eventflow.md#ef-r3)) is on a branch, not reviewed, and VS Code gets it only when the page is published | [EventFlow](../flows/eventflow.md) |
 | VS Code: SDK runner, trees, diagram, connection | **Works**, desktop and web | Manual checks; see below | [client architecture](../zenwave-platform-vscode/architecture.md) |
-| VS Code: Mermaid preview | **Not started** | The whole editor; the request exists | [model preview](../zenwave-platform-vscode/model-preview.md) |
+| VS Code: model preview | **Partial** | ZFL, ZDL and `.zw` built on branches across `dsl-kotlin`, `zenwave-lsp` and the client, not published. Markdown, `.zw` and the catalogue are not reviewed. Modes, ZDL Diagrams and page changes are agreed and not built (backlog PX) | [model preview](../zenwave-platform-vscode/model-preview.md) |
 | VS Code: publishing | **Pipeline built** | Marketplace accounts, tokens, a first release; the extension still pins snapshot versions of packages now on npm | [release](../zenwave-platform-vscode/release.md) |
 | Transitions without id (SDK, ZDL) | **Works** | Optional AsyncAPI adapter case | [flow](../flows/transitions-without-id.md) |
 | Resource discovery, Event Storming whiteboard | **Designed** | Everything | [roadmap](../README.md#part-vi-what-comes-next) |
@@ -48,7 +48,7 @@ is the useful fact.
 | `@zenwave360/dsl` and friends are not on npm | They are: `dsl` `1.10.0`, the vistas `0.1.0`, `lsp-js` pre-releases only |
 | Variables use `{{root}}`, Maven resources use `zenwave://maven/` | `${...}` expressions and the `maven` source. Neither older form exists |
 | A manifest has a `workspace:` block | `config` and `domains` |
-| A preview renderer in Handlebars comes first | The server is the provider. `packages/preview-renderer` is an empty placeholder |
+| A preview renderer in Handlebars comes first | The server is the provider. `packages/preview-renderer` is removed on the preview branch |
 | `.zw` and `.zdl` share one VS Code language id | Same language, but `.zw` has had its own language id and icon since the brand change |
 | Reverse provenance is an open question | `WorkspaceQueryApi.at` exists |
 
