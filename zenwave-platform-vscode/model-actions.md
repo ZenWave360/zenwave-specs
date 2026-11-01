@@ -87,7 +87,7 @@ The editor SHALL show two CodeLens actions above a ZFL document's `systems` bloc
 
 - *A new command.* Given a flow calling `cancelOrder` that the block doesn't list, and a listed command that no flow uses, when the user chooses *Add missing*, then `cancelOrder` is added and the other stays.
 - *Comments stay.* Given a service with a Javadoc comment, when either action runs and the service stays, then the comment is byte for byte what it was.
-- *Today's code loses some.* Comments before an element are kept, and comments inside a service's body are not, by reading `renderService` on 2026-11-01. Both modes SHALL keep them.
+- *Comments inside a service's body may go.* Comments before an element are kept, and comments inside a service's body are not, by reading `renderService` on 2026-11-01. The owner accepted that on 2026-11-01, as those are mostly `//` comments and not Javadoc.
 
 The wire change is [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19). What IntelliJ's action does by default is its own choice to make, now that it can have both.
 

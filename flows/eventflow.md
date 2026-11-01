@@ -131,7 +131,7 @@ diagram, the user's positions are as they were. It applies to the Flow view, not
 flow too wide to fit at the minimum zoom opens at that zoom with its first `start` near the left edge. Systems has no `start`, and keeps fitting the whole diagram.
 
 <a id="ef-r14"></a>
-**EF-R14 (proposed; defined, and left to implement after [EF-R12](#ef-r12)). The user can save the positions of a full diagram.** A *Save positions* control appears once the user has moved something in the full diagram. It writes a file beside the model: `checkout.zfl` saves to `checkout.positions.json`,
+**EF-R14 (proposed; defined, and left to implement after [EF-R12](#ef-r12)). The user can save the positions of a full diagram.** A *Save positions* control appears once the user has moved something in the full diagram. It writes a file beside the model: `checkout.zfl` saves to `checkout.zfl.positions.json`,
 in the workspace, so it can be committed. Reopening the diagram uses that file if it exists and applies; otherwise the diagram has automatic layout and says why, and the file is left alone. Only saving ever writes it. See
 [decision 0022](../decisions/0022-saved-positions-are-a-file-beside-the-model.md).
 

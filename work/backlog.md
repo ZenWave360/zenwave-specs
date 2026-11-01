@@ -277,7 +277,7 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 
 **5. Reconciling the systems block:**
 
-- [ ] **PX/5.1** `dsl-kotlin`: an additive mode in `ZflSystemsOrganizer`, and keep comments inside a service's body in both modes. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
+- [ ] **PX/5.1** `dsl-kotlin`: an additive mode in `ZflSystemsOrganizer`. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
 - [ ] **PX/5.2** `zenwave-lsp`: the request's mode and its capability. [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19)
 - [ ] **PX/5.3** VS Code: CodeLens above `systems` and two palette commands, with *Full* asking first. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
 - [ ] **PX/5.4** IntelliJ: choose what its action does by default. It removes unused elements today, and the owner understood it not to.

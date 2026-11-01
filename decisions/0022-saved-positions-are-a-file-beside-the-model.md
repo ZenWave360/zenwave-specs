@@ -5,7 +5,7 @@
 ## Decision
 
 When a user arranges a full EventFlow diagram and asks to save it, the positions go to a JSON file beside the model, named after it: `checkout.zfl` saves to
-`checkout.positions.json`. Opening the diagram uses that file when it applies. A variant of a flow always has automatic layout and never reads or changes the file.
+`checkout.zfl.positions.json`. Opening the diagram uses that file when it applies. A variant of a flow always has automatic layout and never reads or changes the file.
 
 The server still returns a positioned model. It applies the file's positions in place of ELK, in `dsl-kotlin`, and the page does not compute a layout.
 

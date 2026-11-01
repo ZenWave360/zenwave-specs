@@ -8,7 +8,7 @@ the picture an IntelliJ user sees. No Mermaid source is generated, interpreted o
 reimplemented in the client.
 
 **Status:** 2026-10-31: built on the `feature/preview-eventflow-storming` branches of `dsl-kotlin`, `zenwave-lsp` and
-`zenwave-platform-vscode`. ZDL and ZFL reviewed; Markdown, `.zw` and the catalogue not yet. [MP-R17](#mp-r17) to [MP-R25](#mp-r25) were agreed with the owner on 2026-11-01 and are not built. The server
+`zenwave-platform-vscode`. ZDL and ZFL reviewed. Markdown, `.zw` and the catalogue passed review in `zenwave-lsp` and the client on 2026-11-01, and `dsl-kotlin` has one finding open ([MP-R15](#mp-r15)). [MP-R17](#mp-r17) to [MP-R25](#mp-r25) were agreed with the owner on 2026-11-01 and are not built. The server
 side exists ([LVR-R3](../flows/lsp-visualization-requests.md#lvr-r3)). This document merges the
 original preview spec with the later brief that agreed its controls; where they differed,
 the later brief wins and the rule says so. EventFlow is a different thing: interactive,
@@ -123,7 +123,7 @@ sent as a `MARKDOWN` representation ([MP-T2](#mp-t2)), written by `dsl-docs`
 ([decision 0020](../decisions/0020-previews-come-from-dsl-docs-through-the-server.md)). The port is tested against the cases of the client's `command.test.ts` and `model.test.ts`. Both inherit the whole `config` map, `id` and `title` included, and a plugin that is still being typed is absent. An integer outside JavaScript's safe range is shown as its exact string, as the client passes it to the SDK. [MP-R22](#mp-r22) changes how a plugin is presented, and replaces the resolved sum with what is inherited.
 
 <a id="mp-r15"></a>
-**MP-R15 (exists). A ZDL preview is a Markdown page from `dsl-docs`.** It holds the class diagram, a
+**MP-R15 (partial: a type link can land on the table of contents, because `dsl-docs` numbers Contents after the sections it precedes; review of 2026-11-01). A ZDL preview is a Markdown page from `dsl-docs`.** It holds the class diagram, a
 glossary, commands and events, as the `dsl-docs` domain page does, and replaces the lone class diagram of
 [MP-T1](#mp-t1). `dsl-docs` has a separate method for previews, so `generate` keeps returning a documentation
 folder. A ZFL preview stays as the list of Mermaid diagrams already agreed in [MP-R4](#mp-r4).
@@ -267,7 +267,8 @@ and a selector with no real choice is hidden ([MP-R10](#mp-r10)).
 | Show | Element | Diagram |
 | --- | --- | --- |
 | Services | Each service | Its Event Storming flowchart |
-| Aggregates | Each aggregate, and each lifecycle | Its class diagram, or its state diagram |
+| Aggregates | Each aggregate | Its class diagram |
+| State Machines | Each aggregate with a state machine | Its state diagram |
 | Events | Each event | Its class diagram |
 | Commands | Each service method | Three classes: the signature, with the input and the output hanging from it |
 | Other entities | The one diagram | Entities and enums that no aggregate reaches, as Model Docs titles them today |
