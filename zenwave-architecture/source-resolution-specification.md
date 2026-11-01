@@ -5,7 +5,7 @@
 The contract for reading what a manifest refers to. The [guide](source-resolution-guide.md) explains the same contract with worked examples, and the [workspace model](workspace-model.md) is what is built from it.
 
 Status: current contract  
-Date: 2026-07-15
+Date: 2026-11-01
 
 Architecture Manifest 1.0 is read-only. A conforming implementation resolves content but does not publish, upload, register, clone, push, commit, tag, sign, or deploy manifest-managed content.
 
@@ -16,6 +16,9 @@ Domain, subdomain, and service `id` fields are optional non-blank strings. The r
 A service or domain may declare artifacts and an optional non-blank `repository`. Repository is distinct from stable architecture `id`, is explicit-only, and MUST NOT default to or be derived from owner identity.
 
 Artifact `name` is optional and explicit-only. It is never derived from the artifact path. Service `docs` is a map whose non-blank keys use letters, numbers, `.`, `_`, and `-`; values are non-blank paths or supported absolute URIs.
+
+<a id="sr-r1"></a>
+**SR-R1 (exists). Artifact release groups are explicit metadata.** An artifact may declare an optional string `releaseGroup` identifying artifacts released together. It remains absent when omitted; it does not inherit `type`, change artifact identity or version semantics, or enforce version consistency. The runtime context exposes `artifact.releaseGroup` when declared and `artifact.type` as the original type. For example, `asyncapi` and `asyncapi-client` can both declare `releaseGroup: asyncapi-all` while retaining their own paths and types. Blank groups are allowed and fall through when selected by a fallback expression. No release IDs, computed release URLs, or additional release abstractions are introduced.
 
 Artifact `version` is REQUIRED and MUST be non-blank; a blank value counts as absent and MUST be reported as a deterministic parse diagnostic. Domain, subdomain, and service `version` remain optional.
 
@@ -38,6 +41,8 @@ ${domain.version}
 ${subdomain.version}
 ${service.version}
 ${artifact.version}
+${artifact.type}
+${artifact.releaseGroup}
 ${artifact.path}
 ${artifact.pathWithoutExtension}
 ${artifact.name}
@@ -54,7 +59,13 @@ ${version}
 
 Bracket contents in `service.docs[key]` are literal. A missing key is unresolved before I/O; `${service.docs}` is invalid. `content.path` is the artifact path for an artifact load and the selected docs-map value for a document load. Loading all docs evaluates expressions separately for every entry.
 
-Interpolation is literal and has no functions, conditionals, nesting, or fallback syntax. Missing values fail before I/O. `${server}` is supplied only by the active source and is not a global canonical value.
+Interpolation is literal and has no functions, conditionals, nesting, or literal fallback values. Missing values fail before I/O. `${server}` is supplied only by the active source and is not a global canonical value.
+
+<a id="sr-r2"></a>
+**SR-R2 (exists). A pipe selects the first non-blank variable.** `${a|b|c}` resolves alternatives left to right, trimming variable names and skipping empty alternatives. Missing, null, empty and whitespace-only values are skipped; the first non-blank value is preserved verbatim before provider encoding. If none resolves, the original placeholder and unresolved-expression diagnostic behavior are retained, and runtime resolution fails before I/O. Expressions without a pipe retain their existing behavior, including exact names and resolved blank values. All existing generic interpolation sites support this operator, including coordinates, source paths, URLs, and Maven repository expressions. Static substitution uses the same resolver; a fallback involving runtime names is deferred until its runtime context is available, so a static alternative cannot override a preceding canonical variable. Existing validation of document lookups and recursive coordinates also applies inside alternatives. There are no nested expressions, literal alternatives, boolean operators, or new expression dependencies.
+
+<a id="sr-r3"></a>
+**SR-R3 (exists). Release URL policies belong to configuration.** A `contentUrlExpression` may select `${artifact.releaseGroup|artifact.type}`. For example, `${server}/arcadia-editions/${owner.repository}/raw/release/${artifact.releaseGroup|artifact.type}/v${artifact.version}/${content.path}` selects `release/asyncapi-all/v0.1.1` for both grouped AsyncAPI artifacts and `release/openapi/v0.1.0` for an ungrouped OpenAPI artifact. The interpolation engine has no knowledge of Git release conventions, AsyncAPI, or Terraform. This changes neither provider defaults nor release workflows or provisioning.
 
 Provider encoding occurs after value selection. Git and generic Artifactory preserve content-path `/` separators; Apicurio encodes the complete artifact path as one REST path parameter; hierarchy and coordinates are path segments. Schemes, query delimiters, and Artifactory `!/` remain intact.
 
@@ -207,3 +218,14 @@ Implementations MUST diagnose before transport I/O where possible:
 - preferred source not active in the ordered list.
 
 Candidate transport failure MUST continue in order. Exhaustion MUST report redacted attempted candidates and the final failure. Tests MUST use in-memory, recording, or local file/archive transports and MUST NOT require real network access.
+
+## 8. Verification
+
+Checked on 2026-11-01 in `zenwave-architecture`: `ManifestModels.kt`,
+`ManifestVariableInterpolator.kt`, `ZenWaveManifestLoader.kt`, and both published
+schema files. `ManifestFallbackTest`, `ZenWaveManifestEditorTest`, and
+`ManifestSchemaTest` cover the new rules, including source-preserving YAML edits.
+The complete `architecture-manifest` JVM, Node.js, and headless-browser test suites
+passed. These tests use local or in-memory content; real release hosts and release
+workflows were not exercised. Existing manifests and single-variable interpolation
+remain covered by the existing suites. No whole-manifest serializer was added.

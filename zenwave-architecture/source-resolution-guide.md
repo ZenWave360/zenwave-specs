@@ -20,6 +20,8 @@ Hierarchy IDs resolve from an explicit non-blank `id` or the node's YAML map key
 | `${subdomain.version}` | Explicit owning subdomain version, when declared. |
 | `${service.version}` | Explicit owning service version, when declared. |
 | `${artifact.version}` | Declared current artifact version; artifact `version` is a required field. |
+| `${artifact.type}` | Original artifact type. |
+| `${artifact.releaseGroup}` | Explicit release group; absent when omitted, with no implicit type default. |
 | `${artifact.path}` | Complete declared artifact path. |
 | `${artifact.pathWithoutExtension}` | Complete path with only its final extension removed. |
 | `${artifact.name}` | Explicit artifact `name`; absent for an unnamed artifact. |
@@ -63,7 +65,9 @@ the lookups resolve to their corresponding paths. `${service.docs}` denotes a ma
 
 `config.properties` supplies ordinary static strings. Static expansion happens before runtime interpolation and cannot override any canonical variable, keyed docs lookup, or source-local `${server}`. Coordinates are first-class config fields rather than properties.
 
-Runtime interpolation is exact `${name}` replacement. There are no functions, conditionals, nested expressions, fallback operators, or implicit discovery. Unresolved names report the source, complete expression, and names before transport I/O.
+Runtime interpolation is exact `${name}` replacement, with a generic pipe fallback: `${a|b|c}` selects the first non-null, non-empty, non-whitespace-only variable. Names around pipes are trimmed and empty alternatives are skipped (`${a||b}` is equivalent to `${a|b}`). A selected non-blank value retains its surrounding whitespace before provider encoding. All missing or blank alternatives leave the expression unresolved and fail before transport I/O. Expressions without pipes retain their existing behavior, including exact names and blank substitutions. There are no functions, conditionals, nested expressions, literal fallback values, or implicit discovery. Unresolved names report the source, complete expression, and names before transport I/O. See [SR-R2](source-resolution-specification.md#sr-r2).
+
+Static properties use the same resolver. Fallbacks involving runtime variables are deferred until runtime, where static properties are also available; `${artifact.releaseGroup|defaultGroup}` therefore prefers the explicit group even if `defaultGroup` is a static property. Canonical variables and source-local `server` remain reserved.
 
 Provider encoding happens after values are selected:
 
@@ -206,6 +210,40 @@ https://gitlab.com/commerce/fulfillment/shipping/-/raw/v2.0.0/contracts/events.y
 ```
 
 Self-managed GitLab or a different namespace layout uses `server` and/or a complete custom expression.
+
+### Shared artifact release tags
+
+An optional `releaseGroup` groups artifacts released together without changing their types, paths, identities, or versions. It remains absent when omitted. A blank group falls through to the next alternative. Group members are not required by the library to share a version; release workflow policy stays outside the resolver. See [SR-R1](source-resolution-specification.md#sr-r1) and [SR-R3](source-resolution-specification.md#sr-r3).
+
+```yaml
+config:
+  contentResolution: [git]
+  sources:
+    git:
+      provider: github
+      contentUrlExpression: "${server}/arcadia-editions/${owner.repository}/raw/release/${artifact.releaseGroup|artifact.type}/v${artifact.version}/${content.path}"
+domains:
+  sales:
+    services:
+      orders:
+        repository: orders
+        artifacts:
+          - { type: asyncapi, path: asyncapi.yml, version: 0.1.1, releaseGroup: asyncapi-all }
+          - { type: asyncapi-client, path: asyncapi-client.yml, version: 0.1.1, releaseGroup: asyncapi-all }
+          - { type: openapi, path: openapi.yml, version: 0.1.0 }
+          - { type: zdl, path: domain-model.zdl, version: 0.1.0 }
+```
+
+The URLs are:
+
+```text
+https://github.com/arcadia-editions/orders/raw/release/asyncapi-all/v0.1.1/asyncapi.yml
+https://github.com/arcadia-editions/orders/raw/release/asyncapi-all/v0.1.1/asyncapi-client.yml
+https://github.com/arcadia-editions/orders/raw/release/openapi/v0.1.0/openapi.yml
+https://github.com/arcadia-editions/orders/raw/release/zdl/v0.1.0/domain-model.zdl
+```
+
+The shared tag is configuration, not built-in AsyncAPI, Terraform, or Git release behavior. The source-aware scalar editor can update a declared `releaseGroup` while preserving surrounding YAML and reparsing the resulting model; this feature adds no whole-manifest serialization API.
 
 ### Bitbucket Cloud
 

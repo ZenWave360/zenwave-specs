@@ -16,6 +16,7 @@ at the time*, not re-tested today. Treat it as a dated snapshot.
 | --- | --- | --- | --- |
 | ZDL and ZFL parsers, formatter, view models, layout, Mermaid | **Works**, JVM and JS | Decimals stay strings in the JS output | [parser contracts](../dsl-kotlin/parser-architecture-and-contracts.md) |
 | Manifest and content resolution | **Works**, all five sources | Whether the browser can reach private GitHub ([decision 0008](../decisions/0008-credentials-are-handed-over-per-request.md)) | [source resolution](../zenwave-architecture/source-resolution-specification.md) |
+| Artifact release groups and expression fallback | **Works**, verified 2026-11-01 on JVM, Node.js and headless browser; includes source-aware YAML scalar edits | Real release hosts and workflows were not exercised | [release groups](../zenwave-architecture/source-resolution-specification.md#sr-r1), [fallback operator](../zenwave-architecture/source-resolution-specification.md#sr-r2) |
 | Architecture graph and Query API | **Works** as a library | Rename and API-only scenarios not confirmed here | [workspace model](../zenwave-architecture/workspace-model.md) |
 | `validate` CLI | **Works** (`workspace-cli`) | | [workspace model §13](../zenwave-architecture/workspace-model.md#wmodel-13) |
 | **ZenWave MCP** | **Tools only** | No server: nothing an agent can connect to | [MCP adapter](../zenwave-architecture/mcp-adapter.md) |
