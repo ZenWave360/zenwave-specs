@@ -127,7 +127,8 @@ for a change the host asked for, and the minimal page never sends it.
 diagram, the user's positions are as they were. It applies to the Flow view, not to Systems. As in [EF-R3](#ef-r3), the minimal page has no selector, and its host sends the choice. This is built first, and the visual ZFL editor is designed on top of what results.
 
 <a id="ef-r13"></a>
-**EF-R13 (proposed). A diagram opens as far out as it can with the first start in view.** It opens at the zoom that fits the whole diagram, down to the renderer's minimum zoom, anchored to the left rather than centred, and with the first `start` node on screen and vertically centred. For example, a
+**EF-R13 (proposed). A diagram opens as far out as it can with the first start in view.** It opens at the zoom that fits the whole diagram, down to the renderer's minimum zoom, anchored to the left rather than centred, and with the first `start` node on screen and vertically centred. When the whole
+diagram fits, all of it is shown, even if that moves the `start` off the vertical centre. When it does not fit, the first `start` is on screen at the left edge, even if that leaves nodes to its left out of view. For example, a
 flow too wide to fit at the minimum zoom opens at that zoom with its first `start` near the left edge. Systems has no `start`, and keeps fitting the whole diagram.
 
 <a id="ef-r14"></a>
