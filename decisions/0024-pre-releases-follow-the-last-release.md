@@ -1,6 +1,6 @@
 # 0024. Pre-releases follow the last release, and notes are files
 
-**Status:** decided by the owner, 2026-11-01; not built. **Used by:** [R-R8](../zenwave-platform-vscode/release.md#r-r8), [R-R10](../zenwave-platform-vscode/release.md#r-r10), [R-R11](../zenwave-platform-vscode/release.md#r-r11)
+**Status:** decided by the owner, 2026-11-01; built: committed 2026-11-02, merged to `develop`, and verified on GitHub with publication held back (run 41425641110). **Used by:** [R-R8](../zenwave-platform-vscode/release.md#r-r8), [R-R10](../zenwave-platform-vscode/release.md#r-r10), [R-R11](../zenwave-platform-vscode/release.md#r-r11)
 
 ## Decision
 

@@ -2,7 +2,7 @@
 
 <a id="release"></a>
 
-**Status:** 2026-11-02: 10 partial, 3 exists. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
+**Status:** 2026-11-02: 9 partial, 4 exists. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
 
 ## Purpose
 
@@ -86,9 +86,9 @@ or build intermediates.
 - *A new asset.* Given a change that adds an asset the extension needs at runtime, such as a bundled renderer, when that asset is removed from the build and a release is attempted, then the release fails.
 
 <a id="r-r6"></a>
-### R-R6 (partial). What is published has been exercised in both hosts
+### R-R6 (exists). What is published has been exercised in both hosts
 
-*State: CI builds both hosts; launching them before publishing is still open.*
+Verify runs the packaged desktop smoke and the packaged browser smoke before publishing. On run 41425641110 both passed.
 
 Before a version is published, it SHALL be verified to activate and work in the
 desktop host and in the browser host.
