@@ -11,6 +11,7 @@ Today `on X response Y` inside a `when … do` block is treated as one more step
 3. **Model.** Steps of `on` that answer (`response`, `emits`, `emits response`) are exits: `terminal: true`. `on X call Z` chains, and the `on` lines after it refer to Z's responses. What no `on` catches is the happy path.
 4. **Validation.** Error when the event of an `on` is not a declared response of the preceding `call`. Warning for unreachable lines after `on` lines that catch every response of a call.
 5. **Diagrams (`dsl-views`) and the EventFlow view model.** Draw an exit of the block, not one more step. Check the Mermaid flowchart (BUG/1), the sequence diagrams and the EventFlow graph.
+6. **User documentation (required, owner 2026-11-03).** Document the rule, the list form of `on` and the two validations in `ZenWave360.github.io/src/content/docs/ZenWave360/ZFL-Flow-Language.mdx`, with the example below.
 
 ## The owner's proposal, verbatim
 
