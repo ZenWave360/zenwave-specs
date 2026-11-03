@@ -276,6 +276,12 @@ and a selector with no real choice is hidden ([MP-R10](#mp-r10)).
 A command with no input or no output draws only the classes it has. For example, `placeOrder(PlaceOrderInput) Order` draws `placeOrder`, `PlaceOrderInput` and `Order`. Same-named methods in two
 services are told apart by their service. Commands need a new transformer in `dsl-views`; the others exist. The wire change is [LVR-R17](../flows/lsp-visualization-requests.md#lvr-r17).
 
+<a id="mp-r26"></a>
+**MP-R26 (proposed). A Markdown page can be copied as Markdown.** When the preview shows a Markdown page (Model Docs of a `.zdl`, and Scripts Docs of a `.zw`), the editor's title bar has a
+*Copy as Markdown* button with VS Code's standard copy icon (`$(copy)`, two overlapping squares), and the palette has the same command while that preview is active. It copies the page the server sent,
+unchanged, Mermaid fences included, through the host's clipboard, as [MP-R19](#mp-r19) does for one diagram. It needs nothing new from the server. A preview showing a single diagram, or the React
+Flow editor, has no such button. The owner asked for it on 2026-11-03, for ZDL previews first.
+
 ## Not in scope
 
 Scroll sync with the text, exporting to PNG or SVG, previewing an unopened file from the

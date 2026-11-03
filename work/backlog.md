@@ -285,6 +285,7 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 - [ ] **PX/1.2** The file's own icon on the title bar's preview button, one entry per language. [MP-R18](../zenwave-platform-vscode/model-preview.md#mp-r18)
 - [ ] **PX/1.3** The modes named per file, with Sequence Diagrams and EventFlow Diagrams for ZFL. [MP-R17](../zenwave-platform-vscode/model-preview.md#mp-r17)
 - [ ] **PX/1.4** Inline Go to Definition and Go to References on the Model tree's items. [ME-R9](../zenwave-platform-vscode/model-explorer.md#me-r9)
+- [ ] **PX/1.5** Copy as Markdown: a title-bar button with the `$(copy)` codicon, and a palette command, on a preview showing a Markdown page (ZDL Model Docs first, `.zw` Scripts Docs too). Copies the page the server sent through the host's clipboard. Added by the owner 2026-11-03. [MP-R26](../zenwave-platform-vscode/model-preview.md#mp-r26)
 
 **2. `zenwave-architectural-vistas`:**
 
