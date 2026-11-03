@@ -12,9 +12,9 @@ The diagram is the Mermaid flowchart that `dsl-views` writes for a ZFL flow, in 
 4. **Responses not connected.** The outcomes `policy-violated` (`BookingRejected`) and `slot-full` (`SlotFull`) have no node, and `BookingRejected`, `SlotFull` and `SlotNotBookable` only have edges into their terminals, none from `bookSlot`. The handlers on calls (`on SlotNotBookable response BookingRejected`, `on HolderNotEligible response BookingRejected`) are not drawn.
 5. **Label.** The policy reads `when RequestBooking,RequestAssistedBooking do bookSlot`, with no space after the comma.
 
-## Open question for the owner
+## Handlers that end the command
 
-The source has `on SlotNotBookable response SlotNotBookable // how to shortcircuit this? with return instead of response?` after `call getBookingTerms`. Whether a handler on a call should end the policy (a `return`) is a language question, not part of this bug. The excerpt in the report below does not have that line; the complete file does.
+The source has `on SlotNotBookable response SlotNotBookable // how to shortcircuit this? with return instead of response?` after `call getBookingTerms`. The owner answered on 2026-11-03: an `on` that answers ends the command. That is [BUG/2](bug-2-zfl-on-ends-the-command.md), to do together with this one; defect 4 depends on it. The excerpt in the report below does not have that line; the complete file does.
 
 ## Original report (`pista-aberta/zfl-sequence-bug.md`)
 
