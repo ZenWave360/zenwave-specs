@@ -324,6 +324,10 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 
 - [ ] **PX/8.1** `dsl-kotlin` and `zenwave-lsp`: JS tests fail intermittently in full builds and pass when rerun, which would fail CI with no real error. On 2026-11-01, 8 tests of `dsl-views` `jsNodeTest` hit Mocha's 2000 ms limit in one build and all 91 passed alone. `GenerateMermaidFromZflTest`, `ArcadiaSnapshotTest` and `lsp-core`'s `HierarchyRequestTest` also failed once each; the first was that limit, and the cause of the other two was not read. Raise the limit for the tests that run the parser and ELK, or make them lighter.
 
+**Bugs:**
+
+- [ ] **BUG/1** `dsl-views` ZFL Mermaid flowchart, reported 2026-11-03: start events connect straight to the action instead of to the policy that handles them. The same diagram also defines each start node twice (the actor label is lost), draws action-to-event edges both through the outcome node and directly, leaves the `policy-violated` and `slot-full` responses and the `on … response …` handlers unconnected, and writes the policy's triggers with no space after the comma. Report, the five defects and the complete source that reproduces them: [bug 1](bugs/bug-1-zfl-flowchart-starts-skip-policy.md). Use that source as a test fixture. Open question for the owner inside: whether a handler on a call can end the policy.
+
 **7. Navigation:**
 
 - [ ] **PX/7.1** Hold the interview from the [navigation brief](../roadmap/navigation-brief.md), and turn its answers into rules in [navigation](../zenwave-lsp/navigation-spec.md).
