@@ -370,6 +370,8 @@ representation field `group`; capability `experimental.previewModes`.
 `zenwave/eventFlowViews` SHALL list the flow's variants, with the same outcomes and titles as its sequence diagrams, and SHALL return the laid-out graph of one variant when asked. That graph always comes from automatic layout. Separately, the client MAY send the positions of a saved file for the
 full diagram, and the server SHALL use them instead of automatic layout when they apply ([EF-R14](eventflow.md#ef-r14)). A request for a variant ignores them. With neither, the answer is what it is today. Provisional names: params `variant` and `positions`, result field `variants: [{ id, title }]`.
 
+**Wire for saved positions (agreed 2026-11-04, PX/6.3).** Param `positions`: an object from node id to `{ x, y }`, the `flow` object of the file. Only for the full diagram: with `variant` it is ignored. When `positions` is sent, the answer adds `savedPositions: { applied: true }`, or `{ applied: false, reason }` when the file does not apply, with `reason` one of `missing-nodes` (a node of the diagram has no position; the answer lists them in `missing`) or `invalid` (a value that is not a finite number). A server advertises `capabilities.experimental.savedPositions: true`. Applying positions replaces each node's `position` and recomputes the graph's bounds; dimensions stay ELK's, and edges carry no geometry, so nothing else changes. A non-object `positions` answers -32602 `positions must be an object`.
+
 <a id="lvr-r19"></a>
 ### LVR-R19 (proposed). Organising a flow's services has a mode
 

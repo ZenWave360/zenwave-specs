@@ -307,6 +307,8 @@ state (EF-Q2, EF-Q7) it is not.
 **EF-Q9. What should a partly matching positions file do?** [EF-R14](#ef-r14) applies a file only when every node has a position, so one new command loses the whole arrangement until the user saves again. The alternative is to keep what matches and place the new nodes, as
 the visual ZFL editor's ZVE-R10 wants, on branch `feature/zfl-visual-editing`. Decide when EF-R14 is built, using what the variants work leaves. How to get back to automatic layout once a file applies also belongs here.
 
+**Answered 2026-11-04 (PX/6.3), the cheap way:** a file applies all or nothing, as EF-R14 says; one new node means automatic layout and a note naming the nodes without a position, until the user saves again. Getting back to automatic layout is deleting the file: the host offers *Discard Saved Positions* in the diagram's title bar menu when the file exists, after a confirmation. Keeping what matches and placing only the new nodes is left to the visual ZFL editor (ZVE-R10).
+
 ## 9. Sources
 
 Facts in section 3 come from reading, on 2026-10-29:
