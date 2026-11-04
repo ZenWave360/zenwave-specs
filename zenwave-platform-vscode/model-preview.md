@@ -298,6 +298,20 @@ Flow editor, has no such button. The owner asked for it on 2026-11-03, for ZDL p
 <a id="mp-r31"></a>
 **MP-R31 (proposed). A following preview shows the focused model and remembers each file's place.** Besides the previews of [MP-R3](#mp-r3), which never follow the active editor, the command *ZenWave: Open Following Preview* opens one following preview per window, beside the text. It shows the last focused text editor of a `.zdl` or `.zfl`, not a `.zw`; focusing anything else (the preview, an EventFlow diagram, a `.zw`, another language, a view) leaves it as it is. For each file it has shown, it remembers the mode, the selected diagram and the scroll position, and restores them when that file is focused again; a file shown for the first time opens at its default ([MP-R4](#mp-r4)). Its title names the file it shows. A lock icon in its title bar turns it into an ordinary preview of the current file. Everything else is the preview as it is: modes, Copy as Markdown, the last good drawing ([MP-R5](#mp-r5)). Following the cursor is not part of this rule. See [the analysis](../roadmap/following-preview.md); the owner chose this option on 2026-11-04.
 
+<a id="mp-r32"></a>
+**MP-R32 (proposed). The ZFL flowchart reads like the EventFlow diagram.** In Sequence Diagrams, the flowchart follows [EF-R18](../flows/eventflow.md#ef-r18) and [EF-R19](../flows/eventflow.md#ef-r19): no edge from a call's response to the caller's outcome, and with `emits response Y` the event follows the response. It uses the EventFlow colours, with dark text where the fill is light and white text where it is dark:
+
+| Element | Shape | Fill / border |
+| --- | --- | --- |
+| Start | Rounded rectangle, close to a command but not one | `#475569` / `#1e293b`, white text |
+| Command | Rectangle | `#3b82f6` / `#1d4ed8`, white text |
+| Response (read model) | Square-cornered rectangle | `#bbf7d0` / `#15803d` |
+| Event | Parallelogram, as today | `#f97316` / `#c2410c`, white text |
+| Policy | Hexagon, as today | `#a855f7` / `#7e22ce`, white text |
+| End outcome | Circle, as today | `#ef4444` / `#b91c1c`, white text |
+
+A start shows its actor, or that it is a timer, as its first line, as today. The owner asked for it on 2026-11-04.
+
 ## Not in scope
 
 Scroll sync with the text, exporting to PNG or SVG, previewing an unopened file from the

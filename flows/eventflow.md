@@ -148,6 +148,12 @@ current diagram has a position; ids it has beyond those are ignored. The rename 
 <a id="ef-r17"></a>
 **EF-R17 (proposed). A start shows who or what starts the flow.** The `START` node carries `startKind`: `timer` when the `start` has `@time`, else `actor` when it has `@actor`, else `system`. The page draws an icon for each kind (a person, a clock, a gear or server) next to the label, and the actor's name when there is one, so `@actor(Scheduler) @time("…") start BookingReminderDue` reads as a timer started by `Scheduler`. A missing `startKind` is drawn as today.
 
+<a id="ef-r18"></a>
+**EF-R18 (proposed). With `emits response Y`, the event hangs from the read model.** The command points to the read model `Y` ([EF-R16](#ef-r16)), and the event `Y` follows the read model, not the command: `command → readModel:Y → event:Y`. The edge between them is a plain causation edge (solid grey, no label), and the policies on `Y` still start from the event. A plain `emits Y` and a plain `response Y` are unchanged. The owner asked for it on 2026-11-04, to stop drawing the same fact as two parallel branches.
+
+<a id="ef-r19"></a>
+**EF-R19 (proposed). A call's responses do not connect to the outcomes of the command that made the call.** When `call X` is followed by `on R response S` (or `emits`), no edge is drawn from `X`'s response `R` to the caller's outcome `S`. The call edge and the outcome label already say it, and those edges crossed the diagram. Which response of which call leads to an outcome stays in the sequence diagrams and in the variants ([EF-R12](#ef-r12)). The owner asked for it on 2026-11-04.
+
 ### Acting on a node
 
 <a id="ef-r4"></a>

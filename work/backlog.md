@@ -342,6 +342,7 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 - [x] **PX/9.5** VS Code: the following preview that remembers each file, option 1 of the analysis, chosen by the owner 2026-11-04. Queued until there is capacity. [MP-R31](../zenwave-platform-vscode/model-preview.md#mp-r31)
 - [ ] **PX/9.6** CI: pushing `dsl-kotlin` and `zenwave-lsp` together races. The lsp publish compiles against `dsl-kotlin` 1.11.0-SNAPSHOT from maven-snapshots, so it fails (or would publish against the old one) when it starts before the dsl publish ends. On 2026-11-04 it failed and passed on a rerun. Make the lsp job wait for or re-trigger after the dsl snapshot.
 - [ ] **PX/9.7** Navigation gaps left by 001/2.19-2.21: ZDL entity-to-entity uses are not indexed; ZFL `service X.Y` uses are not indexed against the service; events, inputs and outputs have no location entry for their own declaration in `dsl-kotlin`, so `symbolAt` and `targetRange` give null there; a target range is only found when the target document is open.
+- [ ] **PX/9.8** `dsl-kotlin`: the EventFlow event hangs from its read model, and a call's responses do not connect to the caller's outcomes [EF-R18](../flows/eventflow.md#ef-r18), [EF-R19](../flows/eventflow.md#ef-r19); the ZFL flowchart does the same and uses the EventFlow colours [MP-R32](../zenwave-platform-vscode/model-preview.md#mp-r32).
 
 **7. Navigation:**
 
