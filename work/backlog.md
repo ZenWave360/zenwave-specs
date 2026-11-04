@@ -304,14 +304,14 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 **4. ZDL Diagrams, across `dsl-kotlin`, `zenwave-lsp` and the client:**
 
 - [ ] **PX/4.1** A `dsl-views` transformer for a command: signature, input and output. [MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)
-- [ ] **PX/4.2** `zenwave/preview` by mode, with grouped representations, measuring the cost on `lsp-js`. [LVR-R17](../flows/lsp-visualization-requests.md#lvr-r17)
-- [ ] **PX/4.3** The Show and Element selectors, in the same preview editor. [MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)
+- [x] **PX/4.2** `zenwave/preview` by mode, with grouped representations, measuring the cost on `lsp-js`. [LVR-R17](../flows/lsp-visualization-requests.md#lvr-r17)
+- [x] **PX/4.3** The Show and Element selectors, in the same preview editor. [MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)
 
 **5. Reconciling the systems block:**
 
 - [ ] **PX/5.1** `dsl-kotlin`: an additive mode in `ZflSystemsOrganizer`. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
-- [ ] **PX/5.2** `zenwave-lsp`: the request's mode and its capability. [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19)
-- [ ] **PX/5.3** VS Code: CodeLens above `systems` and two palette commands, with *Full* asking first. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
+- [x] **PX/5.2** `zenwave-lsp`: the request's mode and its capability. [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19)
+- [x] **PX/5.3** VS Code: CodeLens above `systems` and two palette commands, with *Full* asking first. [MA-R5](../zenwave-platform-vscode/model-actions.md#ma-r5)
 - [ ] **PX/5.4** IntelliJ: choose what its action does by default. It removes unused elements today, and the owner understood it not to.
 
 **6. EventFlow variants, then saved positions:**
@@ -327,9 +327,9 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 
 **Bugs, first when implementation resumes (owner, 2026-11-03):**
 
-- [ ] **BUG/2** ZFL: an `on` that answers (`on X response Y`, `on X emits Y`, `on X emits response Y`) must end the command, as a `return`; today the diagrams keep going past it. The owner's rule, grammar change (`on` takes a list of events), validations (the `on` event must be a response of the preceding `call`; unreachable lines warn) and the `terminal: true` exit steps for the diagrams: [bug 2](bugs/bug-2-zfl-on-ends-the-command.md), rules [ZFL-R1 to ZFL-R4](../dsl-kotlin/zfl-language.md). Spec rule first, then `dsl-kotlin`, `dsl-views` and the EventFlow view model, and document it in `ZenWave360.github.io/src/content/docs/ZenWave360/ZFL-Flow-Language.mdx`. Do it with BUG/1, which uses the same source.
-- [ ] **BUG/3** ZDL parser: `policies` are stored in a map keyed by policy name (`ZdlListenerImpl`, `appendToWithMap`), so two policies with the same name under different aggregates collide and only one survives. Found while building PX/3.4 (MP-R23), 2026-11-03.
-- [ ] **BUG/1** `dsl-views` ZFL Mermaid flowchart, reported 2026-11-03: start events connect straight to the action instead of to the policy that handles them. The same diagram also defines each start node twice (the actor label is lost), draws action-to-event edges both through the outcome node and directly, leaves the `policy-violated` and `slot-full` responses and the `on … response …` handlers unconnected, and writes the policy's triggers with no space after the comma. Report, the five defects and the complete source that reproduces them: [bug 1](bugs/bug-1-zfl-flowchart-starts-skip-policy.md). Use that source as a test fixture. Defect 4 depends on BUG/2.
+- [x] **BUG/2** ZFL: an `on` that answers (`on X response Y`, `on X emits Y`, `on X emits response Y`) must end the command, as a `return`; today the diagrams keep going past it. The owner's rule, grammar change (`on` takes a list of events), validations (the `on` event must be a response of the preceding `call`; unreachable lines warn) and the `terminal: true` exit steps for the diagrams: [bug 2](bugs/bug-2-zfl-on-ends-the-command.md), rules [ZFL-R1 to ZFL-R4](../dsl-kotlin/zfl-language.md). Spec rule first, then `dsl-kotlin`, `dsl-views` and the EventFlow view model, and document it in `ZenWave360.github.io/src/content/docs/ZenWave360/ZFL-Flow-Language.mdx`. Do it with BUG/1, which uses the same source.
+- [x] **BUG/3** ZDL parser: `policies` are stored in a map keyed by policy name (`ZdlListenerImpl`, `appendToWithMap`), so two policies with the same name under different aggregates collide and only one survives. Found while building PX/3.4 (MP-R23), 2026-11-03.
+- [x] **BUG/1** `dsl-views` ZFL Mermaid flowchart, reported 2026-11-03: start events connect straight to the action instead of to the policy that handles them. The same diagram also defines each start node twice (the actor label is lost), draws action-to-event edges both through the outcome node and directly, leaves the `policy-violated` and `slot-full` responses and the `on … response …` handlers unconnected, and writes the policy's triggers with no space after the comma. Report, the five defects and the complete source that reproduces them: [bug 1](bugs/bug-1-zfl-flowchart-starts-skip-policy.md). Use that source as a test fixture. Defect 4 depends on BUG/2.
 
 **7. Navigation:**
 
