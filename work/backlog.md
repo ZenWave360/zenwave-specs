@@ -323,7 +323,7 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 
 **Test reliability, any time:**
 
-- [ ] **PX/8.1** `dsl-kotlin` and `zenwave-lsp`: JS tests fail intermittently in full builds and pass when rerun, which would fail CI with no real error. On 2026-11-01, 8 tests of `dsl-views` `jsNodeTest` hit Mocha's 2000 ms limit in one build and all 91 passed alone. `GenerateMermaidFromZflTest`, `ArcadiaSnapshotTest` and `lsp-core`'s `HierarchyRequestTest` also failed once each; the first was that limit, and the cause of the other two was not read. Raise the limit for the tests that run the parser and ELK, or make them lighter.
+- [x] **PX/8.1** `dsl-kotlin` and `zenwave-lsp`: JS tests fail intermittently in full builds and pass when rerun, which would fail CI with no real error. On 2026-11-01, 8 tests of `dsl-views` `jsNodeTest` hit Mocha's 2000 ms limit in one build and all 91 passed alone. `GenerateMermaidFromZflTest`, `ArcadiaSnapshotTest` and `lsp-core`'s `HierarchyRequestTest` also failed once each; the first was that limit, and the cause of the other two was not read. Raise the limit for the tests that run the parser and ELK, or make them lighter.
 
 **Bugs, first when implementation resumes (owner, 2026-11-03):**
 
@@ -335,11 +335,11 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 
 **Pre-release testing feedback (owner, 2026-11-04):**
 
-- [ ] **PX/9.1** VS Code: the title-bar entries *Open Sequence Diagrams / Model Docs / Scripts Docs to the Side* [MP-R27](../zenwave-platform-vscode/model-preview.md#mp-r27); tables at full width [MP-R28](../zenwave-platform-vscode/model-preview.md#mp-r28); and the *Copy as Markdown* button, which the owner did not see on Model Docs [MP-R26](../zenwave-platform-vscode/model-preview.md#mp-r26).
+- [x] **PX/9.1** VS Code: the title-bar entries *Open Sequence Diagrams / Model Docs / Scripts Docs to the Side* [MP-R27](../zenwave-platform-vscode/model-preview.md#mp-r27); tables at full width [MP-R28](../zenwave-platform-vscode/model-preview.md#mp-r28); and the *Copy as Markdown* button, which the owner did not see on Model Docs [MP-R26](../zenwave-platform-vscode/model-preview.md#mp-r26).
 - [ ] **PX/9.2** EventFlow: calls solid [EF-R15](../flows/eventflow.md#ef-r15), responses as read models [EF-R16](../flows/eventflow.md#ef-r16), start icons [EF-R17](../flows/eventflow.md#ef-r17). `dsl-kotlin` builds the nodes, `zenwave-architectural-vistas` draws them.
 - [ ] **PX/9.3** Model Docs: queries in the services flowchart [MP-R29](../zenwave-platform-vscode/model-preview.md#mp-r29); inputs, outputs and unused entities [MP-R30](../zenwave-platform-vscode/model-preview.md#mp-r30). `dsl-views`, `dsl-docs` and the ZDL Diagrams kind in `zenwave-lsp`.
 - [x] **PX/9.4** Analyse a preview that follows the focused file, for exploring and checking a design, and how it keeps the diagram in view. Analysis first, no build.
-- [ ] **PX/9.5** VS Code: the following preview that remembers each file, option 1 of the analysis, chosen by the owner 2026-11-04. Queued until there is capacity. [MP-R31](../zenwave-platform-vscode/model-preview.md#mp-r31)
+- [x] **PX/9.5** VS Code: the following preview that remembers each file, option 1 of the analysis, chosen by the owner 2026-11-04. Queued until there is capacity. [MP-R31](../zenwave-platform-vscode/model-preview.md#mp-r31)
 
 **7. Navigation:**
 
