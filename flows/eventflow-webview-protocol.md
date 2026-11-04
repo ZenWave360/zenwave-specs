@@ -115,12 +115,13 @@ becoming a blank panel.
 
 | Direction | Message | Payload |
 | --- | --- | --- |
-| host → page | `renderBundle` | `flowGraph`, `serviceGraph`, `viewMode`, `displaySettings` |
+| host → page | `renderBundle` | `flowGraph`, `serviceGraph`, `viewMode`, `displaySettings`; optionally `variants` (`[{ id, title }]`) and `variant` (an id, or `null` for the full diagram), which only the page with a selector reads ([EF-R12](eventflow.md#ef-r12)). A bundle without them leaves the variant state as it was |
 | host → page | `setViewMode` | `viewMode`: `flow` or `services` |
 | host → page | `setDisplaySettings` | `displaySettings`, e.g. `humanizeLabels` |
 | host → page | `highlightNode` | `nodeId`, or `null` to clear |
 | page → host | `webviewReady` | `{ protocol: "zenwave.eventflow.webview", protocolVersion: 1 }` |
 | page → host | `viewModeChanged` | `viewMode`: `flow` or `services`. Only the page with a selector sends it, and only for the user's own change ([EF-R3](eventflow.md#ef-r3)). A host may ignore it, so the version stays 1 |
+| page → host | `variantChanged` | `{ variant }`: the chosen id, or `null` for the full diagram. Only the page with a selector sends it, for the user's own choice; the host answers with a `renderBundle` for that variant ([EF-R12](eventflow.md#ef-r12)). Additive, so the version stays 1 |
 
 Versioning is [decision 0003](../decisions/0003-protocol-version-is-separate-from-package-version.md). What is being proposed on top is in [EventFlow](eventflow.md#ef-r4).
 
