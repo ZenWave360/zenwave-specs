@@ -282,6 +282,19 @@ services are told apart by their service. Commands need a new transformer in `ds
 unchanged, Mermaid fences included, through the host's clipboard, as [MP-R19](#mp-r19) does for one diagram. It needs nothing new from the server. A preview showing a single diagram, or the React
 Flow editor, has no such button. The owner asked for it on 2026-11-03, for ZDL previews first.
 
+
+<a id="mp-r27"></a>
+**MP-R27 (proposed). The "to the side" entries name what they open.** In the ZenWave title-bar menu, the entry that opens the preview beside the text names the view: *Open Sequence Diagrams to the Side* for a `.zfl`, *Open Model Docs to the Side* for a `.zdl`, and *Open Scripts Docs to the Side* for a `.zw`. Each opens the same preview as its plain entry ([MP-R1](#mp-r1)), in the adjacent group. *Open Preview to the Side* stays in the palette and on `Ctrl+K V`. The owner asked for it on 2026-11-04.
+
+<a id="mp-r28"></a>
+**MP-R28 (proposed). Tables in a Markdown page use the full width.** In Model Docs and Scripts Docs every table is `width: 100%`, whatever its content, so the field tables of one page line up. The owner asked for it on 2026-11-04.
+
+<a id="mp-r29"></a>
+**MP-R29 (proposed). A service's Event Storming flowchart shows its queries.** In Model Docs and in ZDL Diagrams' Services, a query (a service method that is a `query`) appears in its service's box as a pale yellow node, next to the commands, with no events. Until now queries were left out. The owner asked for it on 2026-11-04.
+
+<a id="mp-r30"></a>
+**MP-R30 (proposed). Model Docs lists inputs and outputs, and "Other entities" becomes unused entities.** Under `## Aggregates`, after the aggregates, Model Docs has `### Inputs` and `### Outputs`: one class diagram each, with the inputs and the outputs the module declares and the entities and enums they reach. The section that was *Other entities* becomes `### Unused entities and enums`, with the entities and enums that no aggregate, input, output, event or service method reaches; it is left out when there are none. ZDL Diagrams renames its *Other entities* kind to *Unused entities and enums*, with the same contents. The owner asked for it on 2026-11-04.
+
 ## Not in scope
 
 Scroll sync with the text, exporting to PNG or SVG, previewing an unopened file from the

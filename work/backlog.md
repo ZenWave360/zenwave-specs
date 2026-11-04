@@ -331,6 +331,15 @@ Not built, and to start only after the phase 3 reviews of `feature/preview-event
 - [x] **BUG/3** ZDL parser: `policies` are stored in a map keyed by policy name (`ZdlListenerImpl`, `appendToWithMap`), so two policies with the same name under different aggregates collide and only one survives. Found while building PX/3.4 (MP-R23), 2026-11-03.
 - [x] **BUG/1** `dsl-views` ZFL Mermaid flowchart, reported 2026-11-03: start events connect straight to the action instead of to the policy that handles them. The same diagram also defines each start node twice (the actor label is lost), draws action-to-event edges both through the outcome node and directly, leaves the `policy-violated` and `slot-full` responses and the `on … response …` handlers unconnected, and writes the policy's triggers with no space after the comma. Report, the five defects and the complete source that reproduces them: [bug 1](bugs/bug-1-zfl-flowchart-starts-skip-policy.md). Use that source as a test fixture. Defect 4 depends on BUG/2.
 
+- [ ] **BUG/4** `dsl-views` ZFL Mermaid flowchart, reported 2026-11-04 on `booking-lifecycle-flow.zfl`: a policy that handles a `start` (`when BookingReminderDue do sendBookingReminder`) has no edge to the command it runs; only policies on emitted events get one. Left by the BUG/1 fix.
+
+**Pre-release testing feedback (owner, 2026-11-04):**
+
+- [ ] **PX/9.1** VS Code: the title-bar entries *Open Sequence Diagrams / Model Docs / Scripts Docs to the Side* [MP-R27](../zenwave-platform-vscode/model-preview.md#mp-r27); tables at full width [MP-R28](../zenwave-platform-vscode/model-preview.md#mp-r28); and the *Copy as Markdown* button, which the owner did not see on Model Docs [MP-R26](../zenwave-platform-vscode/model-preview.md#mp-r26).
+- [ ] **PX/9.2** EventFlow: calls solid [EF-R15](../flows/eventflow.md#ef-r15), responses as read models [EF-R16](../flows/eventflow.md#ef-r16), start icons [EF-R17](../flows/eventflow.md#ef-r17). `dsl-kotlin` builds the nodes, `zenwave-architectural-vistas` draws them.
+- [ ] **PX/9.3** Model Docs: queries in the services flowchart [MP-R29](../zenwave-platform-vscode/model-preview.md#mp-r29); inputs, outputs and unused entities [MP-R30](../zenwave-platform-vscode/model-preview.md#mp-r30). `dsl-views`, `dsl-docs` and the ZDL Diagrams kind in `zenwave-lsp`.
+- [ ] **PX/9.4** Analyse a preview that follows the focused file, for exploring and checking a design, and how it keeps the diagram in view. Analysis first, no build.
+
 **7. Navigation:**
 
 - [ ] **PX/7.1** Hold the interview from the [navigation brief](../roadmap/navigation-brief.md), and turn its answers into rules in [navigation](../zenwave-lsp/navigation-spec.md).

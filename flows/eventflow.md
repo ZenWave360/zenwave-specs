@@ -139,6 +139,15 @@ in the workspace, so it can be committed. Reopening the diagram uses that file i
 The file holds, by node id: `{ "schema": "zfl.eventflow.positions@1", "flow": { "command:ReserveCopy": { "x": 120, "y": 40 } } }`, with sorted keys and whole numbers, so diffs stay small. A file applies when it parses, its schema is known and every node of the
 current diagram has a position; ids it has beyond those are ignored. The rename problem of [EF-Q8](#ef-q8) therefore falls back to automatic layout, not to a wrong picture. The host reads and writes it, so this works on every host with a writable workspace, and the server applies it, so both IDEs draw the same picture.
 
+<a id="ef-r15"></a>
+**EF-R15 (proposed). A call is a solid line.** The edge from a policy to the command it calls (`CALL`) is drawn solid, in its own colour; dashes stay for the edges that are not a direct call (outcome handlers, triggers, conditions, errors). The owner asked for it on 2026-11-04, after testing the pre-release build.
+
+<a id="ef-r16"></a>
+**EF-R16 (proposed). A response is a read model, not an event.** What a command answers with `response`, or the response half of `emits response`, is drawn as a square green node, the Event Storming read model, with a new node type `READ_MODEL`. It is never drawn as an orange event. An `emits response Y` draws both: the event `Y` and the read model `Y`. The server builds the node ([decision 0001](../decisions/0001-layout-stays-on-the-server.md)), and a page that does not know `READ_MODEL` draws it as a plain node rather than failing ([EF-R2](#ef-r2)).
+
+<a id="ef-r17"></a>
+**EF-R17 (proposed). A start shows who or what starts the flow.** The `START` node carries `startKind`: `timer` when the `start` has `@time`, else `actor` when it has `@actor`, else `system`. The page draws an icon for each kind (a person, a clock, a gear or server) next to the label, and the actor's name when there is one, so `@actor(Scheduler) @time("…") start BookingReminderDue` reads as a timer started by `Scheduler`. A missing `startKind` is drawn as today.
+
 ### Acting on a node
 
 <a id="ef-r4"></a>
