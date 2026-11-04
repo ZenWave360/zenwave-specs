@@ -1,6 +1,6 @@
 # A preview that follows the focused file (PX/9.4, analysis)
 
-**Status:** analysis for the owner, 2026-11-04. Nothing here is a rule yet.
+**Status:** analysis, 2026-11-04. The owner chose option 1, now [MP-R31](../zenwave-platform-vscode/model-preview.md#mp-r31); options 2 and 3 are not rules.
 
 ## What was asked
 
