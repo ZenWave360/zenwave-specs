@@ -228,9 +228,9 @@ The publishing tools come from `publish-tools/`, a private package with a lockfi
 - *A feature branch.* Given a workflow on a feature branch that names `vscode-prerelease`, when it runs, then GitHub does not give it the environment.
 
 <a id="r-r14"></a>
-### R-R14 (proposed). The next stable version is computed from the commits since the last stable tag
+### R-R14 (exists). The next stable version is computed from the commits since the last stable tag
 
-*State: Proposed by the owner, 2026-11-05. [Decision 0025](../decisions/0025-stable-versions-come-from-commits.md) says why. Nothing is built.*
+*State: Proposed by the owner, 2026-11-05. [Decision 0025](../decisions/0025-stable-versions-come-from-commits.md) says why. Built 2026-11-05 as `nextStableVersion` in `scripts/release-rules.mjs` and `node scripts/release.mjs plan [--json]`; [R-R15](#r-r15), which runs it in a workflow, is not built yet.*
 
 A script SHALL compute the next stable version as a pure function of the stable base and the commit messages. The base is the highest stable-shaped `v*` tag ([R-R8](#r-r8)); before the first stable it is `0.0.0`. The commits are those reachable from the head of `main` and not from that tag. Merge commits whose message is not conventional are ignored.
 
@@ -242,7 +242,7 @@ A script SHALL compute the next stable version as a pure function of the stable 
 | else a `fix` or `fix(scope)` | patch |
 | else only other types (`chore`, `docs`, `test`, `refactor`, `perf`, `ci`, `build`, `style`) | none: nothing is released |
 
-`Release:` is a footer line of a commit message, as `Release-As` is in release-please. When several are in the range the highest result wins. An explicit version SHALL be above the highest stable tag, and a value that is neither `major` nor a version SHALL fail, naming the commit. A trailer forces a release even when every other commit is `chore`. `!` after a type and a `BREAKING CHANGE` footer have no effect: a major here is a milestone chosen by the owner, not a statement about an API. The same function is used by `release.mjs` for `plan`, so the workflow and the tests cannot disagree.
+`Release:` is a footer line of a commit message, as `Release-As` is in release-please: it counts only in the last paragraph of the message, when every line of that paragraph is a git trailer, so an example in the body never releases. Types are read case-insensitively, as Conventional Commits says. `plan` refuses a shallow clone, because missing commits or tags would give a wrong version that looks right. When several are in the range the highest result wins. An explicit version SHALL be above the highest stable tag, and a value that is neither `major` nor a version SHALL fail, naming the commit. A trailer forces a release even when every other commit is `chore`. `!` after a type and a `BREAKING CHANGE` footer have no effect: a major here is a milestone chosen by the owner, not a statement about an API. The same function is used by `release.mjs` for `plan`, so the workflow and the tests cannot disagree.
 
 **Examples**
 
