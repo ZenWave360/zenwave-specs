@@ -117,7 +117,7 @@ becoming a blank panel.
 | --- | --- | --- |
 | host → page | `renderBundle` | `flowGraph`, `serviceGraph`, `viewMode`, `displaySettings`; optionally `variants` (`[{ id, title }]`) and `variant` (an id, or `null` for the full diagram), which only the page with a selector reads ([EF-R12](eventflow.md#ef-r12)). A bundle without them leaves the variant state as it was |
 | host → page | `setViewMode` | `viewMode`: `flow` or `services` |
-| host → page | `setDisplaySettings` | `displaySettings`, e.g. `humanizeLabels` |
+| host → page | `setDisplaySettings` | `displaySettings`, e.g. `humanizeLabels` and `lanes`. The page merges the keys present: a message without `lanes` keeps the current choice |
 | host → page | `highlightNode` | `nodeId`, or `null` to clear |
 | page → host | `webviewReady` | `{ protocol: "zenwave.eventflow.webview", protocolVersion: 1 }` |
 | page → host | `viewModeChanged` | `viewMode`: `flow` or `services`. Only the page with a selector sends it, and only for the user's own change ([EF-R3](eventflow.md#ef-r3)). A host may ignore it, so the version stays 1 |
@@ -125,6 +125,8 @@ becoming a blank panel.
 | page → host | `labelsChanged` | `{ humanize: boolean }`, for the user's own *Humanize labels* toggle. The host keeps the choice per diagram and applies it through the existing `displaySettings.humanizeLabels` path ([EF-R22](eventflow.md#ef-r22)). Additive, so the version stays 1 |
 | host → page | `renderBundle` field `savedPositions` | Optional, full diagram only: `{ exists, applied, missing? }`. `exists` says a positions file is beside the model, `applied` whether it was used, `missing` the node ids without a position. The page shows a note when `exists && !applied` ([EF-R14](eventflow.md#ef-r14)) |
 | host → page | `savePositionsFailed` | `{ message }`, after a `savePositions` the host could not write. The toolbar page shows *Positions not saved: message* in its status bar and offers Save positions again, until the next save or `renderBundle` ([EF-R22](eventflow.md#ef-r22)). The minimal page ignores it. Additive, so the version stays 1 |
+| host → page | `renderBundle` fields `displaySettings.lanes`, `lanesSupported` | `lanes` is `none`, `systems` or `services`, the diagram's lanes choice ([EF-R24](eventflow.md#ef-r24)); `lanesSupported` is `true` when the server advertises `experimental.flowLanes`. The page shows its *Lanes* control only when `lanesSupported` is `true`, so a host that never sends it keeps today's page. With lanes, `flowGraph.lanes` holds the bands and each node its `lane`. Additive, so the version stays 1 |
+| page → host | `lanesChanged` | `{ lanes: "none" \| "systems" \| "services" }`, for the user's own choice, never for a value the host sent. The host keeps it per diagram, as `labelsChanged`, and answers with a `renderBundle` laid out in those lanes. With lanes the host sends no saved positions and refuses `savePositions` with `savePositionsFailed` ([EF-R24](eventflow.md#ef-r24)). Additive, so the version stays 1 |
 | page → host | `savePositions` | `{ positions }`: node id to `{ x, y }`, whole numbers, every node of the full diagram as the page shows it. Only the page with a selector sends it, from its *Save positions* control, which appears once the user moved a node in the full diagram. Additive, so the version stays 1 |
 
 Versioning is [decision 0003](../decisions/0003-protocol-version-is-separate-from-package-version.md). What is being proposed on top is in [EventFlow](eventflow.md#ef-r4).
