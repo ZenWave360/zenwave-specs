@@ -2,7 +2,7 @@
 
 <a id="languages"></a>
 
-**Status:** exists, 2026-10-30. Checked against `packages/extension/package.json`.
+**Status:** exists, 2026-10-30. Checked against `packages/extension/package.json`, now `package.json` at the root.
 
 ## Purpose
 

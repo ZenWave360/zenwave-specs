@@ -7,7 +7,7 @@ ZDL, ZFL and the architecture manifest, on desktop and in the browser. For the
 platform around it, read [the stack](../architecture/stack.md).
 
 **Status:** 2026-10-30. Structure checked against
-`packages/extension/src`. Merges the earlier project context and architecture notes.
+`src/` (`packages/extension/src` before REL/14). Merges the earlier project context and architecture notes.
 What each feature does is in its own document, listed [below](#vscode-capabilities).
 
 It supersedes [`zdl-vscode`](https://github.com/ZenWave360/zdl-vscode) and is the sibling
@@ -44,9 +44,7 @@ src/eventflow/               EventFlow custom editor: hosts the vistas page, rel
 Feature code reaches the server only through the `LanguageServerApi` that `activate`
 returns. A request never throws and never hangs.
 
-Two packages live in the repository: `packages/extension` and
-`packages/preview-renderer`, which is an empty placeholder whose future is
-[backlog](../work/backlog.md) item 005/1.4.
+The repository is the extension itself: `package.json`, `src/`, `webview/`, `test/` and `scripts/` sit at its root, with no npm workspaces (flattened 2026-11-05, REL/14). The `packages/preview-renderer` placeholder of [backlog](../work/backlog.md) item 005/1.4 is no longer in the repository.
 
 ## Rules that shape the code
 
@@ -136,5 +134,5 @@ upstream, including the ones in this manual.
 
 ## Sources
 
-`packages/extension/src`, `packages/extension/package.json`; the earlier
+`src/`, `package.json`; the earlier
 `project.md`, `architecture.md` and the designs of changes 001 to 009, all in git history.

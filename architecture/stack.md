@@ -108,6 +108,6 @@ The end-to-end version, with who owns each seam, is [EventFlow](../flows/eventfl
 ## Sources
 
 Read on 2026-10-30: `settings.gradle.kts` and `build.gradle.kts` of the Kotlin
-repositories; `packages/extension/package.json` and `src/host/capabilities.ts` of the
+repositories; `package.json` (`packages/extension/package.json` before REL/14) and `src/host/capabilities.ts` of the
 VS Code client; `lsp-js/README.md`; `apps/` and `packages/` of the vistas. The IntelliJ
 row comes from the earlier verified notes in the VS Code design and was not re-read.
