@@ -60,7 +60,7 @@ when RequestBooking, RequestAssistedBooking do bookSlot {
 }
 ```
 
-### ZFL-R5 (proposed). A policy can carry a title, an actor or a timer
+### ZFL-R5 (exists). A policy can carry a title, an actor or a timer
 
 A `when X do Y` takes the annotations that `start` takes, read the same way:
 
