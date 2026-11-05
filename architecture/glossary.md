@@ -51,6 +51,10 @@ defines the term properly.
 | --- | --- | --- |
 | **Vista** | A projection of the graph as a diagram. Layout and grouping stay out of the graph | [world model §6.3](world-model.md#wm-6-3) |
 | **EventFlow** | The interactive React Flow diagram of a ZFL flow, with its Service Map | [EventFlow](../flows/eventflow.md) |
+| **Edit projection** | What KMP returns for one revision of a ZFL document for the visual editor: flows, declarations, occurrences, relationship origins and allowed operations | [visual editing](../flows/zfl-visual-editing.md#zve-r3) |
+| **Intent** | One user action on the visual editor's canvas, sent by identity with the revision it was made against | [visual editing](../flows/zfl-visual-editing.md#zve-r4) |
+| **Operation** | KMP's validated answer to an intent: text edits, diagnostics and identity mappings, or a rejection | [visual editing](../flows/zfl-visual-editing.md#zve-r16) |
+| **Revision** | One state of an open document, including unsaved edits; intents and operations name the one they belong to | [visual editing](../flows/zfl-visual-editing.md#zve-r4) |
 | **View model** | The already positioned data a renderer draws: `FlowViewModel`, `ServiceViewModel` | [decision 0001](../decisions/0001-layout-stays-on-the-server.md) |
 | **Preview** | The read-only Mermaid or Markdown rendering of a model. Not EventFlow | [model preview](../zenwave-platform-vscode/model-preview.md) |
 | **Page** | The built webview that hosts EventFlow, embedded by IDEs | [webview protocol](../flows/eventflow-webview-protocol.md) |

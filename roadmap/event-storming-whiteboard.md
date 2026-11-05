@@ -11,12 +11,16 @@ canvas actions produce validated text edits. Behaviour is specified in
 valid models only and a standalone component on this date. This replaces the
 2026-10-18 free-form JSON board and one-way export brief, retained in git history.
 [Decision 0021](../decisions/0021-zfl-text-owns-visual-editing.md) supersedes the
-export-only consequence of 0019 while retaining vistas UI ownership.
+export-only consequence of 0019 while retaining vistas UI ownership. Amended
+2026-11-05 after the owner reviewed an outside architecture brief: starts, property
+edits, the intent queue and body-preserving deletion are added, and the ZFL language
+changes of [decision 0026](../decisions/0026-deleting-a-trigger-keeps-the-body.md)
+come first in ES-P2. The layered build order stays; no vertical slice precedes it.
 
 ## Scope
 
-Edit one selected flow in a ZFL document while preserving other flows and
-unsupported constructs. Desktop and web VS Code use the same component and KMP
+Edit one selected, existing flow in a ZFL document while preserving other flows and
+unsupported constructs. Creating a flow from the canvas is outside v1. Desktop and web VS Code use the same component and KMP
 semantics as the browser harness. React Flow is interaction, not saved semantics.
 
 Free-form notes, hot spots, aggregates, read models, collaboration, ZDL mutation,
@@ -53,15 +57,23 @@ operations. Resolve targeting problems before UI work.
 
 **Owners:** `dsl-kotlin`, `zenwave-specs`.
 
-Add command creation with required service selection, event creation through an
-emission, atomic policy creation, connection changes, scoped renames and deletion
-with reference checks. Define cascades and attached-comment deletion. Return
-capabilities and invalid/stale/unsupported results. Preserve read-only consumers.
+First make the language changes of [decision 0026](../decisions/0026-deleting-a-trigger-keeps-the-body.md):
+the never-triggered action warning, and `completed` and the service as warnings
+([ZFL-R6 to ZFL-R8](../dsl-kotlin/zfl-language.md#zfl-r6)). Then add command
+creation without a service, event creation through an emission, atomic policy
+creation and trigger reuse ([ZVE-R21](../flows/zfl-visual-editing.md#zve-r21)),
+start creation with its policy and command ([ZVE-R22](../flows/zfl-visual-editing.md#zve-r22)),
+connection changes, scoped renames, property edits
+([ZVE-R23](../flows/zfl-visual-editing.md#zve-r23)), and deletion that keeps bodies
+and reports its impact ([ZVE-R19](../flows/zfl-visual-editing.md#zve-r19),
+[ZVE-R20](../flows/zfl-visual-editing.md#zve-r20)). Define attached-comment deletion.
+Return capabilities and the result kinds of
+[ZVE-R16](../flows/zfl-visual-editing.md#zve-r16). Preserve read-only consumers.
 
 **Exit:** supported gestures and rejection paths have operation tests. Publish
 versioned projection and operation examples, source range encoding, revision and
 idempotency rules. Verify JVM/JS serialization parity and browser imports without
-Node. Confirm ZVE-Q2 through ZVE-Q4 or retain their proposed status explicitly.
+Node. ZVE-Q2 to ZVE-Q4 were resolved by the owner on 2026-11-05.
 
 <a id="es-p3"></a>
 ### ES-P3. Build the standalone React editor
@@ -73,9 +85,16 @@ diagnostics. Its adapter calls KMP JS and applies revision-checked edits. Reuse
 existing node components/styles; extract shared code only when both consumers need
 it. Declare the React Flow version used; migrating the library is not a prerequisite.
 
-Add palette/forms, explicit connection intents, deletion impact, selection,
-session placement and Arrange. Show policies explicitly in the editing projection.
-Invalid text leaves a visibly stale, non-editable last-valid diagram.
+Lay the editor out in three columns: palette, canvas, details panel
+([ZVE-R24](../flows/zfl-visual-editing.md#zve-r24)). Add explicit connection
+intents, deletion impact, property editing, selection, session placement and
+Arrange. Queue intents and draw pending work
+([ZVE-R14](../flows/zfl-visual-editing.md#zve-r14),
+[ZVE-R18](../flows/zfl-visual-editing.md#zve-r18)), commit text on Enter or blur
+([ZVE-R17](../flows/zfl-visual-editing.md#zve-r17)) and keep rejected input
+([ZVE-R16](../flows/zfl-visual-editing.md#zve-r16)). Show policies explicitly in the
+editing projection, except a start's policy, which is its edge. Invalid text leaves a
+visibly stale, non-editable last-valid diagram.
 
 **Prerequisites available to this consumer:**
 
@@ -85,6 +104,7 @@ Invalid text leaves a visibly stale, non-editable last-valid diagram.
 **Exit:** in a real browser create a command and event, create/reconnect a policy,
 rename, delete, undo/redo and edit text. Rejections and delayed responses never
 overwrite newer text. Existing manually placed nodes do not move after an edit.
+Gestures made while an intent is in flight are queued, not lost.
 
 <a id="es-p4"></a>
 ### ES-P4. Add LSP and webview transport
@@ -95,7 +115,8 @@ Expose projection and edit preparation against current unsaved snapshots.
 Advertise capabilities. Document wire names, examples, stale versions, page
 intents and host acknowledgements in the LSP and webview contracts. The server
 prepares edits; the host applies them. Do not apply through both a response and a
-server callback.
+server callback. A stale intent is prepared again once when its targets still resolve
+([ZVE-R15](../flows/zfl-visual-editing.md#zve-r15)).
 
 **Prerequisite available to this consumer:**
 
@@ -115,6 +136,9 @@ Host the component as an optional custom text editor over `.zfl`. Apply each
 accepted operation as one guarded document edit. Serialize mutation handling to
 avoid a gap between revision comparison and application. Refresh from document
 changes. Integrate native undo/redo, save, switching views and multiple open views.
+Undo and redo pressed inside the webview must reach the document's undo
+([ZVE-R11](../flows/zfl-visual-editing.md#zve-r11)); verify it on desktop and web
+rather than assume it.
 
 **Prerequisites available to this consumer:**
 
@@ -133,7 +157,8 @@ No Node API enters shared or browser code.
 
 Alternate text and canvas editing on representative fixtures and a real process.
 Inspect diffs for unrelated changes. Test the browser harness and both VS Code
-hosts. Record package versions, actual results and unsupported operations. Run
+hosts. Record package versions, actual results, unsupported operations and the
+measured intent-to-projection times ([ZVE-R18](../flows/zfl-visual-editing.md#zve-r18)). Run
 each repository's required checks and the spec reference checker. Flip rules to
 *exists* only for demonstrated behaviour; update backlog and platform status.
 
@@ -145,8 +170,9 @@ Cross-reopen manual layout is assessed against the answer to ZVE-Q4.
 
 Question IDs remain permanent. Workshop/export assumptions are superseded.
 
-<a id="es-q1"></a>**ES-Q1.** Palette/detail-panel layout remains open; decide in
-ES-P3 after testing creation workflows.
+<a id="es-q1"></a>**ES-Q1.** Palette/detail-panel layout. Answered by the owner,
+2026-11-05: three columns, palette left, canvas centre, details of the element in
+focus right ([ZVE-R24](../flows/zfl-visual-editing.md#zve-r24)).
 
 <a id="es-q2"></a>**ES-Q2.** Answered by
 [ZVE-R6](../flows/zfl-visual-editing.md#zve-r6): gestures submit explicit semantic
@@ -155,7 +181,8 @@ operations, including trigger grouping.
 <a id="es-q3"></a>**ES-Q3.** Hot-spot export is outside the revised v1.
 
 <a id="es-q4"></a>**ES-Q4.** Use existing ZFL documents; select one flow without
-changing unrelated flows.
+changing unrelated flows. Flows are created in the text
+([ZVE-R25](../flows/zfl-visual-editing.md#zve-r25)).
 
 <a id="es-q5"></a>**ES-Q5.** The semantic file is `.zfl`; no board JSON extension
 is needed. Durable placement is [ZVE-Q4](../flows/zfl-visual-editing.md#zve-q4).

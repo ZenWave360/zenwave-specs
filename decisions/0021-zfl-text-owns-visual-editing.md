@@ -32,6 +32,8 @@ validated edits over original text.
 - Appearance identity is owner-confirmed: one symbol per flow with explicit origin
   selection when ambiguous, policies occurrence-specific
   ([ZVE-R13](../flows/zfl-visual-editing.md#zve-r13)). Forms, invalid-text display
-  and durable layout remain questions; their proposed defaults are not owner-confirmed.
+  and durable layout were settled by the owner on 2026-11-05 (ZVE-R9, ZVE-R10,
+  ZVE-R23, ZVE-R24), and deletion by [0026](0026-deleting-a-trigger-keeps-the-body.md),
+  which also makes a missing `completed` outcome and a missing service warnings.
 - Identifiers stay ASCII and the ZFL and ZDL grammars do not change for them, by owner
   decision of 2026-10-31 ([ZVE-R5](../flows/zfl-visual-editing.md#zve-r5)).

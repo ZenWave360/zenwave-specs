@@ -2,7 +2,7 @@
 
 <a id="zfl-language"></a>
 
-**Status:** 2026-11-03: 4 proposed. Written from the owner's rule for [BUG/2](../work/bugs/bug-2-zfl-on-ends-the-command.md).
+**Status:** 2026-11-05: 7 proposed, 1 exists. Written from the owner's rule for [BUG/2](../work/bugs/bug-2-zfl-on-ends-the-command.md).
 
 ## Purpose
 
@@ -60,6 +60,7 @@ when RequestBooking, RequestAssistedBooking do bookSlot {
 }
 ```
 
+<a id="zfl-r5"></a>
 ### ZFL-R5 (exists). A policy can carry a title, an actor or a timer
 
 A `when X do Y` takes the annotations that `start` takes, read the same way:
@@ -79,5 +80,39 @@ A policy has at most one of `@actor` and `@timer`/`@time`, and each annotation a
 when PendingGuestCallRecorded do recordGuestCall {
     service Bookings.SlotBlockService
     emits GuestCallCompleted
+}
+```
+
+<a id="zfl-r6"></a>
+### ZFL-R6 (proposed). An action nothing triggers or calls is a warning
+
+The analyser reports a warning, not an error, for a `do Y { … }` that no `when … do Y` triggers and no `call Y` or `on … call Y` calls, in its flow: "Action 'Y' is never triggered nor called." Such an action is valid. The visual editor leaves one behind when a policy loses its last trigger ([ZVE-R19](../flows/zfl-visual-editing.md#zve-r19)), and the warning is how the user sees it. Decided in [0026](../decisions/0026-deleting-a-trigger-keeps-the-body.md).
+
+**Example**
+
+```zfl
+// warning: Action 'recordGuestCall' is never triggered nor called.
+do recordGuestCall {
+    service Bookings.SlotBlockService
+    emits GuestCallCompleted
+}
+```
+
+<a id="zfl-r7"></a>
+### ZFL-R7 (proposed). A flow without a `completed` outcome is a warning
+
+A flow with no `end` block, or with an `end` block that has no `completed` outcome, is valid, and the analyser reports a warning where it reported an error. An outcome that names an unknown event is still an error. `flow Booking { }` is therefore a valid, empty flow. Decided in [0026](../decisions/0026-deleting-a-trigger-keeps-the-body.md).
+
+<a id="zfl-r8"></a>
+### ZFL-R8 (proposed). A command without a service is a warning
+
+A `when … do Y { … }` or `do Y { … }` without a `service` line is valid, and the analyser reports a warning where it reported an error. Diagrams draw such a command by its system or its name, as they already do. The owner holds that the service was always meant to be optional. Decided in [0026](../decisions/0026-deleting-a-trigger-keeps-the-body.md).
+
+**Example**
+
+```zfl
+// warning: Action 'bookSlot' does not declare a service.
+when RequestBooking do bookSlot {
+    emits SlotBooked
 }
 ```
