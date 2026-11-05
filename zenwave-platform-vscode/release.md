@@ -2,7 +2,7 @@
 
 <a id="release"></a>
 
-**Status:** 2026-11-05: 9 partial, 4 exists, 2 proposed ([R-R14](#r-r14), [R-R15](#r-r15)). Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
+**Status:** 2026-11-05: 9 partial, 6 exists. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
 
 ## Purpose
 
@@ -230,7 +230,7 @@ The publishing tools come from `publish-tools/`, a private package with a lockfi
 <a id="r-r14"></a>
 ### R-R14 (exists). The next stable version is computed from the commits since the last stable tag
 
-*State: Proposed by the owner, 2026-11-05. [Decision 0025](../decisions/0025-stable-versions-come-from-commits.md) says why. Built 2026-11-05 as `nextStableVersion` in `scripts/release-rules.mjs` and `node scripts/release.mjs plan [--json]`; [R-R15](#r-r15), which runs it in a workflow, is not built yet.*
+*State: Proposed by the owner, 2026-11-05. [Decision 0025](../decisions/0025-stable-versions-come-from-commits.md) says why. Built 2026-11-05 as `nextStableVersion` in `scripts/release-rules.mjs` and `node scripts/release.mjs plan [--json]`; [R-R15](#r-r15) runs it in `release-on-main.yml`.*
 
 A script SHALL compute the next stable version as a pure function of the stable base and the commit messages. The base is the highest stable-shaped `v*` tag ([R-R8](#r-r8)); before the first stable it is `0.0.0`. The commits are those reachable from the head of `main` and not from that tag. Merge commits whose message is not conventional are ignored.
 
@@ -255,17 +255,17 @@ A script SHALL compute the next stable version as a pure function of the stable 
 - *A mistyped trailer.* Given `Release: mayor`, then it fails and names the commit.
 
 <a id="r-r15"></a>
-### R-R15 (proposed). A merge to main with something to release prepares, tags, publishes and syncs
+### R-R15 (exists). A merge to main with something to release prepares, tags, publishes and syncs
 
-*State: Proposed by the owner, 2026-11-05. Nothing is built. It replaces the maintainer's manual `prepare`, commit and tag of [R-R11](#r-r11) as the usual path; a tag pushed by hand still starts the stable workflow.*
+*State: Proposed by the owner, 2026-11-05. Built 2026-11-05 as `release-on-main.yml` (plan, prepare, dispatch) and the `release` and `sync` jobs of `release.yml`, reviewed three times by Codex; not yet run on GitHub. What only a hosted run can show: `gh workflow run` with the workflow's token, the bot merging pull requests to `main` and `develop`, the `vscode-release` environment (not created yet) and its secrets, refused approval and re-runs, and the trusted publisher of [R-Q2](#r-q2). `release.yml` with `workflow_dispatch` must be on `main` before the first tag it publishes, because a dispatch on a tag runs the workflow of the tagged commit. It replaces the maintainer's manual `prepare`, commit and tag of [R-R11](#r-r11) as the usual path; a tag pushed by hand still starts the stable workflow.*
 
-A push to `main` SHALL run one workflow, as [`release-gradle.yml`](https://github.com/ZenWave360/release-workflows) does, in this order:
+A push to `main` SHALL run one workflow, as [`release-gradle.yml`](https://github.com/ZenWave360/release-workflows) does, which hands over to the stable workflow on the tag, in this order:
 
-1. **plan**, with no credential: [R-R14](#r-r14) gives the version, or none and the run ends green. The notes check of [R-R11](#r-r11) runs here on `release-notes/next.md`, so a missing, empty or draft note fails before anything is changed.
-2. **prepare**, the only job with `contents: write` and `pull-requests: write` before publication: from the validated `main` commit it creates the branch `release/X.Y.Z`, runs `release.mjs prepare X.Y.Z`, and commits `chore(release): X.Y.Z`. Only the manifest, the lockfile and the release notes files may change. It opens a pull request to `main` and merges it with a merge commit at once. A pull request needs no bypass of the `main` ruleset, which a direct push would. It waits until the merge is confirmed, fails on a conflict, and only then pushes the tag `vX.Y.Z` on the release commit.
-3. **publish**: the stable workflow of [R-R11](#r-r11), run as a job of this workflow with the tag as input, with its checks, its `vscode-release` reviewer approval and the credential isolation of [R-R13](#r-r13). Tags and releases made with the workflow's own token start no other workflow, so this chain is what starts it.
-4. **release**: once the registries were tried, the GitHub release for the tag is created with the notes file as its text, then the line with the commit and the registry outcomes of [R-R10](#r-r10).
-5. **sync**: the release commit is merged into `develop` through a pull request titled `chore: sync version`, so `develop` carries the new `major.minor` ([R-R8](#r-r8)).
+1. **plan**, with no credential: it plans from the current head of `main`, not from the commit that started the run, and stops while a stable workflow run on a tag is queued, waiting or running, so two releases never overlap. A release that ended failed or refused does not block: it is abandoned once a newer release starts, whose version is computed above its tag. [R-R14](#r-r14) gives the version, or none and the run ends green. The notes check of [R-R11](#r-r11) runs here on `release-notes/next.md`, so a missing, empty or draft note fails before anything is changed.
+2. **prepare**, the only job with `contents: write` and `pull-requests: write` before publication: from the validated `main` commit it creates the branch `release/X.Y.Z`, runs `release.mjs prepare X.Y.Z`, and commits `chore(release): X.Y.Z` with a `Release-Run` footer naming the run, so a re-run of the same run resumes its branch and pull request and any other run fails on them. Only the manifest, the lockfile and the release notes files may change. It opens a pull request to `main` and merges it with a merge commit at once. A pull request needs no bypass of the `main` ruleset, which a direct push would. It waits until the merge is confirmed, fails on a conflict, and only then pushes the tag `vX.Y.Z` on the release commit.
+3. **publish**: the stable workflow of [R-R11](#r-r11) is dispatched on the tag, with its checks, its `vscode-release` reviewer approval and the credential isolation of [R-R13](#r-r13). A tag pushed with the workflow's own token starts no workflow, but a dispatch does; a reusable call would run with the ref of `main`, which the tag-only environment refuses. The workflow on `main` ends once the dispatch is sent; a dispatch already made for the tag is not repeated.
+4. **release**, a job of the stable workflow, so a tag pushed by hand gets it too: once the registries were tried, the GitHub release for the tag is created with the notes file as its text, then the line with the commit and the registry outcomes of [R-R10](#r-r10).
+5. **sync**, also in the stable workflow: the release commit is merged into `develop` through a pull request titled `chore: sync version`, so `develop` carries the new `major.minor` ([R-R8](#r-r8)). An open sync pull request is reused, and its own head is checked for conflicts. Then the pre-release workflow is dispatched on `develop`, because the token's merge starts none.
 
 Runs are serialized and never cancelled. A head commit whose message starts with `chore(release)` or `chore: sync version` does nothing. `workflow_dispatch` takes `dry_run`, which prints the version and the notes check and stops after plan. Failed jobs of a run can be run again ([R-R12](#r-r12)); a new run for a version whose `release/X.Y.Z` branch exists fails and says so.
 
