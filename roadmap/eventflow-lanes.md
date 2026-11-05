@@ -111,8 +111,8 @@ This is a static analysis of the checked-out sources. No files were modified; no
 
 8. **Owner decisions, 2026-11-05**
 
-   - **Bands.** Full-width horizontal bands. The order is the order of the `systems {}` block: systems as declared, and in Services lanes the services of each system as declared. A system or service used but not declared, and a command with no service ([ZFL-R8](../dsl-kotlin/zfl-language.md#zfl-r8) makes that a warning), go after the declared ones in order of first appearance; commands with no service share one last band.
+   - **Bands.** Full-width horizontal bands, in the order in which each system or service first appears in the flow's text (the owner preferred it to the order of the `systems {}` block). Commands with no service ([ZFL-R8](../dsl-kotlin/zfl-language.md#zfl-r8) makes that a warning) share one last band.
    - **Membership.** A policy, and a start through the policy it triggers, takes the band of the command it calls. A policy that calls nothing, or a start whose policies call commands in different bands, takes the band of the first command in text order. This is presentation only: it never changes what the model says owns them.
    - **Service map.** Kept as it is, behind the existing palette commands and `defaultView`. Lanes are a separate choice on the flow view, so the `services` view mode and `viewModeChanged` keep their meaning and the protocol stays at v1. The owner had no preference; this is the choice with the least work, and removing the service map later is still possible.
-   - **Positions.** The positions file holds one map per lanes value (`none`, `systems`, `services`) under a new schema `zfl.eventflow.positions@2`; saving one mode keeps the others. No compatibility is needed yet: an `@1` file is ignored and the flow is laid out automatically, and the next save writes `@2`.
+   - **Positions.** Lanes do not use saved positions for now: with Systems or Services the layout is always automatic and saving is off. No lanes keeps the `@1` positions file unchanged.
    - **Services now.** `lanes: none | systems | services` ships at once, not Systems first.
