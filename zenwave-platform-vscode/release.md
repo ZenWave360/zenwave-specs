@@ -2,7 +2,7 @@
 
 <a id="release"></a>
 
-**Status:** 2026-11-02: 9 partial, 4 exists. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
+**Status:** 2026-11-05: 9 partial, 4 exists, 2 proposed ([R-R14](#r-r14), [R-R15](#r-r15)). Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
 
 ## Purpose
 
@@ -108,8 +108,8 @@ Asked for by the owner and built 2026-11-01. [Decision 0023](../decisions/0023-p
 
 | | Pre-release | Stable |
 |---|---|---|
-| Starts on | a push to `develop` | a tag `vX.Y.Z` on a commit of `main` |
-| Version | `X.Y.<run number>` of the last release, stamped by CI, not committed | the version committed in the manifest on `main` |
+| Starts on | a push to `develop` | a push to `main` with something to release ([R-R15](#r-r15)), or a tag `vX.Y.Z` on a commit of `main` |
+| Version | `X.Y.<run number>` of the last release, stamped by CI, not committed | computed from the commits ([R-R14](#r-r14)) and committed in the manifest on `main` by the release pull request |
 | `@zenwave360/*` dependencies | exact versions, `next` allowed | exact versions, stable only |
 | Approval | none | required reviewer |
 | Registries | Marketplace and Open VSX, as pre-release, only when `ZENWAVE_PUBLISH_PRERELEASE` is `true` | Marketplace and Open VSX |
@@ -226,6 +226,59 @@ The publishing tools come from `packages/extension/publish-tools`, a private pac
 - *A hostile dependency.* Given a compromised build dependency that reads the environment during tests, when the pipeline runs, then it finds no registry token.
 - *What gets published.* Given a verified VSIX, when the publishing job runs, then it publishes those exact bytes rather than building again.
 - *A feature branch.* Given a workflow on a feature branch that names `vscode-prerelease`, when it runs, then GitHub does not give it the environment.
+
+<a id="r-r14"></a>
+### R-R14 (proposed). The next stable version is computed from the commits since the last stable tag
+
+*State: Proposed by the owner, 2026-11-05. [Decision 0025](../decisions/0025-stable-versions-come-from-commits.md) says why. Nothing is built.*
+
+A script SHALL compute the next stable version as a pure function of the stable base and the commit messages. The base is the highest stable-shaped `v*` tag ([R-R8](#r-r8)); before the first stable it is `0.0.0`. The commits are those reachable from the head of `main` and not from that tag. Merge commits whose message is not conventional are ignored.
+
+| What the range holds | Next version |
+|---|---|
+| a `Release: major` trailer | `(major+1).0.0` |
+| a `Release: vX.Y.Z` trailer (the `v` is optional) | exactly `X.Y.Z` |
+| else a `feat` or `feat(scope)` | minor |
+| else a `fix` or `fix(scope)` | patch |
+| else only other types (`chore`, `docs`, `test`, `refactor`, `perf`, `ci`, `build`, `style`) | none: nothing is released |
+
+`Release:` is a footer line of a commit message, as `Release-As` is in release-please. When several are in the range the highest result wins. An explicit version SHALL be above the highest stable tag, and a value that is neither `major` nor a version SHALL fail, naming the commit. A trailer forces a release even when every other commit is `chore`. `!` after a type and a `BREAKING CHANGE` footer have no effect: a major here is a milestone chosen by the owner, not a statement about an API. The same function is used by `release.mjs` for `plan`, so the workflow and the tests cannot disagree.
+
+**Examples**
+
+- *A fix.* Given `v0.2.0` and commits `fix: x` and `chore: y`, when the version is computed, then it is `0.2.1`.
+- *A feature.* Given the same tag and a `feat(eventflow): z` among them, then it is `0.3.0`.
+- *Nothing to release.* Given only `chore:`, `docs:` and `test:` commits, then there is no version and the pipeline ends green without publishing.
+- *A milestone.* Given a commit whose footer says `Release: major` on `v0.7.2`, then it is `1.0.0`; given `Release: v1.0.0`, then it is `1.0.0`; given `Release: v0.5.0`, then the computation fails and says it is not above `0.7.2`.
+- *Breaking is not major.* Given `feat!: drop a setting` and no `Release:` trailer, then it is minor.
+- *Before the first stable.* Given no stable tag and `feat: a`, then it is `0.1.0`.
+- *A mistyped trailer.* Given `Release: mayor`, then it fails and names the commit.
+
+<a id="r-r15"></a>
+### R-R15 (proposed). A merge to main with something to release prepares, tags, publishes and syncs
+
+*State: Proposed by the owner, 2026-11-05. Nothing is built. It replaces the maintainer's manual `prepare`, commit and tag of [R-R11](#r-r11) as the usual path; a tag pushed by hand still starts the stable workflow.*
+
+A push to `main` SHALL run one workflow, as [`release-gradle.yml`](https://github.com/ZenWave360/release-workflows) does, in this order:
+
+1. **plan**, with no credential: [R-R14](#r-r14) gives the version, or none and the run ends green. The notes check of [R-R11](#r-r11) runs here on `release-notes/next.md`, so a missing, empty or draft note fails before anything is changed.
+2. **prepare**, the only job with `contents: write` and `pull-requests: write` before publication: from the validated `main` commit it creates the branch `release/X.Y.Z`, runs `release.mjs prepare X.Y.Z`, and commits `chore(release): X.Y.Z`. Only the manifest, the lockfile and the release notes files may change. It opens a pull request to `main` and merges it with a merge commit at once. A pull request needs no bypass of the `main` ruleset, which a direct push would. It waits until the merge is confirmed, fails on a conflict, and only then pushes the tag `vX.Y.Z` on the release commit.
+3. **publish**: the stable workflow of [R-R11](#r-r11), run as a job of this workflow with the tag as input, with its checks, its `vscode-release` reviewer approval and the credential isolation of [R-R13](#r-r13). Tags and releases made with the workflow's own token start no other workflow, so this chain is what starts it.
+4. **release**: once the registries were tried, the GitHub release for the tag is created with the notes file as its text, then the line with the commit and the registry outcomes of [R-R10](#r-r10).
+5. **sync**: the release commit is merged into `develop` through a pull request titled `chore: sync version`, so `develop` carries the new `major.minor` ([R-R8](#r-r8)).
+
+Runs are serialized and never cancelled. A head commit whose message starts with `chore(release)` or `chore: sync version` does nothing. `workflow_dispatch` takes `dry_run`, which prints the version and the notes check and stops after plan. Failed jobs of a run can be run again ([R-R12](#r-r12)); a new run for a version whose `release/X.Y.Z` branch exists fails and says so.
+
+**Examples**
+
+- *A normal release.* Given `develop` merged into `main` with a `feat` and notes in `next.md`, when the workflow runs and the reviewer approves, then `main` has `chore(release): 0.3.0`, the tag `v0.3.0` is on that commit, both registries carry `0.3.0`, the GitHub release has the notes, and `develop` has `chore: sync version`.
+- *Only chores.* Given a merge of `chore:` and `docs:` commits, then plan ends green and nothing is changed.
+- *No notes.* Given a releasable range and an empty `next.md`, then plan fails and names the file; no branch, pull request or tag exists.
+- *Approval refused.* Given the reviewer refuses, then the version commit and tag exist, nothing is published, and no GitHub release is made. Approving by running the failed jobs again finishes it.
+- *No loop.* Given the release pull request merged by the workflow, then the push to `main` does nothing, because of the head commit and because a token's own pushes start no workflow.
+- *Dry run.* Given `dry_run`, then the summary says the version and the commits that decided it, and `main` is unchanged.
+- *A conflict on sync.* Given a change on `develop` that conflicts with the release commit, then the run is failed after publication and says which files to resolve; nothing is published twice.
+- *A pre-release in between.* Given `develop` pushed while the workflow runs, then the pre-release workflow is not delayed, and its version is above the new stable once the sync has landed ([R-R8](#r-r8)).
 
 <a id="packages-a-pre-release-needs"></a>
 ## Packages a pre-release needs
