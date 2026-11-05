@@ -1,6 +1,6 @@
 # EventFlow lanes, analysis for PX/10.4
 
-Codex, read-only, 2026-11-05. Awaiting the owner's decisions listed in section 7.
+Codex, read-only, 2026-11-05. The owner decided section 7's questions the same day; see section 8.
 
 **Recommendation:** add `lanes: none | systems` to the existing flow layout, using server-side horizontal bands after ELK. Keep the service map as a separate representation. Defer Services lanes until ownership rules for policies and unassigned nodes are agreed.
 
@@ -108,3 +108,11 @@ This is a static analysis of the checked-out sources. No files were modified; no
    Owner decisions needed: confirm full-width horizontal bands and lane order; choose Unassigned versus inferred membership; decide whether to retain the service map through existing palette commands; approve per-mode saved positions and discard scope; decide whether Services ships now or later. Existing `defaultView` explicitly means flow versus service map, so it needs an explicit migration decision: [package.json:953](C:/Users/ivangsa/workspace/zenwave/grok-work/vscode-px10/package.json:953).
 
    Finally, EF-R3 still describes title-bar controls superseded by EF-R22. PX/10.4 remains the pending lanes analysis/build item: [EF-R3:100](C:/Users/ivangsa/workspace/zenwave/zenwave-specs/flows/eventflow.md:100), [EF-R22:163](C:/Users/ivangsa/workspace/zenwave/zenwave-specs/flows/eventflow.md:163), [backlog:352](C:/Users/ivangsa/workspace/zenwave/zenwave-specs/work/backlog.md:352).
+
+8. **Owner decisions, 2026-11-05**
+
+   - **Bands.** Full-width horizontal bands. The order is the order of the `systems {}` block: systems as declared, and in Services lanes the services of each system as declared. A system or service used but not declared, and a command with no service ([ZFL-R8](../dsl-kotlin/zfl-language.md#zfl-r8) makes that a warning), go after the declared ones in order of first appearance; commands with no service share one last band.
+   - **Membership.** A policy, and a start through the policy it triggers, takes the band of the command it calls. A policy that calls nothing, or a start whose policies call commands in different bands, takes the band of the first command in text order. This is presentation only: it never changes what the model says owns them.
+   - **Service map.** Kept as it is, behind the existing palette commands and `defaultView`. Lanes are a separate choice on the flow view, so the `services` view mode and `viewModeChanged` keep their meaning and the protocol stays at v1. The owner had no preference; this is the choice with the least work, and removing the service map later is still possible.
+   - **Positions.** The positions file holds one map per lanes value (`none`, `systems`, `services`) under a new schema `zfl.eventflow.positions@2`; saving one mode keeps the others. No compatibility is needed yet: an `@1` file is ignored and the flow is laid out automatically, and the next save writes `@2`.
+   - **Services now.** `lanes: none | systems | services` ships at once, not Systems first.
