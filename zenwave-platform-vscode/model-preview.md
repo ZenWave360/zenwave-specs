@@ -312,6 +312,12 @@ Flow editor, has no such button. The owner asked for it on 2026-11-03, for ZDL p
 
 A start shows its actor, or that it is a timer, as its first line, as today. The owner asked for it on 2026-11-04.
 
+<a id="mp-r33"></a>
+**MP-R33 (proposed). A policy with an actor or a timer reads as such in the sequence diagrams.** With `@actor(A)` ([ZFL-R5](../dsl-kotlin/zfl-language.md)), the diagram adds `A` as an actor participant. Instead of a start, `A` sends an arrow to the service that runs the command, and the answer comes back to `A`. With `@timer`/`@time`, a note on the service's lifeline gives the timer: `Note over Bookings: ⏳ <timer text>`. A `@title` replaces the policy's text in the diagram. The owner asked for it on 2026-11-05 (PX/10.6) and chose the note for timers.
+
+<a id="mp-r34"></a>
+**MP-R34 (proposed). The preview editor is named for what it shows.** The *Reopen Editor With* picker and the editor's name use the [MP-R17](#mp-r17) modes: *ZenWave Sequence Diagrams* for `.zfl`, *ZenWave Model Docs* for `.zdl`, *ZenWave Scripts Docs* for `.zw`. VS Code takes a custom editor's name from its declaration, not per file, so this needs one custom editor per language. Editor associations that users already saved must keep working. The owner asked for it on 2026-11-05 (PX/10.9).
+
 ## Not in scope
 
 Scroll sync with the text, exporting to PNG or SVG, previewing an unopened file from the

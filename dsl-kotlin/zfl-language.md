@@ -59,3 +59,25 @@ when RequestBooking, RequestAssistedBooking do bookSlot {
     response SlotFull
 }
 ```
+
+### ZFL-R5 (proposed). A policy can carry a title, an actor or a timer
+
+A `when X do Y` takes the annotations that `start` takes, read the same way:
+
+- `@title("…")`: the text drawn for the policy everywhere it is drawn (the EventFlow, the flowchart, the sequence diagrams, Model Docs). Without it, the policy is drawn as today.
+- `@actor(Name)`: a person acts on the event. This is how a step reads when someone does something after the event, rather than the system reacting on its own.
+- `@timer("…")`, or `@time("…")` as on `start`: the policy runs when the time comes, not immediately.
+
+A policy has at most one of `@actor` and `@timer`/`@time`, and each annotation at most once. The analyser reports a second one as it does for `start`. The owner asked for it on 2026-11-05 (PX/10.5).
+
+**Example**
+
+```zfl
+/** The facility staff note that they have called that person. */
+@actor(FacilityStaff)
+@title("Staff call the guest")
+when PendingGuestCallRecorded do recordGuestCall {
+    service Bookings.SlotBlockService
+    emits GuestCallCompleted
+}
+```
