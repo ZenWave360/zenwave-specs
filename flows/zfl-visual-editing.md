@@ -354,13 +354,16 @@ In the text two identical policies are an error
 
 <a id="zve-r27"></a>
 **ZVE-R27 (proposed). A policy keeps its identity when its triggers or its command
-change.** A policy is the `when` block in the text. Adding or removing a trigger, or
-reconnecting it to another command, edits that block, so it is the same policy: the
-operation returns an identity mapping from the old key to the new one, and the canvas
-keeps its selection and saved position. Reconnecting a policy that has an inline body
+change.** A policy is the `when` block in the text. Adding, removing or replacing a
+trigger, including when a deleted event or start is removed from it, or reconnecting it
+to another command, edits that block, so it is the same policy: the operation returns
+an identity mapping from the old key to the new one for every policy whose key changes,
+including peers whose `#n` suffix shifts, and the canvas keeps its selection and saved
+position. The mappings of one result apply simultaneously: each old key is looked up
+in the document before the operation, never in the result of another mapping. Reconnecting a policy that has an inline body
 leaves the body with its command ([ZVE-R19](#zve-r19)): `when E do Y { body }`
-reconnected to `Z` becomes `do Y { body }` and `when E do Z`, written `when E do Z { }`
-if `Z` has no body yet. The policy keeps its identity; the body becomes the command
+reconnected to `Z` becomes `do Y { body }` and `when E do Z`, written with an empty
+body, as the formatter writes it, if `Z` has no body yet. The policy keeps its identity; the body becomes the command
 `Y` with nothing pointing at it, with the warning of
 [ZFL-R6](../dsl-kotlin/zfl-language.md#zfl-r6). Decided by the owner, 2026-11-06.
 
