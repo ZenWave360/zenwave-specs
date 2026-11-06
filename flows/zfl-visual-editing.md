@@ -345,6 +345,33 @@ flow is started in the text, for example `flow Booking { }`; once one exists the
 canvas edits it. An empty flow is valid, with the warning of
 [ZFL-R7](../dsl-kotlin/zfl-language.md#zfl-r7).
 
+<a id="zve-r26"></a>
+**ZVE-R26 (proposed). Connecting an event to a command that already has that policy
+does nothing.** Dropping a connection from an event onto a command that a policy
+with exactly that trigger already targets is ignored: no edits, no form, no message.
+In the text two identical policies are an error
+([ZFL-R9](../dsl-kotlin/zfl-language.md#zfl-r9)). Decided by the owner, 2026-11-06.
+
+<a id="zve-r27"></a>
+**ZVE-R27 (proposed). A policy keeps its identity when its triggers or its command
+change.** A policy is the `when` block in the text. Adding or removing a trigger, or
+reconnecting it to another command, edits that block, so it is the same policy: the
+operation returns an identity mapping from the old key to the new one, and the canvas
+keeps its selection and saved position. Reconnecting a policy that has an inline body
+leaves the body with its command ([ZVE-R19](#zve-r19)): `when E do Y { body }`
+reconnected to `Z` becomes `do Y { body }` and `when E do Z`, written `when E do Z { }`
+if `Z` has no body yet. The policy keeps its identity; the body becomes the command
+`Y` with nothing pointing at it, with the warning of
+[ZFL-R6](../dsl-kotlin/zfl-language.md#zfl-r6). Decided by the owner, 2026-11-06.
+
+<a id="zve-r28"></a>
+**ZVE-R28 (proposed). Inserted and removed text follows the formatter.** Lines an
+operation inserts are laid out as the ZFL formatter would lay them out, with its
+indentation and spacing, and a deletion leaves no blank line or double space the
+formatter would not leave. Only the lines the operation touches follow it: the rest
+of the document is not reformatted ([ZVE-R8](#zve-r8)). Decided by the owner,
+2026-11-06.
+
 ## Open questions
 
 <a id="zve-q1"></a>

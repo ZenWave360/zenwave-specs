@@ -116,3 +116,16 @@ when RequestBooking do bookSlot {
     emits SlotBooked
 }
 ```
+
+<a id="zfl-r9"></a>
+### ZFL-R9 (proposed). Two identical policies are an error
+
+Two `when … do Y` blocks in the same flow with the same triggers, grouped the same way, the same command and the same condition (`@if`, or none) are an error on the second one. The text allows writing them, but they describe one policy twice. The visual editor never creates the second one ([ZVE-R26](../flows/zfl-visual-editing.md#zve-r26)). Policies that differ only by `@if` are distinct. Decided by the owner, 2026-11-06.
+
+**Example**
+
+```zfl
+when SlotRequested do bookSlot
+// error: Policy 'when SlotRequested do bookSlot' is already declared in flow 'Booking'.
+when SlotRequested do bookSlot
+```
