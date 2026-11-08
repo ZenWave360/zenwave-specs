@@ -251,7 +251,7 @@ Rules are in [model preview](../zenwave-platform-vscode/model-preview.md).
 - [ ] **008/2.4** Launch the desktop host and confirm the extension activates on a fixture Local `npm run test:desktop` passes; CI execution remains unavailable (no remote).
 - [ ] **008/2.5** Launch the browser host through `@vscode/test-web` and confirm the same Local `npm run test:browser` passes; CI execution remains unavailable (no remote).
 - [ ] **008/3.4** Install the built VSIX into a clean editor and confirm it activates
-- [ ] **008/6.2** A real pre-release, installed from each registry in a clean editor
+- [ ] **008/6.2** A real pre-release, installed from each registry in a clean editor — published 2026-11-08: 0.0.22, tag `v0.0.22-pre`, run 42475804547 (verify, publish, trace green), pre-release on the VS Code Marketplace and Open VSX; installing it in a clean editor is still to do.
 - [ ] **008/6.3** Confirm a user on stable is not moved onto the pre-release
 - [ ] **008/6.4** Confirm switching back to stable works
 - [ ] **008/6.5** Break the browser bundle deliberately on a branch and confirm the release checks catch it Local probe on deleted branch `codex/browser-node-api-probe`: importing `node:fs` in `src/activate.ts` makes `npm run build` exit 1 with the browser Node API diagnostic (`tmp/browser-node-api-probe.log`); CI evidence still needed.
