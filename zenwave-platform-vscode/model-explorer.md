@@ -54,7 +54,7 @@ them to open a document first.
 
 *Refresh.* The view title SHALL offer **Refresh**, which clears what was fetched during the session and reads the manifest again. A remote manifest is read-only, and Refresh is the only way to pick up its changes. Fetched content is otherwise kept in memory for the session.
 
-*Choosing the manifest.* The view title and the no-manifest welcome content SHALL offer **Open Architecture Manifest…**, which asks for *Local file…* or *URL…*. With a workspace folder open, the choice is written to `zenwave.workspace.manifest` at workspace scope, which already outranks `.zenwave/config.yml` ([LC-R5](lsp-client.md#lc-r5)), and the server restarts with the new manifest. With no folder, the choice is kept for the session in `workspaceState`. See [ME-Q1](#me-q1) for the name.
+*Choosing the manifest.* The view title and the no-manifest welcome content SHALL offer **Choose Architecture Manifest…**, which asks for *Local file…* or *URL…*. With a workspace folder open, the choice is written to `zenwave.workspace.manifest` at workspace scope, which already outranks `.zenwave/config.yml` ([LC-R5](lsp-client.md#lc-r5)), and the server restarts with the new manifest. With no folder, the choice is kept for the session in `workspaceState`. See [ME-Q1](#me-q1) for the name.
 
 *Hosts.* The same behaviour SHALL work on the desktop and in web mode ([WE-R2](../roadmap/web-explorer.md#we-r2), [decision 0018](../decisions/0018-vscode-web-mode-is-the-web-explorer.md)). In web mode the server reaches only `http(s)`, and whether the Arcadia manifest's content URLs allow it is [AR-Q5](../flows/architecture-resources.md#ar-q5).
 
@@ -237,7 +237,7 @@ manifest document the client resolved (it is offered when the server could not r
 read the manifest* above). [ME-R2](#me-r2) asks for an action of the same name that lets the user choose a manifest. They do
 different things. Proposal: keep the existing one as it is and give the new command another id and a palette title such as
 *Choose Architecture Manifest…*, keeping "Open Architecture Manifest…" for the welcome link and the title bar if the owner
-prefers. Not decided.
+prefers. *Decided (owner, 2026-11-10):* the new action is **Choose Architecture Manifest…** everywhere; `zenwave.explorer.openManifest` keeps its name and behaviour.
 
 <a id="me-q2"></a>
 **ME-Q2. A tree node for an entry with no address.** [AR-Q3](../flows/architecture-resources.md#ar-q3): a document with no

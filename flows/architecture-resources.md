@@ -70,7 +70,9 @@ name and extension survive. Each segment is percent-encoded as a URI path segmen
 **Why:** keeping the path and extension is what lets the editor pick the language and lets installed OpenAPI, AsyncAPI and
 Markdown tooling recognise the file. Putting the owner and the version in the address makes it a name for one thing, whichever
 source later produces the bytes. The version is part of the name, not necessarily part of the URL the bytes come from: the
-Arcadia manifest reads `raw/main/<path>` and its expression never mentions `${version}`.
+Arcadia manifest reads `raw/main/<path>` and its expression never mentions `${version}`. The bytes are always fetched with
+the manifest's expression: when the expression does not use `${version}`, that is how the resource is resolved, and the
+version in the address only names it (owner decision, 2026-11-10).
 
 <a id="ar-r2"></a>
 ### AR-R2 (proposed). Only what the manifest declares is served
@@ -281,6 +283,7 @@ dot has not been checked.
 **AR-Q2. How does *Refresh* reach the server?** The server ignores configuration changes
 ([LVR-R12](lsp-visualization-requests.md#lvr-r12)), so today the only way to re-read the manifest is a restart, which closes
 the open documents' state. A new notification would avoid that. Decide when the first task is built.
+*Owner, 2026-11-10:* Refresh is wanted, at low priority; phase 1 may ship with a restart.
 
 <a id="ar-q3"></a>
 **AR-Q3. A document with no version has no address.** In the Arcadia manifest the `architecture` domain declares
@@ -288,6 +291,8 @@ the open documents' state. A new notification would avoid that. Decide when the 
 the nodes above it ([source resolution §1](../zenwave-architecture/source-resolution-specification.md#source-resolution)).
 [AR-R1](#ar-r1) then cannot form its address. Options: the manifest declares a version (the manifest's own fix), or a
 reserved segment stands for "unversioned". Until decided, such an entry is shown with a warning, not hidden.
+*Decided in part (owner, 2026-11-10):* docs inherit the version of their service, as [AR-R1](#ar-r1) says. Still open: a doc
+declared on a domain or subdomain that has no version anywhere above it, as the Arcadia `architecture` domain.
 
 <a id="ar-q4"></a>
 **AR-Q4. What is the address of an entry written as an absolute URI?** A docs value may be a supported absolute URI, which
