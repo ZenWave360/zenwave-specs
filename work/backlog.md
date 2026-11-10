@@ -344,7 +344,7 @@ Groups 1 to 6 built by 2026-11-06, except PX/5.4 (IntelliJ) and PX/6.4 (the visu
 
 - [ ] **BUG/5** `zenwave-lsp` JVM server: `initializationOptions` sent over the wire are never read, so over stdio the server does not open the manifest. Found by the architecture review of 2026-11-10 (`architecture-review-20261110.html`), checked in the code. Needs a wire test over stdio.
 - [ ] **BUG/6** `zenwave-architecture` / `zenwave-lsp`: `unresolved-consumer-reference` is reported twice for the same entry, once as ERROR and once as WARNING. Same review, checked. Decide which severity stays.
-- [ ] **BUG/7** `dsl-kotlin`: `publishedEvents` looks at one level of handlers only, so events emitted after a chained `call` (`on X call Z` then `on … emits E`) are missing. Same review, checked. Not a language change; fix with a test on a chained call.
+- [x] **BUG/7** `dsl-kotlin`: `publishedEvents` looks at one level of handlers only, so events emitted after a chained `call` (`on X call Z` then `on … emits E`) are missing. Same review, checked. Not a language change; fix with a test on a chained call.
 
 **Pre-release testing feedback (owner, 2026-11-04):**
 
