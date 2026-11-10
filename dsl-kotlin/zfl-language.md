@@ -13,7 +13,7 @@ Record what ZFL text means, where the meaning is not obvious from the grammar, s
 <a id="zfl-r1"></a>
 ### ZFL-R1 (proposed). An `on` that answers ends the command
 
-Inside a `when … do` block, an `on` line handles a response of the `call` before it. `on X response Y`, `on X emits Y` and `on X emits response Y` are exits: they end the command, as a `return` does. `on X call Z` chains instead: the `on` lines after it handle the responses of `Z`. A response that no `on` handles is the happy path, and the command goes on to the next line.
+Inside a `when … do` block, an `on` line handles a response of the `call` before it. `on X response Y`, `on X emits Y` and `on X emits response Y` are exits: they end the command, as a `return` does. An `on X emits Y` is also an exit of the command that emits `Y`, so the EventFlow graph draws a command → event `Y` edge for it, with the response `X` as the outcome, even when the command has no `emits Y` line of its own ([EF-R19](../flows/eventflow.md#ef-r19)). `on X call Z` chains instead: the `on` lines after it handle the responses of `Z`. A response that no `on` handles is the happy path, and the command goes on to the next line.
 
 It reads as plain language: "call getBookingTerms; if the slot cannot be booked, answer SlotNotBookable". Nobody reads that as going on after the answer.
 
@@ -128,4 +128,18 @@ Two `when … do Y` blocks in the same flow with the same triggers, grouped the 
 when SlotRequested do bookSlot
 // error: Policy 'when SlotRequested do bookSlot' is already declared in flow 'Booking'.
 when SlotRequested do bookSlot
+```
+
+<a id="zfl-r10"></a>
+### ZFL-R10 (exists). The `for` before a service's aggregates is optional
+
+A service header takes its aggregate list with or without the `for` keyword, in both languages. In ZDL the aggregates are still required: `service S for (A, B) {` and `service S (A, B) {` are both valid. In a ZFL `systems` block they were already optional: `service S for (A)`, `service S (A)` and `service S` are all valid. The `service` line inside a `do` is unchanged. The formatters keep the `for` when the source has it, leave it out when the source does not, and write one space between `for` and `(` ([formatter](formatter-spec.md#horizontal-spacing)).
+
+**Example**
+
+```zdl
+service OrdersService for (CustomerOrder, Payment) {
+}
+service InventoryService (StockReservation) {
+}
 ```

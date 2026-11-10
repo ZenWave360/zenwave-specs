@@ -55,7 +55,7 @@ ZFL is the flow-modeling DSL used for Event Storming style timelines. It models 
 
 Constructs in the grammar (`Zfl.g4`):
 
-- `systems`, with a `service` per system and its `commands`, optionally `for (Aggregate)`
+- `systems`, with a `service` per system and its `commands`, with `for (Aggregate)` optional, and the `for` itself optional ([ZFL-R10](zfl-language.md#zfl-r10))
 - `flow`
 - `start`, with its fields
 - `when <trigger> do <command>`, where triggers combine with `and`, `or` and commas
@@ -76,7 +76,7 @@ systems {
     }
     @zdl("catalog-inventory-api/domain-model.zdl")
     CatalogInventory {
-        service InventoryService for(StockReservation) {
+        service InventoryService for (StockReservation) {
             commands: reserveStock, confirmStockReservation, releaseStock
         }
     }

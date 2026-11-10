@@ -104,6 +104,7 @@ This includes:
 - normalizing repeated spaces between tokens down to a single required separator
 - normalizing spacing around braces where appropriate
 - normalizing spacing between keywords, identifiers, annotations, and punctuation where the grammar expects separation
+- writing one space between `for` and `(` in a service header: `service Orders for (Order, Payment)`; the `for` is kept when the source has it and stays absent when it does not, so `service S(A)` becomes `service S (A)` ([ZFL-R10](zfl-language.md#zfl-r10))
 
 This does not include:
 

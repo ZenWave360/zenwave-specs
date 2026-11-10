@@ -144,7 +144,7 @@ This collides with `@outcome` branch nodes which will also need `outcome_*` ids.
 Rename event node ids to `event_*` before implementing `@outcome` support:
 
 ```
-event_PaymentAuthorized[/PaymentAuthorized/]
+event_PaymentAuthorized("PaymentAuthorized")
 ```
 
 #### Without `@outcome` (current behavior, unchanged)
@@ -158,12 +158,12 @@ action_authorizePayment --> event_PaymentFailed
 #### With `@outcome`
 
 Insert an intermediate outcome node between the action and each event group.
-Outcome nodes use a distinct shape — rounded rectangle `(["label"])` — to
-differentiate them from event nodes (parallelogram `/label/`) and action nodes
+Outcome nodes use a distinct shape — diamond `{"label"}` — to
+differentiate them from event nodes (rounded rectangle `("label")`) and action nodes
 (rectangle `["label"]`).
 
 ```mermaid
-action_authorizePayment --> outcome_authorized(["authorized"])
+action_authorizePayment --> outcome_authorized{"authorized"}
 outcome_authorized --> event_PaymentAuthorized
 outcome_authorized --> event_OrderUpdated
 action_authorizePayment --> event_PaymentDeclined
@@ -173,11 +173,11 @@ action_authorizePayment --> event_PaymentFailed
 Single-event outcomes still get an outcome node for visual consistency:
 
 ```mermaid
-action_authorizePayment --> outcome_authorized(["authorized"])
+action_authorizePayment --> outcome_authorized{"authorized"}
 outcome_authorized --> event_PaymentAuthorized
-action_authorizePayment --> outcome_declined(["declined"])
+action_authorizePayment --> outcome_declined{"declined"}
 outcome_declined --> event_PaymentDeclined
-action_authorizePayment --> outcome_failed(["failed"])
+action_authorizePayment --> outcome_failed{"failed"}
 outcome_failed --> event_PaymentFailed
 ```
 

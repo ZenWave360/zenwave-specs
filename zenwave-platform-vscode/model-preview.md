@@ -306,11 +306,12 @@ Flow editor, has no such button. The owner asked for it on 2026-11-03, for ZDL p
 | Start | Rounded rectangle, close to a command but not one | `#475569` / `#1e293b`, white text |
 | Command | Rectangle | `#3b82f6` / `#1d4ed8`, white text |
 | Response (read model) | Square-cornered rectangle | `#bbf7d0` / `#15803d` |
-| Event | Parallelogram, as today | `#f97316` / `#c2410c`, white text |
+| Event | Rounded rectangle, `("Event")` | `#f97316` / `#c2410c`, white text |
 | Policy | Hexagon, as today | `#a855f7` / `#7e22ce`, white text |
+| `@outcome` outcome | Diamond, `{"outcome"}` | colours unchanged |
 | End outcome | Circle, as today | `#ef4444` / `#b91c1c`, white text |
 
-A start shows its actor, or that it is a timer, as its first line, as today. The owner asked for it on 2026-11-04.
+A policy that only hands an actor's start to its command is not drawn: the start connects directly to the command, as in [EF-R17](../flows/eventflow.md#ef-r17)'s diagram. A start shows its actor, or that it is a timer, as its first line, as today. The owner asked for it on 2026-11-04.
 
 <a id="mp-r33"></a>
 **MP-R33 (exists). A policy with an actor or a timer reads as such in the sequence diagrams.** With `@actor(A)` ([ZFL-R5](../dsl-kotlin/zfl-language.md)), the diagram adds `A` as an actor participant. Instead of a start, `A` sends an arrow to the service that runs the command, and the answer comes back to `A`. With `@timer`/`@time`, a note on the service's lifeline gives the timer: `Note over Bookings: ⏳ <timer text>`. A `@title` replaces the policy's text in the diagram. The owner asked for it on 2026-11-05 (PX/10.6) and chose the note for timers.
