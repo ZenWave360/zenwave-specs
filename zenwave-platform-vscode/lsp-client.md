@@ -2,7 +2,7 @@
 
 <a id="lsp-client"></a>
 
-**Status:** 2026-10-30: 11 exists, 1 proposed, 2 partial. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
+**Status:** 2026-10-30: 11 exists, 1 proposed, 2 partial. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md). Amended 2026-11-10 for the architecture navigator ([phase 1](../work/backlog.md#architecture-navigator)): [LC-R3](#lc-r3), [LC-R5](#lc-r5), [LC-R6](#lc-r6), [LC-R8](#lc-r8) and [LC-R9](#lc-r9) each carry a paragraph marked *proposed*.
 
 ## Purpose
 
@@ -57,6 +57,11 @@ hover, navigation, diagnostics and a hierarchy. A client whose document selector
 covers only `zdl` and `zfl` leaves all of that unreachable — and the manifest is
 the document a user is most likely to be editing when they get it wrong.
 
+**Proposed, 2026-11-10.** When the manifest is an `http(s)` address, the extension SHALL include it as the document the server serves under the `zenwave:` scheme, still selected by exact scheme and path ([AR-Q1](../flows/architecture-resources.md#ar-q1) fixes the address), and it SHALL be read-only. The selector for the scheme SHALL cover `zdl`, `zfl` and `.zw` documents and that manifest, and SHALL NOT be widened to `*.yml`, `*.yaml` or `*.md` ([AR-R8](../flows/architecture-resources.md#ar-r8), [LVR-R15](../flows/lsp-visualization-requests.md#lvr-r15)).
+
+- *A remote OpenAPI file.* Given a declared `openapi.yml` open under `zenwave:`, when the document opens, then the server is not sent it.
+- *A remote manifest.* Given a manifest that is a URL and is open, when the user hovers a declaration in it, then they get whatever the server provides, and cannot edit it.
+
 <a id="lc-r4"></a>
 ### LC-R4 (exists). Server-backed language features come from the server
 
@@ -91,6 +96,12 @@ configuration changes.
 - *The configuration is edited.* Given a running server initialised from a resolved manifest, when the user edits the configuration that resolved it, or the manifest itself, then the server is made aware of the change without the user restarting VS Code.
 - *Finding out which manifest was chosen.* Given a user whose models are not being understood as part of their architecture, when they open the ZenWave output channel, then it states which manifest was resolved, and how.
 
+**Proposed, 2026-11-10 (architecture navigator, phase 1).** The manifest MAY be an `http(s)` address, as well as a path, in `zenwave.workspace.manifest` and in `project-manifest`, in both hosts. The extension SHALL offer **Open Architecture Manifest…** ([ME-R2](model-explorer.md#me-r2)) to choose one. With a workspace folder open, the action writes `zenwave.workspace.manifest` at workspace scope, which already outranks the config file, and the server SHALL be restarted with the new manifest. With no folder open (an empty window, or the web without a folder), it SHALL keep the choice as a session override in `workspaceState`, which takes the place of the setting for that session only and is never written to a file. One manifest per workspace still holds ([decision 0014](../decisions/0014-one-manifest-per-workspace.md)). The output channel states the choice and where it came from, as it does for any other.
+
+- *Choosing a URL with a folder open.* Given an open folder, when the user chooses *URL…* and enters an `https` address, then the setting is written at workspace scope, the server restarts, and the output channel names the manifest and "setting".
+- *Choosing a URL with no folder.* Given an empty window, when the user does the same, then nothing is written to disk, the server restarts with that manifest, and closing the window forgets it.
+- *Forgetting.* Given a session override, when the user chooses another manifest, then the override is replaced; the output channel states which manifest the server was started with.
+
 **Why:** a manifest describes an organisation's architecture, and a
 workspace holds one. The shape it is written for is a folder holding several
 checked-out repositories side by side, where the architecture is one of them —
@@ -118,6 +129,12 @@ work without a special case: the workspace source simply finds nothing and the
 next source is tried. An extension that forced a source would be second-guessing
 a specification that already covers it.
 
+**Proposed, 2026-11-10 (architecture navigator, phase 1).** The extension SHALL register a read-only `FileSystemProvider` for the `zenwave:` scheme. It is a **facade over the server**: `stat` and `readFile` call `zenwave/statResource` and `zenwave/readResource` ([AR-R4](../flows/architecture-resources.md#ar-r4), [AR-R5](../flows/architecture-resources.md#ar-r5)), and it has no resolution logic, no cache of its own beyond what the editor requires, and no choice of source. Every write operation SHALL fail as read-only. An entry the server says came from the workspace source SHALL be opened as the plain `file:` document the answer names, and never through the scheme. Reading through the server is not the extension fetching content "on the manifest's behalf": the paragraph above still holds, because the server decides everything and the provider only delivers it. The provider is available only where the server advertises the two requests ([LVR-R1](../flows/lsp-visualization-requests.md#lvr-r1)); without them, entries that need it say that the language server is too old.
+
+- *A remote file.* Given a service that is not checked out, when the user opens one of its artifacts, then the document opens with a `zenwave:` URI and its original file name, and cannot be saved.
+- *A checked-out service.* Given the service checked out beside the manifest, when the user opens an artifact, then a plain `file:` document opens.
+- *An old server.* Given a server that does not advertise `zenwave/readResource`, when the user opens a remote entry, then they are told the server is too old, not that the file is missing.
+
 <a id="lc-r7"></a>
 ### LC-R7 (proposed). The user can pin which source content comes from
 
@@ -135,7 +152,7 @@ manifest declares, and SHALL default to the manifest's own declared order.
 <a id="lc-r8"></a>
 ### LC-R8 (partial). The extension supplies credentials when the server asks for them
 
-*State: The handler is built and no server sends the request ([LVR-R13](../flows/lsp-visualization-requests.md#lvr-r13)).*
+*State: The handler is built and no server sends the request ([LVR-R13](../flows/lsp-visualization-requests.md#lvr-r13)). Reading a remote entry for the architecture navigator is its first real use, 2026-11-10 ([AR-R7](../flows/architecture-resources.md#ar-r7)); proposed, not built.*
 
 Where the server needs a credential to reach content, the extension SHALL obtain
 it on request — from the editor's own authentication providers where the host is
@@ -155,7 +172,7 @@ that are shared through the repository.
 <a id="lc-r9"></a>
 ### LC-R9 (partial). A credential is only released to the host it was meant for
 
-*State: The origin policy is built. The end-to-end refusal test waits on the server.*
+*State: The origin policy is built. The end-to-end refusal test waits on the server, and the first request that reaches it is a `zenwave:` read for the architecture navigator ([AR-R7](../flows/architecture-resources.md#ar-r7)): a document read through the scheme, a manifest on an unauthorised host, is the case to test it with.*
 
 The extension SHALL release a credential only where the request's **origin** —
 its scheme, host and port taken together — is one the user authorised for that
@@ -277,6 +294,8 @@ happened.
 
 **Selecting the manifest by URI.** The document filter is `{ scheme, pattern: <fsPath> }`, so exactly that file is selected. The
 precision matters: sending an unrelated OpenAPI file can stop the server ([LVR-R15](../flows/lsp-visualization-requests.md#lvr-r15)).
+
+**The scheme selector stays narrow.** `zenwave:` documents are selected by language id (`zdl`, `zfl`, `zw`), like local ones, and the remote manifest by exact scheme and path. A scheme-wide `{ scheme: 'zenwave' }` selector would send every remote OpenAPI file to the server, which is what [LVR-R15](../flows/lsp-visualization-requests.md#lvr-r15) records going wrong. It is a test, not just a convention: open a remote `openapi.yml` and assert that no `didOpen` is sent for it.
 
 **First wire consumer.** IntelliJ calls the server in process, so anything it gets away with (non-serialisable types, blocking calls,
 shared state) surfaces here first. Budget for upstream fixes.

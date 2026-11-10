@@ -319,9 +319,32 @@ A policy that only hands an actor's start to its command is not drawn: the start
 <a id="mp-r34"></a>
 **MP-R34 (exists). The preview editor is named for what it shows.** The *Reopen Editor With* picker and the editor's name use the [MP-R17](#mp-r17) modes: *ZenWave Sequence Diagrams* for `.zfl`, *ZenWave Model Docs* for `.zdl`, *ZenWave Scripts Docs* for `.zw`. VS Code takes a custom editor's name from its declaration, not per file, so this needs one custom editor per language. Editor associations that users already saved must keep working. The owner asked for it on 2026-11-05 (PX/10.9). The shared provider is registered as `zenwave.preview` for `.zfl`, `zenwave.preview.modelDocs` for `.zdl`, and `zenwave.preview.scriptsDocs` for `.zw`. The legacy `zenwave.preview` provider still accepts all three file types, and commands reveal an existing preview under its actual view type; saved associations need no migration. If a second editor resolves for a document that already has a preview, under any of the three view types, the host closes the new tab and reveals the existing preview. VS Code resolves configured associations even outside an editor's selector ([resolver source](https://github.com/microsoft/vscode/blob/main/src/vs/workbench/services/editor/browser/editorResolverService.ts)). Checked in the manifest, provider and extension unit tests on 2026-11-05; desktop/browser smoke was not run.
 
+<a id="mp-r35"></a>
+**MP-R35 (proposed). A preview and the Model tree follow each other.** Agreed with the owner on 2026-11-10 (architecture navigator, [ME-R9](model-explorer.md#me-r9)). For a `.zdl`, `.zw` or `.zfl` preview:
+
+- *Preview to tree.* When the user scrolls the preview or focuses an element in it, the page tells the host which concept it is showing, and the host selects the matching node in the Model tree without moving the preview or taking focus from it. A position that stands for no concept sends nothing.
+- *Tree to preview.* When the user selects a node in the Model tree and the preview of that document is open, the host asks the page to reveal the matching place, and the page scrolls to it and marks it. If the text editor is the active one instead, the cursor moves, as [ME-R5](model-explorer.md#me-r5) says.
+- *No loop.* A reveal that came from the tree does not send a position back. A tree selection that came from the preview does not reveal again. Reports from scrolling are coalesced, so a long scroll is a few messages, not one per frame.
+
+The messages, with names recorded here and not fixed by the rules above ([decision 0007](../decisions/0007-contracts-are-behaviour-with-recorded-wire-names.md)), additive to the [webview protocol](../flows/eventflow-webview-protocol.md) in the way [EWP-R6](../flows/eventflow-webview-protocol.md#ewp-r6) requires, so a page that does not know them ignores them:
+
+| Direction | Message | Meaning |
+| --- | --- | --- |
+| page to host | `{ type: "previewPosition", semanticId, cause: "scroll" \| "focus" }` | the concept now in view or focused |
+| host to page | `{ type: "revealPosition", semanticId }` | scroll to the place showing that concept |
+
+`semanticId` is the id the server uses for a concept ([LVR-R7](../flows/lsp-visualization-requests.md#lvr-r7)), the same that `zenwave/symbolAt` returns and a hierarchy node carries. The host, not the page, maps it to a tree node. A page whose rendered content carries no ids for some of its sections ([MP-Q11](#mp-q11)) sends nothing for them.
+
+**Examples (proposed)**
+
+- *Model Docs.* Given `orders.zdl` as Model Docs, when the user scrolls to the section of the `Order` entity, then `Order` is selected in the tree and the preview does not move.
+- *Revealing.* Given the same preview, when the user selects the `OrderService` in the tree, then the preview scrolls to its section.
+- *A sequence diagram.* Given a `.zfl` Sequence Diagrams preview showing one outcome's diagram, when the user selects a command in the tree, then the diagram that contains it is shown, and if the diagram has no element for it, nothing else changes.
+- *Not for OpenAPI.* A remote `openapi.yml` has no ZenWave preview, so none of this applies to it ([ME-R9](model-explorer.md#me-r9)).
+
 ## Not in scope
 
-Scroll sync with the text, exporting to PNG or SVG, previewing an unopened file from the
+Scroll sync with the text (the preview and the Model tree do follow each other, [MP-R35](#mp-r35)), exporting to PNG or SVG, previewing an unopened file from the
 explorer, and imitating IntelliJ's single tab with two halves. VS Code has no API to compose
 two editors in one tab, and side by side is honestly two tabs.
 
@@ -371,7 +394,10 @@ from the output of the extension's `scripts/generate-sdk-catalogue.mjs`, which r
 **MP-Q9. Does going back to text get its own button?** Left open by the owner on 2026-11-01, to design later with [MP-R18](#mp-r18). `zenwave.preview.showText` keeps working until then.
 
 <a id="mp-q10"></a>
-**MP-Q10. Can a preview have an outline?** Answered 2026-11-01: not the built-in one, which follows the active text editor, so a virtual document would not help. The Model tree is that view ([ME-R9](model-explorer.md#me-r9)).
+**MP-Q10. Can a preview have an outline?** Answered 2026-11-01: not the built-in one, which follows the active text editor, so a virtual document would not help. The Model tree is that view ([ME-R9](model-explorer.md#me-r9)). Which way the two stay in step: [MP-R35](#mp-r35), 2026-11-10.
+
+<a id="mp-q11"></a>
+**MP-Q11. What marks a section of a preview with its concept?** [MP-R35](#mp-r35) needs the page to know which `semanticId` a heading or a diagram stands for. Model Docs is Markdown from `dsl-docs`, which the client renders itself ([LVR-R14](../flows/lsp-visualization-requests.md#lvr-r14): content carries no code). A heading anchor derived from the semantic id, or a line in the server's answer that maps sections to ids, would do. Which one is for `dsl-docs` and the server to decide; the client cannot guess from heading text. For ZFL diagrams the representation id is a start. Not decided; the first task of the preview half is to settle it.
 
 ## Sources
 

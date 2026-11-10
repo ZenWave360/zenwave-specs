@@ -34,3 +34,4 @@ The code follows it, and the owner has not confirmed it. Those are the ones to r
 | [0024](0024-pre-releases-follow-the-last-release.md) | Pre-releases follow the last release, and notes are files | accepted; built, committed 2026-11-02, verified on GitHub with publication held back (run 41425641110) |
 | [0025](0025-stable-versions-come-from-commits.md) | Stable versions come from the commits, and a milestone is a trailer | accepted 2026-11-05; not built |
 | [0026](0026-deleting-a-trigger-keeps-the-body.md) | Deleting a trigger keeps the body; `completed` and service are warnings | accepted 2026-11-05; not built |
+| [0027](0027-the-server-serves-the-zenwave-scheme.md) | Remote documents open under a `zenwave:` scheme that the server owns | accepted 2026-11-10; not built |

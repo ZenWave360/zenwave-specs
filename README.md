@@ -53,6 +53,7 @@ A capability followed end to end. Breaking one of these breaks another repositor
 - [KMP browser runtime](flows/kmp-browser-runtime.md): what every library owes a browser.
 - [SDK plugin catalogue](flows/sdk-plugin-catalogue.md): how the SDK describes itself to IDEs.
 - [Transitions without an id](flows/transitions-without-id.md): from the validator to generated code.
+- [Architecture resources](flows/architecture-resources.md): how a declared remote document opens as a read-only `zenwave:` document.
 
 ### Part V. Clients and visualisation
 

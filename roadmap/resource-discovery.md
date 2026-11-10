@@ -2,8 +2,15 @@
 
 <a id="resource-discovery"></a>
 
-**Status:** brief; nothing built, 2026-10-30. The current client already has the structured half (the [Architecture tree](../zenwave-platform-vscode/model-explorer.md#me-r2)).
-Discovery, the DSL and virtual documents are new. Its direction, VS Code as the host instead of separate portals, was confirmed by [decision 0018](../decisions/0018-vscode-web-mode-is-the-web-explorer.md). Open items are at the end of this document.
+**Status:** brief; nothing built, 2026-10-30. **Narrowed on 2026-11-10 to a phase 1 and a phase 2.** Phase 1 is the *architecture navigator*: browsing what a manifest declares, remote or local, with remote files opening as read-only virtual documents. It is specified as rules, not as a brief: [ME-R2](../zenwave-platform-vscode/model-explorer.md#me-r2) (the tree), [architecture resources](../flows/architecture-resources.md) (the `zenwave:` address and its two requests), [LC-R6](../zenwave-platform-vscode/lsp-client.md#lc-r6) (the provider) and [decision 0027](../decisions/0027-the-server-serves-the-zenwave-scheme.md), with the work in the [backlog](../work/backlog.md#architecture-navigator). The rest of this brief, discovery by a provider DSL, is **not** phase 1 and is superseded for now by the phase 2 below; it stays as the record of what was thought. The current client already has the structured half (the [Architecture tree](../zenwave-platform-vscode/model-explorer.md#me-r2)). Its direction, VS Code as the host instead of separate portals, was confirmed by [decision 0018](../decisions/0018-vscode-web-mode-is-the-web-explorer.md). Open items are at the end of this document.
+
+## Phase 1 and phase 2, decided 2026-11-10
+
+<a id="rd-phase-1"></a>
+**Phase 1 (proposed).** The tree over declared entries only, domains, subdomains and services, each with Artifacts, Docs and Consumers; remote content opened as read-only `zenwave:` documents served by the language server; the outline following the active document and the ZenWave preview. Nothing is discovered: a document exists in the tree because the manifest declares it. This meets the proof-of-concept steps 1, 5, 6, 7 and 8 below (open and navigate the graph; open a remote Markdown read-only; a relative link or image opens another declared-owner document, even if not listed; check in desktop and web) and defers the others. A folder or glob entry is shown disabled as "pending (phase 2)".
+
+<a id="rd-phase-2"></a>
+**Phase 2 (later, not specified).** Folder and glob entries, such as `adrs/` and `adrs/*`. A remote repository gives no listing over http, so it provides a file named `manifest.yml` in the folder, listing the files it holds, and the client fetches it lazily, the first time the folder node is expanded. This replaces the provider DSL of this brief for the first increment: the repository describes itself, and the architecture manifest is not made into a document index. Its contract is reserved, not written: the document `flows/architecture-folder-listing.md`, and the file `<folder>/manifest.yml` ([AR-R12](../flows/architecture-resources.md#ar-r12)). The provider DSL, `Discover Documentation` and the GitHub, GitLab, Bitbucket, Artifactory and Apicurio definitions below stay as options for when a repository cannot carry a `manifest.yml`.
 
 ## Purpose
 
@@ -126,6 +133,8 @@ Remote artifacts discovered or referenced by ZenWave should open as **read-only 
 - Mermaid rendering where supported by the Markdown preview.
 - PlantUML rendering through a compatible extension where available.
 - YAML, Avro, OpenAPI, AsyncAPI, and other file-type tooling available in the host.
+
+**Phase 1 answered this** ([architecture resources](../flows/architecture-resources.md), 2026-11-10): the scheme is `zenwave:`, the address is `zenwave:/<owner.id>/<version>/<content.path>`, the server serves it, and a relative reference stays with its owner and version. The text below is the original brief.
 
 Investigate a **read-only VS Code FileSystemProvider** with a custom ZenWave URI scheme. This is not intended to be a full Git filesystem or remote repository browser. Its responsibility is to expose known or resolvable HTTP resources as documents that VS Code and compatible extensions can open.
 

@@ -2,7 +2,7 @@
 
 <a id="model-explorer"></a>
 
-**Status:** 2026-10-30: 7 exists, 1 partial. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
+**Status:** 2026-10-30: 7 exists, 1 partial. Each rule says which. Amended 2026-11-10 (the architecture navigator, [phase 1](../work/backlog.md#architecture-navigator)): [ME-R2](#me-r2) grows and [ME-R3](#me-r3) and [ME-R9](#me-r9) widen; the new parts are marked *proposed* inside them. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
 
 ## Purpose
 
@@ -27,7 +27,7 @@ document is open.
 <a id="me-r2"></a>
 ### ME-R2 (partial). The workspace architecture is browsable without opening a file
 
-*State: The tree works. In the browser it needs the manifest opened once, and a saved edit needs a restart ([LVR-R12](../flows/lsp-visualization-requests.md#lvr-r12)).*
+*State: The domain and subdomain tree works. In the browser it needs the manifest opened once, and a saved edit needs a restart ([LVR-R12](../flows/lsp-visualization-requests.md#lvr-r12)). The paragraphs marked proposed below (services, the three groups, lazy loading, Refresh, Open Architecture Manifest…, a manifest that is a URL) are the architecture navigator of 2026-11-10 and are not built.*
 
 The architecture tree SHALL present the workspace's architecture manifest as a
 hierarchy, and SHALL populate as soon as the user opens it, without requiring
@@ -40,8 +40,37 @@ them to open a document first.
 - *A workspace with no manifest.* Given a workspace with model files but no architecture manifest, when the user looks at the architecture tree, then it says no architecture manifest was found and points at how to configure one, rather than appearing broken.
 - *The manifest is edited.* Given the architecture tree showing a manifest's contents, when the user adds a domain to that manifest and saves it, then the tree reflects the new domain.
 
+**Proposed, 2026-11-10 (architecture navigator, phase 1).** The tree is the one view `zenwave.architecture`; no new view is created.
+
+*The hierarchy.* The tree SHALL go from domains to subdomains to services. Each service, and each domain or subdomain that declares them directly, SHALL have three groups as children, each shown only when it has something to show:
+
+- **Artifacts**: one node per artifact, with an icon by its `type` (`zdl`, `zfl`, `asyncapi`, `asyncapi-client`, `openapi`; any other type gets a neutral icon, [ME-R6](#me-r6)). The label is the artifact's path and the description its version, as `openapi.yml · 0.1.0`.
+- **Docs**: one node per `docs` key, labelled by the key (`changelog`, `summary`).
+- **Consumers** (preliminary): one node per entry of `consumers`, shown as the manifest writes it (`catalog.orders.order-service#asyncapi`) and not interpreted. Selecting one does nothing in phase 1; going to the service or artifact it names is later work.
+
+*Opening.* Selecting an artifact or a document SHALL open it: as the plain local file when the server resolved it to a file in the workspace, and otherwise as a read-only `zenwave:` document ([AR-R4](../flows/architecture-resources.md#ar-r4), [LC-R6](lsp-client.md#lc-r6)). An entry that is a folder or contains a glob SHALL be shown disabled, marked "pending (phase 2)", and not hidden ([AR-R12](../flows/architecture-resources.md#ar-r12)).
+
+*Lazy.* Building the tree SHALL fetch the manifest and nothing else: no artifact or document is fetched or checked for existence until the user opens it ([AR-R10](../flows/architecture-resources.md#ar-r10)). When an open fails in every source, the error SHALL list the candidate URLs that were tried ([AR-R6](../flows/architecture-resources.md#ar-r6)), and the node SHALL carry a warning icon until the next Refresh.
+
+*Refresh.* The view title SHALL offer **Refresh**, which clears what was fetched during the session and reads the manifest again. A remote manifest is read-only, and Refresh is the only way to pick up its changes. Fetched content is otherwise kept in memory for the session.
+
+*Choosing the manifest.* The view title and the no-manifest welcome content SHALL offer **Open Architecture Manifest…**, which asks for *Local file…* or *URL…*. With a workspace folder open, the choice is written to `zenwave.workspace.manifest` at workspace scope, which already outranks `.zenwave/config.yml` ([LC-R5](lsp-client.md#lc-r5)), and the server restarts with the new manifest. With no folder, the choice is kept for the session in `workspaceState`. See [ME-Q1](#me-q1) for the name.
+
+*Hosts.* The same behaviour SHALL work on the desktop and in web mode ([WE-R2](../roadmap/web-explorer.md#we-r2), [decision 0018](../decisions/0018-vscode-web-mode-is-the-web-explorer.md)). In web mode the server reaches only `http(s)`, and whether the Arcadia manifest's content URLs allow it is [AR-Q5](../flows/architecture-resources.md#ar-q5).
+
+**Examples (proposed)**
+
+- *Browsing a service.* Given a manifest with service `catalog-products` declaring a ZDL, an AsyncAPI file, a `changelog` document and one consumer, when the user expands it, then Artifacts shows `domain-model.zdl · 0.0.0` and `asyncapi.yml · 0.0.0` with their type icons, Docs shows `changelog`, and Consumers shows the consumer string.
+- *Opening costs one fetch.* Given a freshly shown tree, when the user opens `asyncapi.yml` of a service that is not checked out, then exactly that file is requested, and it opens read-only.
+- *A file that cannot be reached.* Given an artifact no source can produce, when the user opens it, then the error lists the URLs tried, the node shows a warning, and it keeps showing it until the user presses Refresh.
+- *A folder entry.* Given `docs: { adrs: "adrs/" }`, then the tree shows `adrs` disabled, saying "pending (phase 2)".
+- *A manifest from the web.* Given an empty window, when the user chooses Open Architecture Manifest…, then URL…, and enters an `https` address, then the tree shows that manifest, and nothing was written to any settings file.
+- *A manifest in a folder workspace.* Given an open folder, when the user chooses a local file, then `zenwave.workspace.manifest` is set at workspace scope, and the tree shows the new manifest after the restart.
+
 <a id="me-r3"></a>
 ### ME-R3 (exists). The model tree follows the document the user is looking at
+
+*Proposed, 2026-11-10: the tree becomes a general outline, see the paragraph after the examples and [ME-R9](#me-r9). The rule above it is unchanged for model documents.*
 
 The model tree SHALL show the conceptual hierarchy of the model document the user
 is currently working on, SHALL name that document, and SHALL keep following the
@@ -59,6 +88,12 @@ hierarchy on screen.
 - *Drilling into the hierarchy.* Given the model tree showing a flow, whose systems are declared in a ZDL document the flow annotates, when the user selects one of those systems and the ZDL document opens, then the tree still shows the flow, with that system in it.
 - *Deliberately moving to another model.* Given the model tree showing a flow, when the user opens a model document that is not part of that hierarchy, then the tree shows the newly opened document.
 - *A model that cannot be read.* Given a model document with a syntax error and nothing shown yet, when the model tree is visible, then it says the document could not be read.
+
+**Proposed, 2026-11-10 (architecture navigator, phase 1).** The Model tree SHALL follow any document the user is looking at, a text editor or a ZenWave preview, not only model documents. For a `zdl`, `zfl` or `.zw` document it behaves as above. For an OpenAPI, AsyncAPI or Markdown document, including a `zenwave:` one, it shows the symbols that `vscode.executeDocumentSymbolProvider` returns for it, from whichever installed extension provides them, and names the document. Those documents are never sent to the ZenWave server for this ([LVR-R15](../flows/lsp-visualization-requests.md#lvr-r15), [AR-R8](../flows/architecture-resources.md#ar-r8)). Moving to a document with no symbol provider SHALL show that nothing provides an outline for it, not an empty tree. The "Working on something that is not a model" example keeps its meaning for files that are none of the above (a Java file).
+
+- *An OpenAPI file.* Given a declared `openapi.yml` open as text with an OpenAPI extension that provides symbols, when the Model tree is visible, then it shows those symbols, and selecting one moves the cursor there.
+- *Markdown.* Given a Markdown page, then the tree shows its headings.
+- *No provider.* Given an AsyncAPI file and no extension providing symbols, then the tree says so.
 
 **Why:** this is the scenario that rules out the standard Outline view.
 With previews and diagrams as editors, the user is frequently not in a text
@@ -143,7 +178,7 @@ it, the tree SHALL offer the action.
 - *Diagnosing an empty tree.* Given a tree that is unexpectedly empty, when the user opens the ZenWave output channel, then the reason is recorded there.
 
 <a id="me-r9"></a>
-### ME-R9 (proposed). The model tree is the outline of a preview, and its items can navigate
+### ME-R9 (proposed). The model tree is the outline of a document or a preview, and its items can navigate
 
 The built-in Outline follows the active text editor and offers no buttons per item, so it shows nothing while a preview or a diagram has focus. The model tree already follows those ([ME-R3](#me-r3)), and SHALL be
 the view to use for them. Each of its items that stands for a declaration SHALL offer inline buttons for *Go to Definition* and *Go to References*, with the same results as those commands in a text editor. A button the server cannot answer SHALL be absent.
@@ -152,6 +187,20 @@ the view to use for them. Each of its items that stands for a declaration SHALL 
 
 - *A preview in focus.* Given `orders.zdl` shown as Model Docs, when the user looks at the model tree, then it lists the document's concepts and each can open its definition without returning to the text first.
 - *Nothing to reference.* Given a server that does not advertise references, when the user looks at an item, then it has no *Go to References* button.
+
+**Proposed, 2026-11-10 (architecture navigator, phase 1).** The Model tree SHALL be the general outline: for the active document, or the ZenWave preview in focus, as [ME-R3](#me-r3) says. Its two sources are:
+
+- **`zdl`, `zfl`, `.zw`:** the symbols and hierarchy come from the ZenWave server, and the tree and the ZenWave preview follow each other in both directions: scrolling or focusing in the preview selects the matching node, and selecting a node scrolls the preview to it, or moves the cursor when the text editor is the active one. The preview side of this is [MP-R35](model-preview.md#mp-r35).
+- **OpenAPI, AsyncAPI, Markdown:** the symbols come from `vscode.executeDocumentSymbolProvider`, and the tree follows the text editor only. These documents have no ZenWave preview in phase 1.
+
+The tree has no sibling view: a third outline view is not added.
+
+**Examples (proposed)**
+
+- *Scrolling the preview.* Given `orders.zdl` shown as Model Docs, when the user scrolls the preview to the section of an entity, then the entity is selected in the tree.
+- *Choosing in the tree.* Given the same preview, when the user selects a service in the tree, then the preview scrolls to it.
+- *The text editor.* Given `orders.zdl` as text, when the user selects a node, then the cursor moves to its declaration.
+- *Not for OpenAPI.* Given an OpenAPI file, then selecting a symbol moves the cursor and nothing happens in a preview, because there is none.
 
 ## Design notes
 
@@ -179,3 +228,23 @@ says the document has errors.
 
 **Selection into the diagram** sends a node's first `viewNodeIds` entry, or `null`, to every panel open for the tree's
 document. The reverse, diagram to tree, needs the page to send a selection: [EF-R5](../flows/eventflow.md#ef-r5).
+
+## Open questions
+
+<a id="me-q1"></a>
+**ME-Q1. Two actions named "Open Architecture Manifest".** `zenwave.explorer.openManifest` already exists and opens the
+manifest document the client resolved (it is offered when the server could not read it, see *A browser-hosted server cannot
+read the manifest* above). [ME-R2](#me-r2) asks for an action of the same name that lets the user choose a manifest. They do
+different things. Proposal: keep the existing one as it is and give the new command another id and a palette title such as
+*Choose Architecture Manifest…*, keeping "Open Architecture Manifest…" for the welcome link and the title bar if the owner
+prefers. Not decided.
+
+<a id="me-q2"></a>
+**ME-Q2. A tree node for an entry with no address.** [AR-Q3](../flows/architecture-resources.md#ar-q3): a document with no
+inherited version cannot be addressed. The tree shows such an entry with a warning in phase 1. Whether that is right is for the
+owner.
+
+<a id="me-q3"></a>
+**ME-Q3. An outline for OpenAPI and AsyncAPI without an extension.** An OpenAPI file shown with no extension registering a
+symbol provider gives no outline. Whether the ZenWave server should ever offer one is not in phase 1, and
+[LVR-R15](../flows/lsp-visualization-requests.md#lvr-r15) says why it cannot be the first thing tried.

@@ -4,7 +4,7 @@
 
 The contract for reading what a manifest refers to. The [guide](source-resolution-guide.md) explains the same contract with worked examples, and the [workspace model](workspace-model.md) is what is built from it.
 
-Status: current contract  
+Status: current contract; SR-R4 and SR-R5 proposed, 2026-11-10  
 Date: 2026-11-01
 
 Architecture Manifest 1.0 is read-only. A conforming implementation resolves content but does not publish, upload, register, clone, push, commit, tag, sign, or deploy manifest-managed content.
@@ -94,6 +94,12 @@ Coordinate expressions MUST NOT recursively select `groupId` or `artifactId`. Af
 A preferred source can reorder or restrict only already-active sources. Transport or not-found failure advances to the next applicable candidate. Apicurio and Maven are skipped for document loads. Terminal errors list redacted candidates in attempted order and the final error.
 
 A supported absolute artifact or document URI bypasses `contentResolution`.
+
+<a id="sr-r4"></a>
+**SR-R4 (proposed). A manifest that is an `http(s)` address does not use the `workspace` source.** Proposed 2026-11-10 for the architecture navigator ([decision 0027](../decisions/0027-the-server-serves-the-zenwave-scheme.md)). The `workspace` base is the manifest's directory ([§5.1](#51-workspace)), and a URL has no directory on a disk. When the manifest was read from an `http(s)` address, the loader SHALL treat `workspace` as not applicable, as Apicurio and Maven are for documents ([§6](#6-applicability)): it is skipped in the ordered list, no local path is built from the URL, and resolution falls through to the later sources. Naming `workspace` in `contentResolution`, or configuring its `basePathExpression`, is not an error for such a manifest. If no applicable source is left, resolution fails with the terminal error of this section, saying that `workspace` was skipped because the manifest is remote. A preferred source of `workspace` for a remote manifest is "preferred source not active" ([§7](#7-deterministic-diagnostics)). For example, with `contentResolution: [workspace, git]` and the manifest at `https://example.org/zenwave-architecture.yml`, an artifact is read from `git` only.
+
+<a id="sr-r5"></a>
+**SR-R5 (proposed). A path next to a declared artifact loads as a document of the same owner and version.** Proposed 2026-11-10. A consumer holding a declared artifact may need a file that artifact refers to by a relative reference, such as an OpenAPI `$ref` to `schemas/common.yml`, which no manifest entry names. The loader SHALL offer that as a **document load with an explicit owner, version and path**: `${content.path}` is the normalised path, `${version}` is the version given, the owner variables are the owner's, and the ordered sources are tried as for any document ([§4](#4-ordered-resolution)); Apicurio and Maven are skipped as they are for documents. Variables that belong to an artifact (`${artifact.*}`) are unresolved for it and fail before I/O if an expression selects them. The loader SHALL refuse a path that leaves the owner's content once normalised (a `..` above the root). It does not know whether a path is declared: the library has no rule that a consumer may only read what the manifest names, and that guard belongs to the consumer that serves content to someone else ([AR-R2](../flows/architecture-resources.md#ar-r2), [AR-R3](../flows/architecture-resources.md#ar-r3)). So the address scheme, the declared-only check and deciding that a reference is relative stay in `zenwave-lsp`; only "load this path of this owner at this version" is a library operation, because only the library knows the sources and their expressions.
 
 ## 5. Sources
 

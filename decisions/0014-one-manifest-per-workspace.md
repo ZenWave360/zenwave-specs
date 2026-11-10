@@ -16,6 +16,8 @@ a changed file is forwarded as `workspace/didChangeWatchedFiles`.
 
 The client does not fetch content, join paths for the manifest or choose a source.
 
+**Amended 2026-11-10** ([decision 0027](0027-the-server-serves-the-zenwave-scheme.md)): the manifest in step 1 or 2 may be an `http(s)` address, and a command, *Open Architecture Manifest…*, can write the setting at workspace scope, or, with no folder, hold a session override in `workspaceState` that takes the setting's place. One manifest per workspace stays.
+
 ## Why
 
 A manifest describes an organisation's architecture, and a workspace holds one. The intended shape is **one folder
