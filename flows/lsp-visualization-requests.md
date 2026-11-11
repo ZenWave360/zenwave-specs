@@ -404,6 +404,12 @@ The plugin catalogue is not a request: a client sends `initializationOptions.plu
 and the `service` and `command` its `@zdl` model declares, point at that ZDL, and gain a `referenced-by` related resource back to the flow. A ZDL
 the server cannot reach leaves them in the flow. `textDocument/documentSymbol` stays within the document.
 
+In an architecture manifest, a node may also carry `version`, `address` (its `zenwave:` address) and `disabledReason`, each absent
+when it does not apply. Under a domain, subdomain or service that declares them, groups of kind `artifacts`, `docs` and `consumers`
+hold nodes of kind `artifact` (`uiHints.type` is the artifact type), `doc` (`uiHints.key` is the docs key) and `consumer` (as the
+manifest writes it, no address). A folder, glob, absolute-URI or unaddressable entry has a `disabledReason` and no `address`.
+A domain or subdomain with no services is still a node ([ME-R2](../zenwave-platform-vscode/model-explorer.md#me-r2), AN/3.2).
+
 **`viewNodeIds`.** The ids, in the same document's view models, standing for the node's concept. Empty means no counterpart.
 
 | Hierarchy kind | View-model ids |
