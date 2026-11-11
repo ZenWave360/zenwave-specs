@@ -59,7 +59,8 @@ name and extension survive. Each segment is percent-encoded as a URI path segmen
 
 - for an artifact, the artifact's own `version`, which never inherits;
 - for a document, the version it inherits from service, then subdomain, then domain: the same value `${version}` has for a
-  document load.
+  document load;
+- `-` when neither the entry nor any node above it declares a version ([AR-Q3](#ar-q3)).
 
 **Examples**
 
@@ -278,6 +279,9 @@ already means a document the client sent.
 [LC-R3](../zenwave-platform-vscode/lsp-client.md#lc-r3) selects the manifest by scheme and exact path. A reserved first
 segment that no owner id can have (a leading dot such as `.manifest`) is one candidate. Whether an owner id can start with a
 dot has not been checked.
+*Decided (owner, 2026-11-11):* the remote manifest is the file `.zenwave-manifest.yml` at the root of the remote repository,
+its name configurable in the extension (one setting, no more). Its address is `zenwave:/.zenwave-manifest.yml`: the
+leading dot is the reserved segment, which no owner id has.
 
 <a id="ar-q2"></a>
 **AR-Q2. How does *Refresh* reach the server?** The server ignores configuration changes
@@ -293,6 +297,8 @@ the nodes above it ([source resolution §1](../zenwave-architecture/source-resol
 reserved segment stands for "unversioned". Until decided, such an entry is shown with a warning, not hidden.
 *Decided in part (owner, 2026-11-10):* docs inherit the version of their service, as [AR-R1](#ar-r1) says. Still open: a doc
 declared on a domain or subdomain that has no version anywhere above it, as the Arcadia `architecture` domain.
+*Decided (owner, 2026-11-11):* the reserved segment `-` stands for "unversioned", as in `zenwave:/architecture/-/README.md`,
+and the tree shows no version for it. The bytes are fetched with the manifest's expression as for any other entry.
 
 <a id="ar-q4"></a>
 **AR-Q4. What is the address of an entry written as an absolute URI?** A docs value may be a supported absolute URI, which
