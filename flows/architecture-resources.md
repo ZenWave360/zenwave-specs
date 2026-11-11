@@ -314,6 +314,11 @@ domains, a list the extension lets the user configure. Any other host is refused
 and on `vscode.dev`, with the Arcadia manifest (`raw/main/${content.path}`): the first public file, a private one with a
 credential, and the redirect. If it fails, record the expression form that works (for instance
 `raw.githubusercontent.com`, or `api.github.com/repos/.../contents`). Not checked.
+Also open: the loaders follow HTTP redirects, and the server does not check the target again. A same-origin `$ref` of a
+remote manifest that redirects to another origin is read (review of AN/2, 2026-11-11). Whether a redirect is re-checked
+against the allowed domains ([AR-Q4](#ar-q4)) is decided with this question, since `github.com` itself redirects.
+A literal `%` in a declared path is not served yet: the entry is marked, because the sources and loaders do not agree on
+decoding it.
 
 <a id="ar-q6"></a>
 **AR-Q6. Which third-party extensions open a `zenwave:` document?** Some OpenAPI, AsyncAPI and Markdown tools may accept only
