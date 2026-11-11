@@ -298,6 +298,8 @@ declared on a domain or subdomain that has no version anywhere above it, as the 
 **AR-Q4. What is the address of an entry written as an absolute URI?** A docs value may be a supported absolute URI, which
 bypasses `contentResolution` ([source resolution §4](../zenwave-architecture/source-resolution-specification.md#source-resolution)).
 `<content.path>` would then be a URL. Not designed; the Arcadia manifest has none.
+*Decided (owner, 2026-11-11):* such an entry is flagged in the tree, and fetched only when its host is one of the allowed
+domains, a list the extension lets the user configure. Any other host is refused and reported, never fetched.
 
 <a id="ar-q5"></a>
 **AR-Q5. Does a git fetch from a browser work?** `https://github.com/<org>/<repo>/raw/...` redirects to
