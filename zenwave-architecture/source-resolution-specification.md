@@ -13,16 +13,16 @@ Architecture Manifest 1.0 is read-only. A conforming implementation resolves con
 
 Domain, subdomain, and service `id` fields are optional non-blank strings. The resolved ID is the explicit value or the node's YAML map key. A service directly below a domain has `subdomain.id = ""` in path-expression contexts.
 
-A service or domain may declare artifacts and an optional non-blank `repository`. Repository is distinct from stable architecture `id`, is explicit-only, and MUST NOT default to or be derived from owner identity.
+A service, subdomain or domain may declare artifacts, `docs` and an optional non-blank `repository`; a subdomain declares them exactly as a domain does (owner decision, 2026-11-11). Repository is distinct from stable architecture `id`, is explicit-only, and MUST NOT default to or be derived from owner identity.
 
-Artifact `name` is optional and explicit-only. It is never derived from the artifact path. Service `docs` is a map whose non-blank keys use letters, numbers, `.`, `_`, and `-`; values are non-blank paths or supported absolute URIs.
+Artifact `name` is optional and explicit-only. It is never derived from the artifact path. The `docs` of a service, subdomain or domain is a map whose non-blank keys use letters, numbers, `.`, `_`, and `-`; values are non-blank paths or supported absolute URIs.
 
 <a id="sr-r1"></a>
 **SR-R1 (exists). Artifact release groups are explicit metadata.** An artifact may declare an optional string `releaseGroup` identifying artifacts released together. It remains absent when omitted; it does not inherit `type`, change artifact identity or version semantics, or enforce version consistency. The runtime context exposes `artifact.releaseGroup` when declared and `artifact.type` as the original type. For example, `asyncapi` and `asyncapi-client` can both declare `releaseGroup: asyncapi-all` while retaining their own paths and types. Blank groups are allowed and fall through when selected by a fallback expression. No release IDs, computed release URLs, or additional release abstractions are introduced.
 
 Artifact `version` is REQUIRED and MUST be non-blank; a blank value counts as absent and MUST be reported as a deterministic parse diagnostic. Domain, subdomain, and service `version` remain optional.
 
-String and numeric versions normalize to strings. An artifact's content version is its own declared `version` and MUST NOT inherit from the service, subdomain, or domain. A service document's content version inherits service, subdomain, domain, unresolved. `config.version` and inspected content are not version sources.
+String and numeric versions normalize to strings. An artifact's content version is its own declared `version` and MUST NOT inherit from the service, subdomain, or domain. A service document's content version inherits service, subdomain, domain, unresolved. A subdomain document's inherits subdomain, domain, unresolved; a domain document's is the domain's own version. `config.version` and inspected content are not version sources.
 
 ## 2. Static properties and runtime expressions
 
@@ -55,7 +55,7 @@ ${artifactId}
 ${version}
 ```
 
-`owner.id` and `owner.repository` refer to the service or domain declaring the artifact. `owner.repository` and `service.repository` exist only when explicitly declared. A selected missing repository MUST fail as unresolved; implementations MUST NOT infer it from an ID. `artifact.name` exists only for an explicitly named artifact. `artifact.pathWithoutExtension` removes only the final extension from the complete path. `artifact.fileName` is the final path segment. `artifact.fileNameWithoutExtension` removes only the final extension from that segment; dotfiles and extensionless values are unchanged. `${version}` is the effective version of the operation: `artifact.version` for an artifact load and the inherited service, subdomain, or domain version for a document load. Each qualified version expression exposes only the explicit version on its named node and is unresolved when that declaration is absent.
+`owner.id` and `owner.repository` refer to the service, subdomain or domain declaring the artifact. `owner.repository` and `service.repository` exist only when explicitly declared. A selected missing repository MUST fail as unresolved; implementations MUST NOT infer it from an ID. `artifact.name` exists only for an explicitly named artifact. `artifact.pathWithoutExtension` removes only the final extension from the complete path. `artifact.fileName` is the final path segment. `artifact.fileNameWithoutExtension` removes only the final extension from that segment; dotfiles and extensionless values are unchanged. `${version}` is the effective version of the operation: `artifact.version` for an artifact load and the inherited service, subdomain, or domain version for a document load. Each qualified version expression exposes only the explicit version on its named node and is unresolved when that declaration is absent.
 
 Bracket contents in `service.docs[key]` are literal. A missing key is unresolved before I/O; `${service.docs}` is invalid. `content.path` is the artifact path for an artifact load and the selected docs-map value for a document load. Loading all docs evaluates expressions separately for every entry.
 
