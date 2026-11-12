@@ -119,6 +119,8 @@ basePathExpression: "../../${domain.id}/${subdomain.id}/${service.id}"
 
 The final path is the manifest directory plus the resolved base expression plus `content.path`. Empty slash-separated segments are removed without rewriting non-empty content. Filesystem paths are normalized after interpolation. An empty base resolves below the manifest directory; relative traversal such as `../../` is allowed. No host local-root input exists.
 
+A `file:` manifest location is percent-decoded once before its directory is taken (`file:///c%3A/work/a%20b/m.yml` has the directory `c:/work/a b`); the identity the client sent is kept for every comparison. The decoded location must still be a plain local path: an encoded `/`, `\`, `.` segment, a host or UNC authority, a query, a fragment, or a decoded `#` or `?` is refused, before anything is read. Owner decision, 2026-11-12.
+
 For `/work/architecture/manifests/zenwave-architecture.yml`, that explicit `../../` expression, direct service `commerce/orders-api`, and artifact `contracts/orders.openapi.yaml`, the result is `/work/commerce/orders-api/contracts/orders.openapi.yaml`.
 
 Repositories may define the workspace location explicitly:

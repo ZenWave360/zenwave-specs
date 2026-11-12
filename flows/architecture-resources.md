@@ -130,6 +130,8 @@ a `file:` URI as that plain file, not through the scheme.
 one that knows which source produced it ([LC-R6](../zenwave-platform-vscode/lsp-client.md#lc-r6)), so the client learns it
 from the answer and never decides it.
 
+*Decided (owner, 2026-11-12):* a local `file:` manifest location is percent-decoded once before its directory is taken, and the URI the client sent stays its identity for every comparison ([source resolution §5.1](../zenwave-architecture/source-resolution-specification.md#51-workspace)). A manifest that fails to open says why: the redacted reason is logged and repeated in the error of every request that needs it.
+
 <a id="ar-r5"></a>
 ### AR-R5 (proposed). `zenwave/readResource` returns the content
 
@@ -238,6 +240,8 @@ served under the scheme and is read-only. A remote manifest is read again only o
 - *A manifest from the web.* Given `zenwave.workspace.manifest` set to `https://example.org/zenwave-architecture.yml` and `contentResolution: [workspace, git]`, when an artifact is opened, then the `git` source is tried, and no local path is built from the URL.
 
 <a id="ar-r12"></a>
+*Decided (owner, 2026-11-12), the browser:* in a browser only a remote (`http(s)`) manifest is supported; `workspace` does not apply and only `git` is used. A manifest that is neither `file:` nor `http(s)` is reported as not supported instead of failing silently. `git` from a browser depends on CORS ([AR-Q5](#ar-q5), not yet verified): `github.com/.../raw` sends no CORS headers, so a browser needs `raw.githubusercontent.com`.
+
 ### AR-R12 (proposed). Folder entries and the remote listing file are reserved for phase 2
 
 Phase 1 serves single files only. A docs entry or artifact path that ends in `/` or contains a glob character is a **folder
