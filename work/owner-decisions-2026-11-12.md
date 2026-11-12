@@ -56,7 +56,8 @@ match (backlog task DEC/1). Numbers are the triage's (D1–D28).
 - **D16, 001/1.2.** Not tried in IntelliJ yet; expected to be JCEF-compatible. Stays a manual check.
 - **D17, 003/3.6.** Not needed for now (explained in plain words; the owner did not see a use). Stays skipped.
 - **D22, 006/1.6.** Settled by AN/5.3: the Model tree is the outline of the active document.
-- **D27, PX/7.1.** Pending: the owner is recovering the interview notes.
+- **D27, PX/7.1.** Pending: the interview was never held (owner kept it on 2026-11-06). Its script is the
+  [navigation brief](../roadmap/navigation-brief.md); run it as a separate grilling session.
 - **D28, 001/2.18.** Nothing is in production, so the best long-term contract wins: `zenwave/conceptAt` itself changes
   to return an object (concepts, whether the list is truncated, whether an architecture is resolved), on JVM and JS, and
   the VS Code client moves with it. No second method and no legacy array.
