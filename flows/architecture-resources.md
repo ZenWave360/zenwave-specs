@@ -317,6 +317,11 @@ credential, and the redirect. If it fails, record the expression form that works
 Also open: the loaders follow HTTP redirects, and the server does not check the target again. A same-origin `$ref` of a
 remote manifest that redirects to another origin is read (review of AN/2, 2026-11-11). Whether a redirect is re-checked
 against the allowed domains ([AR-Q4](#ar-q4)) is decided with this question, since `github.com` itself redirects.
+*Decided (owner, 2026-11-12), for absolute-URI entries:* a URL that is not allowed is never contacted. The server follows
+redirects by hand, at most 5 hops, checks each hop against the allowed domains, and refuses `https` to `http`. A browser
+cannot show the hops, so in the web extension an absolute entry that redirects is refused, and the entry must name its
+final URL (for instance `raw.githubusercontent.com`). Each fetch is bounded to 30 s and 10 MiB. Still open: manifest
+loading and declared repository sources use the loaders' own HTTP, which follows redirects unchecked (backlog AN/4.6).
 A literal `%` in a declared path is not served yet: the entry is marked, because the sources and loaders do not agree on
 decoding it.
 
