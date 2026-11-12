@@ -28,16 +28,18 @@ The packages are on npm (checked 2026-10-30): `@zenwave360/dsl` latest `1.10.0`,
 
 Agents took these to keep work moving. The code follows them; confirm or change them.
 
-- [ ] [0005](../decisions/0005-ide-clients-live-in-their-own-repositories.md) IDE clients in their own repositories
+- [x] [0005](../decisions/0005-ide-clients-live-in-their-own-repositories.md) IDE clients in their own repositories Decided 2026-11-12, see [owner decisions](owner-decisions-2026-11-12.md).
 - [x] [0006](../decisions/0006-one-javascript-server-in-the-extension.md) One JS server in the extension. Confirmed 2026-10-30.
 - [x] [0008](../decisions/0008-credentials-are-handed-over-per-request.md) Credential exchange. Confirmed 2026-10-30.
-- [ ] The CORS question in [0008](../decisions/0008-credentials-are-handed-over-per-request.md#open): how a browser reaches private content, which web mode now depends on ([0018](../decisions/0018-vscode-web-mode-is-the-web-explorer.md))
-- [ ] [0009](../decisions/0009-mermaid-not-plantuml.md) ZDL Mermaid generator scope
+- [x] The CORS question in [0008](../decisions/0008-credentials-are-handed-over-per-request.md#open): how a browser reaches private content, which web mode now depends on ([0018](../decisions/0018-vscode-web-mode-is-the-web-explorer.md)) Decided 2026-11-12, see [owner decisions](owner-decisions-2026-11-12.md).
+- [x] [0009](../decisions/0009-mermaid-not-plantuml.md) ZDL Mermaid generator scope Decided 2026-11-12, see [owner decisions](owner-decisions-2026-11-12.md).
 - [ ] [0013](../decisions/0013-platform-capabilities-are-asked-for.md) Lazy Node loading and capability query
-- [ ] [0014](../decisions/0014-one-manifest-per-workspace.md) Manifest resolution details
+- [x] [0014](../decisions/0014-one-manifest-per-workspace.md) Manifest resolution details Decided 2026-11-12, see [owner decisions](owner-decisions-2026-11-12.md).
 - [ ] [0015](../decisions/0015-documentation-url-has-three-states.md) `documentationUrl`
-- [ ] [0016](../decisions/0016-numbers-from-the-js-parser.md) JS numbers, and whether decimals stay strings
-- [ ] [LVR-R11](../flows/lsp-visualization-requests.md#lvr-r11) The server keeps composing hierarchy labels as plain, IDE-neutral names
+- [x] [0016](../decisions/0016-numbers-from-the-js-parser.md) JS numbers, and whether decimals stay strings Decided 2026-11-12, see [owner decisions](owner-decisions-2026-11-12.md).
+- [x] [LVR-R11](../flows/lsp-visualization-requests.md#lvr-r11) The server keeps composing hierarchy labels as plain, IDE-neutral names Decided 2026-11-12, see [owner decisions](owner-decisions-2026-11-12.md).
+
+- [ ] **DEC/1** Bring each decision document and rule in line with [owner decisions 2026-11-12](owner-decisions-2026-11-12.md), and add the tasks they create (`documentationUrl` for SDK plugins, the visual editor test page, the Systems action in the server).
 
 ## zenwave-lsp
 
