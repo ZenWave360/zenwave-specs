@@ -78,13 +78,13 @@ Decisions are in [0013](../decisions/0013-platform-capabilities-are-asked-for.md
 - [ ] **kmp/1.1** `json-schema-ref-parser-kmp` chooses how to keep the Node filesystem loader out of a browser's module graph — named targets, a separate artifact, or a lazily resolved import (surveyed in `design.md`) (decision recorded in design.md §Decision (task 1.1), pending review)
 - [ ] **kmp/1.2** Agree whether existing Node consumers keep today's default behaviour, and what the migration is if they do not (decision recorded in design.md §Decision (task 1.2), pending review)
 - [ ] **kmp/1.3** Agree how a consumer asks which capabilities exist on its platform (decision recorded in design.md §Decision (task 1.3), pending review)
-- [ ] **kmp/3.1** Confirm `architecture-manifest`, `architecture-graph` and `workspace-runtime` load in a browser once the loader is fixed — they carry no Node API of their own
+- [x] **kmp/3.1** Confirm `architecture-manifest`, `architecture-graph` and `workspace-runtime` load in a browser once the loader is fixed — they carry no Node API of their own
 - [ ] **kmp** workspace-runtime: blocked, the module is not in zenwave-architecture's history. At `develop` c82feb5 `settings.gradle.kts` includes only `architecture-manifest` and `architecture-graph`. `workspace-runtime/` exists only as untracked files in the main checkout, so it cannot be built or verified from committed sources
 - [ ] **kmp/4.4** `lsp-core`'s manifest tests agree with the manifest content resolution it builds against. Four tests fail identically on JVM and JS, already at a72d9b7 against zenwave-architecture 2edd677 (and a72d9b7 does not compile against the local architecture-manifest 0.1.0-SNAPSHOT: `ArchitectureManifestParser.kt:57` unresolved `repository`): `ArchitectureManifestLanguageModuleTest.hoverAndDefinitionResolveOwnedRepositoryAndSpecs`, `.crossReferenceContributionsExposeOwnedResources`, `ArchitectureManifestParserTest.resolvesServiceOwnedResourcesUsingExpandedRepositoryBase`, `.recordsUnresolvedVariablesAsDiagnostics` (service resources now resolve under the domain path, e.g. `file:///workspace/my-docs/orders/orders-api/...`). Blocked: the matching parser and test changes exist only as uncommitted work in the zenwave-lsp main checkout (branch `codex/integrate-manifest-workspace-runtime`).
-- [ ] **kmp/6.1** Declare a `browser()` target wherever a JS artifact is published
-- [ ] **kmp/6.2** A build step that loads the artifact in a browser and fails if it cannot
-- [ ] **kmp/6.3** Confirm the check actually catches a regression, by introducing a Node import on a branch and watching the build fail
-- [ ] **kmp/6.4** Node consumers still work throughout
+- [x] **kmp/6.1** Declare a `browser()` target wherever a JS artifact is published
+- [x] **kmp/6.2** A build step that loads the artifact in a browser and fails if it cannot
+- [x] **kmp/6.3** Confirm the check actually catches a regression, by introducing a Node import on a branch and watching the build fail
+- [x] **kmp/6.4** Node consumers still work throughout
 - [ ] **kmp/7.1** `zenwave-platform-vscode`: the language stack loads in the web extension host, which is what `003-lsp-client` is waiting on
 - [ ] **kmp/7.2** Any other browser consumer that wants it — website, EventCatalog components, Astro components — confirms the same
 
