@@ -152,6 +152,17 @@ the kind, which contradicted every node carrying one and would have left an
 unknown kind with nothing to show.
 
 <a id="me-r7"></a>
+
+**Proposed (owner, 2026-11-12): icons and what is expanded.**
+
+- *Icons.* Domain `globe`, subdomain `folder-library`, service `server`, Artifacts group `library`, Docs group `output`,
+  Consumers `plug`, API `symbol-interface`, command `symbol-method-arrow`. An entry that is a file shows its language's
+  file icon from the icon theme (ZDL, ZFL, OpenAPI, AsyncAPI, Markdown), not a codicon.
+- *Expansion in the Model tree.* The second level is collapsed: entities, events, inputs and outputs are listed, and
+  their fields are children, collapsed. Services are expanded, so their commands show. When the tree follows the cursor
+  ([ME-R3](#me-r3)), the node in focus is revealed and its ancestors are expanded.
+- The ZenWave view container's icon is the ZenWave glyph (`resources/zenwave-brand/zenwave-activitybar.svg`).
+
 ### ME-R7 (exists). A tree selection is reflected in an open diagram
 
 Where a diagram is open for the same document, selecting a node in the model tree
