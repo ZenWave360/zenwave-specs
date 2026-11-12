@@ -40,6 +40,7 @@ Agents took these to keep work moving. The code follows them; confirm or change 
 - [x] [LVR-R11](../flows/lsp-visualization-requests.md#lvr-r11) The server keeps composing hierarchy labels as plain, IDE-neutral names Decided 2026-11-12, see [owner decisions](owner-decisions-2026-11-12.md).
 
 - [ ] **DEC/1** Bring each decision document and rule in line with [owner decisions 2026-11-12](owner-decisions-2026-11-12.md), and add the tasks they create (`documentationUrl` for SDK plugins, the visual editor test page, the Systems action in the server).
+- [ ] **DEC/2** Drop `.zenwave/config.yml` (owner, 2026-11-12, D18): the manifest comes from `.vscode/settings.json` or is opened explicitly. Analyse the activation events, manifest resolution ([0014](../decisions/0014-one-manifest-per-workspace.md)), the smokes and the docs that use it, then implement.
 
 ## zenwave-lsp
 

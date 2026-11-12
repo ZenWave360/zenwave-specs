@@ -10,17 +10,25 @@ match (backlog task DEC/1). Numbers are the triage's (D1–D28).
 - **D2, 008/1.2.** Only the owner creates, rotates and uploads publisher tokens to GitHub. Nobody else.
 - **D23, REL/6, REL/17.** `vscode-release` runs on tags. Trusted publishing replaces tokens when it is available. The
   named reviewer, where one is required, is the owner (ivangsa).
-- **D24, REL/7.** Asked again in plain words (pending).
+- **D24, REL/7.** A stable tag waits for the owner's approval in a GitHub environment; a run that fails half way re-runs
+  only the failed part, with the same tag.
 
 ## Platform and browser
 
 - **D3, 0005.** Confirmed: the VS Code and IntelliJ clients live in separate repositories.
 - **D4, 0008 CORS.** Private content in a browser is fetched directly, with CORS.
-- **D6, 0013.** Capability discovery: the most efficient and maintainable option. Agent proposal: one explicit runtime
-  query (pending owner nod).
+- **D6, 0013.** Capability discovery is one explicit runtime query.
 - **D7, 0014.** The configured manifest wins. Ambiguous candidates are not opened; the user has *Open Architecture
   Manifest* to choose one.
-- **D12, D13, D14, D18.** Asked again in plain words (pending).
+- **D12, kmp/1.1.** Keep the Node filesystem loader out of browser bundles the correct Kotlin way: `expect`/`actual`
+  where it works. `expect`/`actual` separates JVM from JS, not Node from browser, so it needs two named JS targets
+  (node, browser); if that proves unworkable, a separate Node-only artifact.
+- **D13, kmp/1.2.** Node keeps reading the filesystem by default; nothing breaks for current users.
+- **D14, kmp/7.2.** The browser consumers in scope are the architectural-vistas components embedded in EventCatalog, the
+  website and Astro, in the way the EventFlow test app embeds them.
+- **D18, c003/3.6.** Drop `.zenwave/config.yml`. It was meant to be shared with IntelliJ, which is now secondary. The
+  manifest is configured in `.vscode/settings.json` or opened explicitly. Activation and manifest resolution change
+  accordingly (backlog DEC/2).
 - **D19, c003/4.4.** Keep the multi-root selection rule as implemented.
 
 ## Language, editor and representation
@@ -36,11 +44,17 @@ match (backlog task DEC/1). Numbers are the triage's (D1–D28).
     owner before it is built**;
   - annotations and Javadoc go with the policy, as a default rather than a fixed rule.
 - **D25, PX/5.4.** The Systems action is implemented in the language server where possible; the client only invokes
-  it. Additive or full removal by default: pending.
+  it. By default it only adds; it removes nothing.
 - **D26, PX/6.4.** The visual editor first needs a test page, like the viewer's, to try it outside VS Code.
 
 ## Reviews and optional scope
 
 - **D20, 002/11.7.** The installed SDK refreshes the catalogue only when the user asks, and persists it globally or per
   workspace, as the user chooses.
-- **D15, D16, D17, D21, D22, D27, D28.** Pending.
+- **D21, 004/1.5.** The extension pins an exact lsp-js version and checks the protocol version at connection: accepted.
+- **D15, 001/1.1.** The review of the first two visualization requests is superseded: they are built and used. Close.
+- **D16, 001/1.2.** Not tried in IntelliJ yet; expected to be JCEF-compatible. Stays a manual check.
+- **D17, 003/3.6.** Not needed for now (explained in plain words; the owner did not see a use). Stays skipped.
+- **D22, 006/1.6.** Settled by AN/5.3: the Model tree is the outline of the active document.
+- **D27, PX/7.1.** Pending: the owner is recovering the interview notes.
+- **D28, 001/2.18.** Explained again in plain words (pending).
