@@ -149,7 +149,7 @@ service InventoryService (StockReservation) {
 
 A `rules` block lists named business rules, each a name and a text value: `rules (Aggregate)? { name "text" … }`. The grammar is the one ZDL `policies` has today ([Zdl.g4](https://github.com/ZenWave360/dsl-kotlin/blob/develop/dsl-kotlin/src/commonMain/antlr/io.zenwave360.language.antlr/Zdl.g4) `policies`, `policie_body`): a rule name may contain `-`, and the value is a string, single-line or multi-line. Decided by the owner, 2026-11-18.
 
-- **ZDL:** `rules` is a top-level block, as `policies` is. The aggregate in parentheses is optional and is not validated, as today. `policies` stays as a deprecated alias: it parses the same, and the server warns on the keyword with a quick fix that renames it to `rules`. The model keeps rules under a new `rules` key; for as long as the alias exists, the same entries are also written under `policies`, so zenwave-sdk templates keep working.
+- **ZDL:** `rules` is a top-level block, as `policies` is. The aggregate in parentheses is optional and is not validated, as today. `policies` stays as a deprecated alias: it parses the same, and the server warns on the keyword with a quick fix that renames it to `rules`. Both keywords fill the same model object, under the `rules` key. Until zenwave-sdk reads `rules` ([RU/9](../work/backlog.md)), the model also exposes that object as `policies`, which the SDK reads today (`BackendApplicationDefaultHelpers.java:433`). The docs show only `rules`.
 - **ZFL:** `rules` goes inside a `flow`, anywhere among `start`, `when`, `do` and `end`, and a flow may have several. The aggregate in parentheses is optional and, for now, is not validated against the flow's services. ZFL never had a `policies` keyword, so it has no alias.
 - **Names:** in ZFL, `when … do …` is still called a policy in the code, the specs and EventFlow. A rule is a different thing: a statement of business logic, not a link between an event and a command. The [glossary](../architecture/glossary.md) says so.
 - **Where they show:** the generated docs list a flow's rules on the flow page, and a ZDL's rules in the module page as policies are today; the editor gives highlighting, hover and outline in VS Code and IntelliJ.
@@ -171,6 +171,8 @@ flow PlaceOrder {
 ### ZFL-R12 (proposed). A command names the rules it applies with `@rules(…)`
 
 A ZFL `when … do` or `do` block, and a ZDL service method, may carry `@rules(name, …)` listing the rules it applies. This is an annotation, so the grammar does not change. A name that has no rule in the same flow (ZFL) or file (ZDL) is a warning on that name. Hover on a name shows the rule's text, and go to definition opens it. The generated docs and the sequence diagrams list, for each command, the rules it applies; in a Mermaid diagram this is a `%%` comment, so the copied source carries it ([variant title comment](https://github.com/ZenWave360/dsl-kotlin/commit/b3c5ad9)). Decided by the owner, 2026-11-18.
+
+In ZDL, the older method annotation `@policy(name)` is a deprecated alias of `@rules(name)`: it resolves the same way, and the server warns on it with a quick fix to `@rules`. zenwave-sdk reads `@policy` today (`BackendApplicationDefaultHelpers.java:432`); the docs show only `@rules`. Decided by the owner, 2026-11-20.
 
 A rule name with `-` lexes as a different token from a plain identifier, so inside `@rules(…)` it is written quoted: `@rules(minimumAmount, "stock-first")`. Both forms resolve to the same rule.
 
