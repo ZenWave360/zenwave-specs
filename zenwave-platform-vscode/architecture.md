@@ -31,7 +31,7 @@ src/host/                    capabilities, output channel
 src/lsp/feature.ts           trust, settings, manifest, status bar, context keys, commands
 src/lsp/supervisor.ts        one lifecycle; requests answer ok | no-server | unsupported | failed
 src/lsp/requests.ts          typed zenwave/* wrappers for feature code
-src/lsp/manifest*.ts         setting → .zenwave/config.yml → none, through vscode.workspace.fs
+src/lsp/manifest*.ts         setting → none, through vscode.workspace.fs
 src/lsp/credential*.ts       origin-matched answers to zenwave/credential
 src/sdk/                     SDK runner: model reading, command assembly, shell quoting, catalogue
 src/model/actions.ts         editor commands over zenwave/* requests

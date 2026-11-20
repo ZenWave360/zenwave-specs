@@ -54,7 +54,7 @@ them to open a document first.
 
 *Refresh.* The view title SHALL offer **Refresh**, which clears what was fetched during the session and reads the manifest again. A remote manifest is read-only, and Refresh is the only way to pick up its changes. Fetched content is otherwise kept in memory for the session.
 
-*Choosing the manifest.* The view title and the no-manifest welcome content SHALL offer **Choose Architecture Manifest…**, which asks for *Local file…* or *URL…*. With a workspace folder open, the choice is written to `zenwave.workspace.manifest` at workspace scope, which already outranks `.zenwave/config.yml` ([LC-R5](lsp-client.md#lc-r5)), and the server restarts with the new manifest. With no folder, the choice is kept for the session in `workspaceState`. See [ME-Q1](#me-q1) for the name.
+*Choosing the manifest.* The view title and the no-manifest welcome content SHALL offer **Choose Architecture Manifest…**, which asks for *Local file…* or *URL…*. With a workspace folder open, the choice is written to `zenwave.workspace.manifest` at workspace scope, the one place the manifest is read from ([LC-R5](lsp-client.md#lc-r5)), and the server restarts with the new manifest. With no folder, the choice is kept for the session in `workspaceState`. See [ME-Q1](#me-q1) for the name.
 
 *Hosts.* The same behaviour SHALL work on the desktop and in web mode ([WE-R2](../roadmap/web-explorer.md#we-r2), [decision 0018](../decisions/0018-vscode-web-mode-is-the-web-explorer.md)). In web mode the server reaches only `http(s)`, and whether the Arcadia manifest's content URLs allow it is [AR-Q5](../flows/architecture-resources.md#ar-q5).
 

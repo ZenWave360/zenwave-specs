@@ -18,7 +18,6 @@ defines the term properly.
 | **Confidence** | How a relationship is known: `DECLARED`, `RESOLVED`, `INFERRED_EXACT`, `INFERRED_HEURISTIC` | [world model §5.3](world-model.md#wm-5-3) |
 | **Manifest** | `zenwave-architecture.yml`: the hand-written entry point declaring domains, services and artifacts | [source resolution](../zenwave-architecture/source-resolution-specification.md) |
 | **Workspace** | What one manifest anchors. It can span repositories and remote sources. Not a folder and not a Git repository | [workspace model §7](../zenwave-architecture/workspace-model.md#wmodel-7) |
-| **Workspace configuration** | `.zenwave/config.yml`, a local file naming the manifest from a developer's checkout | [LSP client](../zenwave-platform-vscode/lsp-client.md#lc-r5) |
 | **Architecture graph** | Nodes and relationships derived from the sources. Rebuildable, never the source of truth | [workspace model](../zenwave-architecture/workspace-model.md) |
 | **Workspace Query API** | The one contract adapters use to read the graph | [workspace model §12](../zenwave-architecture/workspace-model.md#wmodel-12) |
 | **Adapter** | A surface over the Query API that adds no semantics: MCP, the LSP architecture plane, the Web Explorer | [world model §6.2](world-model.md#wm-6-2) |

@@ -30,7 +30,7 @@ wait for one say so in Needs.
 - [ ] **IJ-D1** Which IntelliJ versions to build against and support: `platformVersion`, `sinceBuild` ([IJ-D1](../roadmap/intellij-update.md#ij-d1)). Blocks IJ/1.3, 1.5.
 - [ ] **IJ-D2** Which EventFlow page, and how it reaches the plugin: copied assets or an npm package ([IJ-D2](../roadmap/intellij-update.md#ij-d2)). Blocks IJ/4.1.
 - [ ] **IJ-D3** Keep the language server in process, or move to `lsp-jvm` over a protocol client ([IJ-D3](../roadmap/intellij-update.md#ij-d3)). Recommended: in process. Blocks nothing if confirmed.
-- [ ] **IJ-D4** How the plugin finds the manifest: keep `.zenwave/config.yml` or a project setting ([IJ-D4](../roadmap/intellij-update.md#ij-d4), [D18](owner-decisions-2026-11-12.md), [decision 0014](../decisions/0014-one-manifest-per-workspace.md)). Blocks IJ/8.1.
+- [ ] **IJ-D4** How the plugin finds the manifest: keep `.zenwave/config.yml` or a project setting. VS Code dropped the file (DEC/2, 2026-11-20); the plugin still reads it until this is decided and IJ/8.1 lands ([IJ-D4](../roadmap/intellij-update.md#ij-d4), [D18](owner-decisions-2026-11-12.md), [decision 0014](../decisions/0014-one-manifest-per-workspace.md)). Blocks IJ/8.1.
 - [ ] **IJ-D5** Whether the architecture navigator is in this update ([IJ-D5](../roadmap/intellij-update.md#ij-d5)). Blocks all of IJ/8.
 - [ ] **IJ-D6** When the ZDL preview changes from PlantUML to Mermaid ([IJ-D6](../roadmap/intellij-update.md#ij-d6), [decision 0009](../decisions/0009-mermaid-not-plantuml.md)). Blocks IJ/3.4.
 - [ ] **IJ-D7** What *Organize services* does by default ([IJ-D7](../roadmap/intellij-update.md#ij-d7), backlog PX/5.4). Blocks IJ/7.4.
@@ -250,6 +250,7 @@ Not ready: the owner decides first whether this is in the update. If yes, these 
   - Files: `.../settings/ProjectSettingsState.kt`, `ProjectSettingsConfigurable.kt`, `ZenwaveWorkspaceConfigProvider.kt`, `ZenwaveLspProjectService.kt:226-300,347-353`.
   - Verify: tests: settings produce the options the server's `parseZenwaveInitializationOptions` accepts (`ZenwaveInitializationOptions.kt:19-24`); an invalid name falls back and logs the warning.
   - Needs: IJ-D4, IJ-D5, IJ/2.1. Source: [LC-R5](../zenwave-platform-vscode/lsp-client.md#lc-r5), [decision 0014](../decisions/0014-one-manifest-per-workspace.md), [AR-Q1, AR-Q4](../flows/architecture-resources.md#ar-q1).
+  - Afterwards: delete `ZenwaveWorkspaceConfig` (and its test) from zenwave-lsp `lsp-core/.../config/`, its last reader gone; drop IJ/F.2.
 
 - [ ] **IJ/8.2** (J, L) A read-only `zenwave:` virtual file system that calls `zenwave/statResource` and `zenwave/readResource`, serves only declared addresses, opens each file in the editor for its type, and says why one cannot be opened.
   - Files: new `.../resources/ZenwaveFileSystem.kt`, `plugin.xml` (`virtualFileSystem`, file type bindings), `ZenwaveLspProjectService.kt`.

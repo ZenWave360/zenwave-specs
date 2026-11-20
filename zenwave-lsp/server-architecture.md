@@ -35,7 +35,7 @@ lsp-core (Kotlin Multiplatform)
 ├── xref/            CrossReferenceIndex
 ├── architecture/    WorkspaceArchitecturePlane, the facade over WorkspaceQueryApi
 ├── visualization/   view models and preview representations
-└── config/          .zenwave/config.yml parsing
+└── config/          resource references, variable interpolation; .zenwave/config.yml for IntelliJ only, until IJ-D4
 
 lsp-jvm   LSP4J transport. Used in process by IntelliJ
 lsp-js    vscode-languageserver transport. Two self-contained bundles, Node IPC and Web Worker
@@ -85,13 +85,15 @@ everywhere. A browser-hosted server has no filesystem and cannot read editor sch
 `initializationOptions`:
 
 ```json
-{ "zenwave": { "configUri": "file:///workspace/.zenwave/config.yml",
-               "projectManifestUri": "file:///workspace/architecture/zenwave-architecture.yml",
+{ "zenwave": { "projectManifestUri": "file:///workspace/architecture/zenwave-architecture.yml",
                "clientCapabilities": { "credentialRequest": true } } }
 ```
 
-The server does not guess where the manifest is when the client can say. `.zenwave/config.yml`
-holds `project-manifest: <path>`, relative to the workspace root, not to `.zenwave`.
+The server does not guess where the manifest is when the client can say. The client resolves it
+([LC-R5](../zenwave-platform-vscode/lsp-client.md#lc-r5)) and sends its URI, a file or an `http(s)` address. There is no
+`configUri` and no config file ([decision 0014](../decisions/0014-one-manifest-per-workspace.md), amended 2026-11-20).
+`ZenwaveWorkspaceConfig` stays in lsp-core only because the IntelliJ plugin still reads `.zenwave/config.yml`; it goes
+with [IJ-D4](../roadmap/intellij-update.md#ij-d4).
 
 <a id="ls-t6"></a>
 **LS-T6 (exists). Capabilities.** `initialize` returns the standard capabilities the modules

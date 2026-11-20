@@ -2,7 +2,7 @@
 
 <a id="lsp-client"></a>
 
-**Status:** 2026-10-30: 11 exists, 1 proposed, 2 partial. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md). Amended 2026-11-10 for the architecture navigator ([phase 1](../work/backlog.md#architecture-navigator)): [LC-R3](#lc-r3), [LC-R5](#lc-r5), [LC-R6](#lc-r6), [LC-R8](#lc-r8) and [LC-R9](#lc-r9) each carry a paragraph marked *proposed*.
+**Status:** 2026-10-30: 11 exists, 1 proposed, 2 partial. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md). Amended 2026-11-10 for the architecture navigator ([phase 1](../work/backlog.md#architecture-navigator)): [LC-R3](#lc-r3), [LC-R5](#lc-r5), [LC-R6](#lc-r6), [LC-R8](#lc-r8) and [LC-R9](#lc-r9) each carry a paragraph marked *proposed*. Amended 2026-11-20: `.zenwave/config.yml` is dropped ([D18](../work/owner-decisions-2026-11-12.md)); [LC-R2](#lc-r2) and [LC-R5](#lc-r5) changed.
 
 ## Purpose
 
@@ -35,9 +35,11 @@ architecture manifest itself.
 
 **Examples**
 
-- *Opening a configured workspace.* Given a workspace carrying ZenWave configuration, when the user opens it and goes to the ZenWave views without opening any model file, then the extension is running and the views have content.
+- *Opening a configured workspace.* Given a workspace whose `zenwave.workspace.manifest` setting names a manifest, when the user opens it and goes to the ZenWave views without opening any model file, then the extension is running and the views have content.
 - *Opening the manifest.* Given a user who opens the architecture manifest as their first ZenWave file, when the document is displayed, then the extension is running and treats it as a ZenWave document.
-- *A workspace with nothing ZenWave in it.* Given a workspace with no ZenWave configuration and no model files, when the user works in it, then the extension does not start.
+- *A workspace with nothing ZenWave in it.* Given a workspace with no model files, when the user works in it without opening a ZenWave view, then the extension does not start.
+
+*Note, 2026-11-20:* VS Code has no activation event for a setting, so a workspace that only sets `zenwave.workspace.manifest` starts the extension when a ZenWave view or a model is opened, not on opening the folder. The `.zenwave/config.yml` activation event is gone ([D18](../work/owner-decisions-2026-11-12.md)).
 
 <a id="lc-r3"></a>
 ### LC-R3 (exists). The architecture manifest is a document the server serves
@@ -78,25 +80,25 @@ simply be absent.
 <a id="lc-r5"></a>
 ### LC-R5 (exists). One architecture manifest is resolved per workspace
 
-*Note: The server ignores change notifications, so an edit to an unopened manifest needs a restart ([LVR-R12](../flows/lsp-visualization-requests.md#lvr-r12)). See [decision 0014](../decisions/0014-one-manifest-per-workspace.md).*
+*Note: The server ignores change notifications, so an edit to an unopened manifest needs a restart ([LVR-R12](../flows/lsp-visualization-requests.md#lvr-r12)). See [decision 0014](../decisions/0014-one-manifest-per-workspace.md). Amended 2026-11-20: `.zenwave/config.yml` is no longer read ([D18](../work/owner-decisions-2026-11-12.md)).*
 
 The extension SHALL resolve at most one ZenWave architecture manifest for the
-whole workspace, SHALL prefer a location the user has configured over any it
-finds by itself, and SHALL pass the manifest it resolved to the server when the
+whole workspace, SHALL take it only from the `zenwave.workspace.manifest`
+setting or **Open Architecture Manifest…**, SHALL NOT search for one, and SHALL pass the manifest it resolved to the server when the
 connection is initialised. The server SHALL be told when the resolved
 configuration changes.
 
 **Examples**
 
-- *One folder holding several repositories.* Given a workspace that is a single folder containing several checked-out repositories side by side — one holding the architecture and its flows, the others holding the models that belong to it, when the language server starts, then it is initialised with the one manifest for that workspace, and models in any of those repositories are understood as part of it.
-- *A single repository opened on its own.* Given a workspace that is one repository, containing an architecture manifest, when the language server starts, then it is initialised with that manifest, without anything outside the repository having to be present.
+- *One folder holding several repositories.* Given a workspace that is a single folder containing several checked-out repositories side by side — one holding the architecture and its flows, the others holding the models that belong to it — and a setting naming the manifest, when the language server starts, then it is initialised with the one manifest for that workspace, and models in any of those repositories are understood as part of it.
+- *A single repository opened on its own.* Given a workspace that is one repository, containing an architecture manifest named by its `.vscode/settings.json`, when the language server starts, then it is initialised with that manifest, without anything outside the repository having to be present.
 - *Configuring where the manifest is.* Given a workspace where the user has set `zenwave.workspace.manifest` to a path, when the language server starts, then that manifest is the one used, and nothing is searched for.
-- *A workspace that carries its own ZenWave configuration.* Given a workspace folder containing a ZenWave configuration file that names a project manifest, and no manifest setting, when the language server starts, then the manifest that configuration names is the one used.
+- *A leftover configuration file.* Given a workspace folder containing `.zenwave/config.yml` and no manifest setting, when the language server starts, then it starts without a manifest, and the file is not read.
 - *A model with no workspace configuration at all.* Given a `.zdl` file opened outside any configured workspace, when the language server starts, then it starts without a manifest, and single-file features still work.
-- *The configuration is edited.* Given a running server initialised from a resolved manifest, when the user edits the configuration that resolved it, or the manifest itself, then the server is made aware of the change without the user restarting VS Code.
+- *The configuration is edited.* Given a running server initialised from a resolved manifest, when the user changes the setting that resolved it, or edits the manifest itself, then the server is made aware of the change without the user restarting VS Code.
 - *Finding out which manifest was chosen.* Given a user whose models are not being understood as part of their architecture, when they open the ZenWave output channel, then it states which manifest was resolved, and how.
 
-**Proposed, 2026-11-10 (architecture navigator, phase 1).** The manifest MAY be an `http(s)` address, as well as a path, in `zenwave.workspace.manifest` and in `project-manifest`, in both hosts. The extension SHALL offer **Open Architecture Manifest…** ([ME-R2](model-explorer.md#me-r2)) to choose one. With a workspace folder open, the action writes `zenwave.workspace.manifest` at workspace scope, which already outranks the config file, and the server SHALL be restarted with the new manifest. With no folder open (an empty window, or the web without a folder), it SHALL keep the choice as a session override in `workspaceState`, which takes the place of the setting for that session only and is never written to a file. One manifest per workspace still holds ([decision 0014](../decisions/0014-one-manifest-per-workspace.md)). The output channel states the choice and where it came from, as it does for any other.
+**Proposed, 2026-11-10 (architecture navigator, phase 1).** The manifest MAY be an `http(s)` address, as well as a path, in `zenwave.workspace.manifest`, in both hosts. The extension SHALL offer **Open Architecture Manifest…** ([ME-R2](model-explorer.md#me-r2)) to choose one. With a workspace folder open, the action writes `zenwave.workspace.manifest` at workspace scope, and the server SHALL be restarted with the new manifest. With no folder open (an empty window, or the web without a folder), it SHALL keep the choice as a session override in `workspaceState`, which takes the place of the setting for that session only and is never written to a file. One manifest per workspace still holds ([decision 0014](../decisions/0014-one-manifest-per-workspace.md)). The output channel states the choice and where it came from, as it does for any other.
 
 - *Choosing a URL with a folder open.* Given an open folder, when the user chooses *URL…* and enters an `https` address, then the setting is written at workspace scope, the server restarts, and the output channel names the manifest and "setting".
 - *Choosing a URL with no folder.* Given an empty window, when the user does the same, then nothing is written to disk, the server restarts with that manifest, and closing the window forgets it.
