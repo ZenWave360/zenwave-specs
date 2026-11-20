@@ -232,6 +232,8 @@ desktop and in the browser. The client generates nothing, and needs nothing new 
 opens in an editor. An `http` or `https` link opens through the host's external opener, which asks the user as it does elsewhere. Any other link stays plain text.
 Nothing is fetched to display the page, so [LVR-R14](../flows/lsp-visualization-requests.md#lvr-r14) holds, and images stay forbidden. For example, the
 `apis` block of [MP-R23](#mp-r23) links `asyncapi.yml` to that file in an editor. `classpath:` locations stay plain text.
+Gestures on a preview page are the row of the gesture table in [NAV-R1](../zenwave-lsp/navigation-spec.md#nav-r1); this
+rule is outside the first navigation wave, and a Mermaid diagram in the page does not navigate.
 
 <a id="mp-r21"></a>
 **MP-R21 (proposed). A page may have collapsible sections, and no other HTML.** The renderer keeps `html: false`. It accepts only `<details>`, `<details open>`,

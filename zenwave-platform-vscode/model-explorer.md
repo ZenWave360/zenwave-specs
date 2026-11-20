@@ -192,12 +192,13 @@ it, the tree SHALL offer the action.
 ### ME-R9 (proposed). The model tree is the outline of a document or a preview, and its items can navigate
 
 The built-in Outline follows the active text editor and offers no buttons per item, so it shows nothing while a preview or a diagram has focus. The model tree already follows those ([ME-R3](#me-r3)), and SHALL be
-the view to use for them. Each of its items that stands for a declaration SHALL offer inline buttons for *Go to Definition* and *Go to References*, with the same results as those commands in a text editor. A button the server cannot answer SHALL be absent.
+the view to use for them. Each of its items that stands for a declaration SHALL offer inline buttons for *Go to Definition* and *Go to References*, with the same results as those commands in a text editor. *Go to References* SHALL launch the editor's Find References on the item's declaration, not `zenwave.model.reverseReferences`, which is retired ([NAV-R19](../zenwave-lsp/navigation-spec.md#nav-r19)). A button the server cannot answer SHALL be absent. Click, Ctrl+click and the context menu on an item are the gestures of [NAV-R1](../zenwave-lsp/navigation-spec.md#nav-r1) and [NAV-R3](../zenwave-lsp/navigation-spec.md#nav-r3).
 
 **Examples**
 
 - *A preview in focus.* Given `orders.zdl` shown as Model Docs, when the user looks at the model tree, then it lists the document's concepts and each can open its definition without returning to the text first.
 - *Nothing to reference.* Given a server that does not advertise references, when the user looks at an item, then it has no *Go to References* button.
+- *References from the tree.* Given a ZDL event in the tree, when the user presses *Go to References*, then the references view lists the same uses as Find References on the event in the text. *(Amended 2026-11-20; today the button runs `reverseReferences`, [NAV-T5](../zenwave-lsp/navigation-spec.md#nav-t5).)*
 
 **Proposed, 2026-11-10 (architecture navigator, phase 1).** The Model tree SHALL be the general outline: for the active document, or the ZenWave preview in focus, as [ME-R3](#me-r3) says. Its two sources are:
 

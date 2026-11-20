@@ -2,7 +2,7 @@
 
 <a id="model-actions"></a>
 
-**Status:** 2026-11-01: 1 partial, 2 proposed, 2 exists. Each rule says which. *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
+**Status:** 2026-11-01: 1 partial, 2 proposed, 2 exists. Each rule says which. Amended 2026-11-20 after the navigation interview: [MA-R1](#ma-r1) keeps forward references only, and who uses a concept is Find References ([NAV-R19](../zenwave-lsp/navigation-spec.md#nav-r19)). *exists* comes from the original task lists and a spot check of the code; it does not mean every example was re-run. Manual checks still to do are in the [backlog](../work/backlog.md).
 
 ## Purpose
 
@@ -15,18 +15,19 @@ reach of someone editing that model, as ordinary editor commands.
 <a id="ma-r1"></a>
 ### MA-R1 (partial). The user can follow what a concept connects to
 
-*State: Both commands exist. Reverse references are always empty until [LVR-R9](../flows/lsp-visualization-requests.md#lvr-r9) is met, and forward references open a document at its first line.*
+*State: The command exists. A result carries its place in the target only when the target document is open (backlog PX/9.7); otherwise it opens the document at its first line. `zenwave.model.reverseReferences` still exists and is to be retired ([NAV-R19](../zenwave-lsp/navigation-spec.md#nav-r19)).*
 
 The extension SHALL offer, for the concept under the cursor in a model document,
-`zenwave.model.forwardReferences` to see what it references and
-`zenwave.model.reverseReferences` to see what references it. Results
+`zenwave.model.forwardReferences` to see what it references. Results
 SHALL be navigable, and SHALL include matches in documents other than the one
-being edited.
+being edited. What references a concept is Find References, the standard request, and the extension SHALL NOT offer
+a command of its own for it ([NAV-R19](../zenwave-lsp/navigation-spec.md#nav-r19)).
 
 **Examples**
 
 - *What this command leads to.* Given the cursor on a command declared in a ZFL flow, when the user asks what it references, then the concepts it leads to are listed, and choosing one opens it where it is declared.
-- *What uses this entity.* Given the cursor on an entity declared in a ZDL model, when the user asks what references it, then the places that use it are listed, including uses in other documents of the same architecture.
+- *Across languages.* Given the cursor on a ZDL method with `@asyncapi` and `withEvents`, when the user asks what it references, then its parameter and return types, its events and its AsyncAPI channel are listed, including those in other documents of the same architecture.
+- *What uses this entity.* Given the cursor on an entity, when the user wants what uses it, then they run Find References, and the editor's context menu has no second command for it.
 - *A single result.* Given a concept with exactly one match, when the user follows it, then they arrive at it directly, without being asked to choose from a list of one.
 - *Nothing to show.* Given a concept the server reports no references for, when the user asks, then they are told there are none, rather than being shown an empty list with no explanation.
 - *The cursor is not on a concept.* Given the cursor in whitespace or in a comment, when the user invokes the command, then nothing happens and nothing reports an error.
@@ -93,8 +94,11 @@ The wire change is [LVR-R19](../flows/lsp-visualization-requests.md#lvr-r19). Wh
 
 ## Design notes
 
-**These are not Go to Definition or Find References.** Those come through standard LSP. These commands are the architectural relations,
-across documents and repositories.
+**Forward references are what the protocol lacks.** Go to Definition gives one target, and Find References answers who
+uses a concept. Neither lists everything a concept leads to, across documents and repositories, which is what
+`forwardReferences` does. A `reverseReferences` command used to sit beside it, kept apart as "architectural relations",
+but it asked the same server index as Find References and answered the same, so for the user it was a second name for one
+thing. The owner retired it on 2026-11-19 ([NAV-R19](../zenwave-lsp/navigation-spec.md#nav-r19)).
 
 **Position to symbol, and `conceptAt` is not it.** Reference requests take a document symbol, `uri#path`, from `zenwave/symbolAt`.
 `conceptAt` answers with architecture identities, a different and legitimate question ([LVR-R7](../flows/lsp-visualization-requests.md#lvr-r7),

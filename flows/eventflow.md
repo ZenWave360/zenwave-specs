@@ -182,7 +182,9 @@ absent, not greyed out and not failing. See
 **EF-R5 (proposed). The page reports intent, the host acts.** Clicking, double
 clicking or choosing a menu entry sends the host the node id and the action id.
 Opening a file, moving the cursor and revealing in a tree are the host's work,
-done the way that IDE does them.
+done the way that IDE does them. Which gesture means what is the gesture table of
+[NAV-R1](../zenwave-lsp/navigation-spec.md#nav-r1), and what a node's menu offers is
+[NAV-R3](../zenwave-lsp/navigation-spec.md#nav-r3).
 
 <a id="ef-r6"></a>
 **EF-R6 (proposed). Well-known actions.** These ids mean the same in every host.
@@ -201,7 +203,9 @@ id it does not know still shows the entry under the label it was given.
 <a id="ef-r7"></a>
 **EF-R7 (proposed). The default action.** Double click on a node runs the first
 available of `open-zfl`, nothing otherwise. Single click selects and tells the host
-about the selection, so the host can sync its tree.
+about the selection, so the host can sync its tree. Ctrl+click goes to the node's
+definition, as on every surface ([NAV-R1](../zenwave-lsp/navigation-spec.md#nav-r1)):
+for a command, its ZDL method ([NAV-R11](../zenwave-lsp/navigation-spec.md#nav-r11)).
 
 <a id="ef-r8"></a>
 **EF-R8 (proposed). Labels come from the host.** The page needs no strings for

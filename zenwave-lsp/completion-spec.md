@@ -4,7 +4,7 @@
 
 **Status:** proposed, 2026-10-30. **Not implemented:** every language module reports `supportsCompletion = false` and neither transport advertises it
 ([LS-T1](server-architecture.md#ls-t1)). The VS Code client completes plugin declarations by itself, from a [shipped catalogue](../decisions/0012-plugin-catalogue-is-shipped.md).
-Same caveats as [navigation](navigation-spec.md) on identity and the manifest's shape.
+Its wording is older than the code: read `uri#path` as a `DocumentSymbolRef` ([LS-T3](server-architecture.md#ls-t3)), and the manifest's `specs` and `consumers` as `artifacts` ([source resolution](../zenwave-architecture/source-resolution-specification.md)).
 
 ## 1. Purpose
 

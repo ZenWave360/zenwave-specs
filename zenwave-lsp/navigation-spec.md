@@ -2,328 +2,276 @@
 
 <a id="navigation"></a>
 
-**Status:** first draft, 2026-10-30, and it says so itself at the end. It maps the navigation space, not what exists. Today: definition,
-hover and document structure work per module ([LS-T1](server-architecture.md#ls-t1)), and cross-document references are
-[partial](../flows/lsp-visualization-requests.md#lvr-r9). Three things below are older than the code. Canonical identity
-`uri#path` is a `DocumentSymbolRef`, a location rather than an identity ([LSP adapter §2](lsp-adapter.md#lsp-2)). "LDSP" was an old name for this
-server. And the manifest's `specs` and `consumers` are now `artifacts` ([source resolution](../zenwave-architecture/source-resolution-specification.md)).
+How a user moves from one place in a model to another: by click, Ctrl+click and right click, inside a file, across
+files and across languages, in VS Code and IntelliJ.
+
+**Status:** rewritten 2026-11-20 from the owner's interview of 2026-11-19 (backlog PX/7.1), which replaced the first
+draft of 2026-10-30. The rules below are *proposed* unless they say otherwise. The facts are code reads, dated, with
+file and line; no gesture was run in a real IDE for this document. The frozen rules of the first draft (`@asyncapi`
+and REST resolution) are kept as [NAV-R15](#nav-r15) and [NAV-R16](#nav-r16); its open questions keep their numbers
+as NAV-Q1 to NAV-Q7.
+
+## Scope
+
+In: Go to Definition, Find References, forward references, related resources, the gestures that reach them on each
+surface, and what the server indexes to answer them. The languages are ZDL, ZFL, OpenAPI, AsyncAPI, Avro and the
+architecture manifest ([source resolution](../zenwave-architecture/source-resolution-specification.md)).
+
+Out: code actions, rename, completion ([completion](completion-spec.md)), refactoring, and Java or Kotlin source
+inferred from a model ([NAV-Q4](#nav-q4), [NAV-Q5](#nav-q5)). Navigation from an OpenAPI or AsyncAPI document back to
+the models that use it comes in a later wave ([NAV-Q7](#nav-q7)). Links in preview pages stay in
+[MP-R20](../zenwave-platform-vscode/model-preview.md#mp-r20), outside this wave.
+
+**Order of work.** First ZFL to ZDL, then ZDL to AsyncAPI and OpenAPI, then manifest to its artifacts. Then the
+reference index for files that are not open, and last the remote documents. The [backlog](../work/backlog.md) has
+one task for each.
+
+## Vocabulary
+
+- A **`DocumentSymbolRef`** is a URI, a semantic path and optionally a range, written `uri#<path>`
+  ([LS-T3](server-architecture.md#ls-t3)). It is a location, not an identity ([LSP adapter §2](lsp-adapter.md#lsp-2)).
+- **Definition** is the one place a name stands for, reached by Ctrl+click or Go to Definition
+  (`textDocument/definition`).
+- **Find References** is everything that uses a declaration (`textDocument/references`; Find Usages in IntelliJ).
+- **Forward references** is everything a concept leads to, `zenwave.model.forwardReferences`
+  ([MA-R1](../zenwave-platform-vscode/model-actions.md#ma-r1)). The standard protocol has no equivalent.
+- A **related resource** is a document a node is associated with without being its definition, such as the ZDL a
+  ZFL system annotates. The Model tree offers it as *Open Related*.
+- The **winning ZDL** of a ZFL system is the first location of its `@zdl` that resolves ([NAV-R9](#nav-r9)).
+- A **known local file** is a file in the workspace that the manifest declares as an artifact, or that a `@zdl` or an
+  `apis` entry names by a local path.
+
+## What exists today
+
+Read 2026-11-19 by a code-reading agent during the interview, at the `develop` heads of that day; not re-run since,
+except NAV-T2, checked again 2026-11-20. Paths are under `zenwave-lsp/lsp-core/src/commonMain/kotlin/io/zenwave360/lsp/core/`
+unless they say otherwise.
+
+<a id="nav-t1"></a>
+**NAV-T1 (exists). ZFL definition answers only for commands, and stays in the file.** `zfl/ZflLanguageModule.kt:84`
+returns nothing unless the position is a command. For a command it searches the text for the first line that starts
+with `service ` and contains the `when`'s service (`:88-92`, `zfl/ZflModelAccess.kt:245`), so it lands on the service
+line of the same ZFL file. Events and system names answer nothing. Nothing follows `@zdl` to the ZDL: `declaredZdlUris`
+(`zfl/ZflModelAccess.kt:278`) reads one string per system and is used only by the hierarchy and the reference index.
+
+<a id="nav-t2"></a>
+**NAV-T2 (exists). A target without a range is dropped on the wire.** The contract returns a list of targets
+(`contracts/LanguageModule.kt:21`), but `lsp-jvm/.../DtoMapper.kt:43-44` and `lsp-js/.../JsInterop.kt:70-71` drop any
+target with no range. `zdl/ZdlLanguageModule.kt` `definition` resolves a REST method to its OpenAPI operation with
+`range = null`, so the module test passes and the editor does nothing. It also matches any path under
+`services.X.methods.Y`, so a parameter type inside such a method goes to the OpenAPI file too (checked 2026-11-20).
+`@asyncapi` has no definition; it is reachable only through forward references (`zdl/ZdlCrossReferenceContributor.kt:29-49`).
 
-## 1. Purpose
+<a id="nav-t3"></a>
+**NAV-T3 (exists). References see open documents only.** The index is fed by open snapshots
+(`platform/ZenwaveLanguageServer.kt:667-675`) and loses them on close (`:106`). `textDocument/references` asks the same
+reverse index as `zenwave/reverseReferences` (JVM `ZenwaveLspServer.kt:265-275`, JS `ZenwaveJsLanguageServer.kt:365-370`).
+A forward reference carries the target range only when the target is open (`:550-563`). Gaps in what is indexed are
+backlog PX/9.7.
 
-This document defines navigation behavior for the ZenWave language server and IDE integrations.
+<a id="nav-t4"></a>
+**NAV-T4 (exists). No `documentLink`.** No repository implements it. A `@zdl` path opens only through the Model tree's
+*Open Related*; `apis` entries are read by `zdl/ZdlRestNavigation.kt:18` and have no navigation of their own.
 
-It covers navigation:
-- inside a single file
-- across files
-- across languages
-- from models to APIs
-- from APIs back to models
-- from architecture/service descriptors to owned resources
-- from model elements to inferred source code representations
+<a id="nav-t5"></a>
+**NAV-T5 (exists). The clients.** IntelliJ (`ZenWaveDomainModelEditor`) calls the server in process through its own
+`GotoDeclarationHandler`, keeps only the first location (`ZenwaveLspProjectService.kt:161`, `firstOrNull()`), and
+registers no find usages or structure view. The VS Code Model tree opens a node's source on click; its inline
+*Go to Definition* does the same, and *Go to References* runs `zenwave.model.reverseReferences`
+(`src/explorer/feature.ts:108-110`, `:363-368`).
 
-This document is intended to:
-- freeze the first navigation model before implementation expands further
-- make ambiguity explicit
-- separate already-defined behavior from deferred or still-open behavior
+## Rules
 
-## 2. Scope
+### Gestures
 
-### In scope
+<a id="nav-r1"></a>
+### NAV-R1 (proposed). The same gestures mean the same on every surface
 
-- `Go to Definition`
-- `Find References` / usages
-- click navigation
-- hover-backed semantic target identification
-- document structure navigation
-- cross-language semantic links
+A plain click selects. Ctrl+click (Cmd+click on macOS) goes to the definition. A right click opens the menu of
+[NAV-R3](#nav-r3). Each surface's own spec refers to this table rather than defining its gestures again.
 
-### Out of scope for the first implementation wave
+| Surface | Click | Ctrl+click | Right click |
+| --- | --- | --- | --- |
+| Text editor | Moves the cursor ([NAV-R2](#nav-r2)) | Definition | The IDE's menu, with Find References and forward references |
+| Model tree | Selects and reveals the source ([ME-R5](../zenwave-platform-vscode/model-explorer.md#me-r5)) | Definition | [NAV-R3](#nav-r3); inline buttons are [ME-R9](../zenwave-platform-vscode/model-explorer.md#me-r9) |
+| EventFlow diagram | Selects, and tells the host ([EF-R7](../flows/eventflow.md#ef-r7)) | Definition | [NAV-R3](#nav-r3), through [EF-R5](../flows/eventflow.md#ef-r5) |
+| Mermaid diagram in a preview | Nothing | Nothing | Copy only ([MP-R19](../zenwave-platform-vscode/model-preview.md#mp-r19)) |
+| Markdown preview page | A link, as [MP-R20](../zenwave-platform-vscode/model-preview.md#mp-r20) says | Same | Not defined in this wave |
 
-- code actions
-- rename
-- completion-driven navigation
-- refactoring support
-- full generated-code reverse engineering
-- UI-specific behaviors outside the LSP contracts
+Definition is the semantic one. In the tree, revealing the source and the definition are the same place for a
+declaration; they differ for a node that refers to something else. A Mermaid diagram does not navigate: the client
+does not interpret Mermaid ([MP-T1](../zenwave-platform-vscode/model-preview.md#mp-t1)), and the EventFlow diagram is
+the diagram that navigates.
 
-## 3. Languages and artifacts
+**Examples**
 
-### DSL / model languages
+- *A command in the tree.* Given the Model tree of a flow showing the command `createOrder`, when the user clicks it, then the ZFL opens at the command; when they Ctrl+click it, then the ZDL method `createOrder` opens ([NAV-R11](#nav-r11)).
+- *A Mermaid sequence diagram.* Given a participant name in a sequence diagram, when the user Ctrl+clicks it, then nothing happens.
 
-- ZDL
-- ZFL
+<a id="nav-r2"></a>
+### NAV-R2 (proposed). A plain click in text belongs to the cursor
 
-### API / schema languages
+The server offers no `documentLink`. A path written in a model, in a `@zdl` or in an `apis` entry, navigates by
+definition ([NAV-R8](#nav-r8)), so Ctrl+click works on it as on a name, and a plain click only moves the cursor.
 
-- OpenAPI
-- AsyncAPI
-- Avro
+**Example:** given `@zdl("../orders/orders.zdl")`, when the user clicks inside the string, then the cursor moves there
+and nothing opens.
 
-### Other artifacts
+<a id="nav-r3"></a>
+### NAV-R3 (proposed). A node's menu offers the four ways out, and both IDEs offer the same capabilities
 
-- master project manifest / architecture YAML
-- repository roots
-- inferred source code files
+The context menu of a tree or diagram node offers *Go to Definition* and *Find References*, and also
+*Forward References* and *Open Related* when they apply to that node. VS Code and IntelliJ offer the same
+capabilities, each in its own menu form; their entries need not match one for one. Whether the diagram's menu is
+native or drawn by the page is [EF-Q6](../flows/eventflow.md#ef-q6).
 
-### Manifest example
+**Example:** given an event node with no related resource, when the user right-clicks it, then *Open Related* is not
+in the menu.
 
-The current draft example of the master project manifest is:
-- [zenwave-architecture.yml](https://github.com/arcadia-editions/arcadia-editions-architecture/blob/main/zenwave-architecture.yml)
+### Definition
 
-The manifest is described in [source resolution](../zenwave-architecture/source-resolution-specification.md).
+<a id="nav-r4"></a>
+### NAV-R4 (partial). Definition resolves meaning, not text
 
-This document assumes this shape (see the status note above):
-- workspace/project-level config
-- domains
-- services
-- docs
-- specs
-- consumers
-- optional Maven repository configuration
+Definition resolves through the model to a `DocumentSymbolRef`. Text search is a fallback only where no semantic
+binding exists.
 
-The manifest may use either:
-- `domains -> services`
-- `domains -> subdomains -> services`
+*Missing:* ZFL commands are found by text search today ([NAV-T1](#nav-t1)).
 
-## 4. Navigation operations
+<a id="nav-r5"></a>
+### NAV-R5 (proposed). A target is never dropped
 
-The system should support these navigation operations.
+A target the server resolves reaches the editor. A target with no range opens its document at the start, and both
+transports pass it on. This is what makes ZDL to OpenAPI work in the editor ([NAV-T2](#nav-t2)).
 
-### 4.1 Definition
+**Example:** given a REST method whose OpenAPI operation is found but has no known range, when the user Ctrl+clicks
+the method's annotation, then the OpenAPI file opens at its first line.
 
-Resolve the semantic target represented by the symbol under the cursor.
+<a id="nav-r6"></a>
+### NAV-R6 (proposed). Several targets are all returned, and both IDEs show a list
 
-Examples:
-- field type -> entity or enum definition
-- ZFL command reference -> ZDL service method definition
-- `@asyncapi` annotation -> AsyncAPI channel or operation
-- OpenAPI `$ref` -> referenced schema
+When a name still has more than one target after the scoping rules ([NAV-R13](#nav-r13)), the server returns all of
+them and both IDEs let the user choose from a list. Nothing picks one arbitrarily: IntelliJ keeping the first
+([NAV-T5](#nav-t5)) is a bug. One target opens directly.
 
-### 4.2 References
+**Example:** given a `when` with an unscoped command `cancel` that the ZDLs of two systems both declare, when the user
+Ctrl+clicks it, then both methods are offered.
 
-Resolve all known usages of a semantic target.
+<a id="nav-r7"></a>
+### NAV-R7 (proposed). A missing target falls back to its file, or to nothing
 
-Examples:
-- ZDL event -> all service methods using `withEvents`
-- AsyncAPI channel -> all ZDL methods or ZFL flows referencing it
-- ZDL service method -> all ZFL commands pointing to it
+Partial checkouts and missing remotes are normal. When the semantic target is not found and its document exists, the
+document opens at the start. When the document does not exist or cannot be read, navigation returns nothing, and the
+diagnostic at the place of the link says why. There is no modal message, and the server keeps serving.
 
-### 4.3 Related resource navigation
+**Examples**
 
-Resolve owned or associated artifacts even when the link is not a strict language definition.
+- *A renamed method.* Given a ZDL that exists but no longer declares the command, when the user Ctrl+clicks the command in the flow, then the ZDL opens at its first line.
+- *A missing ZDL.* Given a `@zdl` whose locations all fail, then the `@zdl` has a diagnostic, and Ctrl+click on a command of that system goes to its `systems {}` declaration ([NAV-R11](#nav-r11)).
 
-Examples:
-- service -> repository
-- service -> docs
-- service -> OpenAPI / AsyncAPI / ZDL
-- event -> inferred source code file, asyncapi.yml deifnition
+### Locations written in a model
 
-### 4.4 Document structure navigation
+<a id="nav-r8"></a>
+### NAV-R8 (proposed). A location in `@zdl` or `apis` navigates by definition
 
-Return symbols or hierarchy nodes suitable for IDE structure views and outline navigation.
+Ctrl+click on a string in a ZFL `@zdl`, or on the location of a ZDL `apis` entry, opens the document it names. A local
+path resolves against the document it is written in. A remote one opens as [NAV-R10](#nav-r10) says.
 
-## 5. Canonical identity
+*Not today:* neither has a definition ([NAV-T4](#nav-t4)).
 
-All semantic elements should have stable canonical semantic identities.
+<a id="nav-r9"></a>
+### NAV-R9 (proposed). A `@zdl` may list several locations, tried in order
 
-### 5.1 General form
+`@zdl("../orders/orders.zdl", "https://example.com/orders/orders.zdl")` resolves to the first location that exists,
+the winning ZDL. The commands and events of that system resolve against the winning ZDL. Ctrl+click on one string opens
+that location, even when it is not the winner. When no location resolves, the `@zdl` has a diagnostic and navigation
+through that system returns nothing ([NAV-R7](#nav-r7)). The owner decided the list form on 2026-11-19.
 
-```text
-<uri>#<semantic-path>
-```
+*Not checked:* the grammar accepts a list as an annotation value (`complex_value`, `Zfl.g4:126`), but
+`declaredZdlUris` reads one string ([NAV-T1](#nav-t1)), and the validator was not read.
 
-Examples:
+<a id="nav-r10"></a>
+### NAV-R10 (proposed). A remote document opens in the editor, read-only
 
-```text
-file:///workspace/orders.zdl#services.OrdersService.methods.cancelOrder
-file:///workspace/asyncapi.yml#$.channels.OrdersChannel.publish.message
-file:///workspace/subscriptions.zfl#flows.PaymentsFlow.whens.renewSubscription
-```
+A remote document reached by navigation opens in the editor, not in a browser, so the user can go on navigating inside
+it, and it cannot be saved. A document the manifest declares opens under its `zenwave:` address, with everything
+[architecture resources](../flows/architecture-resources.md) says, credentials included
+([AR-R7](../flows/architecture-resources.md#ar-r7)). A direct `https://` location in a `@zdl` or an `apis` entry is
+fetched with a plain GET by the HTTP client of the source-resolution library, with or without a manifest: there are no
+ordered sources and no expressions, because the URL is already absolute. A relative location inside a remote document,
+a `$ref` or a relative `@zdl`, resolves against that document's URL. A direct remote that asks for authentication
+fails as a missing target does ([NAV-R7](#nav-r7)); credentials for it are [NAV-Q9](#nav-q9), and its address in the
+editor is [NAV-Q10](#nav-q10).
 
-### 5.2 Resolution principle
+**Example:** given a winning `@zdl("https://example.com/orders.zdl")`, when the user Ctrl+clicks a command of that
+system, then the remote ZDL opens read-only at the method, and a `$ref` inside an `apis` file it names resolves against
+`https://example.com/`.
 
-Navigation should resolve by semantic identity, not by textual search alone.
+### ZFL
 
-Text matching may be used as a fallback only where no stronger semantic binding exists.
+<a id="nav-r11"></a>
+### NAV-R11 (proposed). A ZFL command goes to its ZDL method
 
-## 6. Navigation target kinds
+From a use in `when` or `call`, or from its declaration in `systems {}`, definition goes to the method of the same name
+in the winning ZDL of the command's system. The declaration in `systems {}` is not a second target; it is among the
+results of Find References. When the winning ZDL cannot be resolved, definition falls back to that declaration.
 
-Navigation targets should be classified by kind.
+**Example:** given `when OrderPlaced do createOrder` in a flow whose `Orders` system has `@zdl("orders.zdl")`, when the
+user Ctrl+clicks `createOrder`, then `orders.zdl` opens at `createOrder` in its service.
 
-Required target kinds:
-- `definition`
-- `reference`
-- `related-resource`
-- `source-code`
-- `repository`
-- `documentation`
-- `api`
-- `schema`
+*Not today:* definition lands on the `service` line of the ZFL ([NAV-T1](#nav-t1)).
 
-## 7. ZDL navigation rules
+<a id="nav-r12"></a>
+### NAV-R12 (proposed). A ZFL event goes to its ZDL event, or to its first appearance
 
-## 7.1 In-file navigation
+An event that the winning ZDL of a system in the file declares goes to that ZDL event. An event no ZDL declares, one of
+the flow's own or an end outcome, goes to its first appearance in the ZFL file. What `call`, `on Outcome` and end
+outcomes mean for navigation is still open ([NAV-Q1](#nav-q1) to [NAV-Q3](#nav-q3)).
 
-### 7.1.1 Field types
+**Example:** given `when PaymentFailed do cancelOrder`, where no ZDL declares `PaymentFailed` and a `start` names it
+first, when the user Ctrl+clicks it, then the cursor goes to that `start`.
 
-A ZDL field type may resolve to:
-- entity
-- enum
-- input
-- output
-- event
+<a id="nav-r13"></a>
+### NAV-R13 (proposed). A name scoped by a service looks only in that system's ZDL
 
-Examples:
-- `status OrderStatus` -> `enums.OrderStatus`
-- `customer Customer` -> `entities.Customer`
+A command or event under a named service is looked up only in the winning ZDL of that service's system. A name with no
+service is looked up in every system of the file; when it matches in several, all are returned ([NAV-R6](#nav-r6)).
 
-Remember you can always access a entity of any type (ecept events) with `allEntitiesAndEnums.<name>` and now which type is using `allEntitiesAndEnums.<name>.type`.
+### ZDL
 
-Definition:
-- cursor on type name -> target type declaration
+<a id="nav-r14"></a>
+### NAV-R14 (partial). Types and events in a ZDL go to their declarations
 
-References:
-- type declaration -> all fields using that type
+A field type goes to its entity, enum, input, output or event. A method's parameter type goes to its entity or input,
+its return type to its entity or output, and a `withEvents` entry to its event. Find References on a declaration lists
+these uses.
 
-Status:
-- partially defined
+*Missing:* inside a method with a REST target, a parameter type goes to the OpenAPI file ([NAV-T2](#nav-t2)); entity
+to entity uses are not indexed (backlog PX/9.7). The rest was described as defined in the first draft, and not
+re-checked.
 
-### 7.1.2 Service method parameter / command types
+<a id="nav-r15"></a>
+### NAV-R15 (proposed). `@asyncapi` goes to its AsyncAPI channel
 
-A service method parameter may resolve to:
-- entity
-- input
-
-Definition:
-- parameter type -> target entity/input declaration
-
-References:
-- entity/input declaration -> all service methods using it as parameter type
-
-Status:
-- defined
-
-### 7.1.3 Service outcomes / return types
-
-A service outcome / return type may resolve to:
-- entity
-- output
-
-Definition:
-- return type -> target entity/output declaration
-
-References:
-- entity/output declaration -> all service methods returning it
-
-Status:
-- defined
-
-### 7.1.4 `withEvents`
-
-`withEvents` entries resolve to ZDL events.
-
-Definition:
-- event name in `withEvents` -> event declaration
-
-References:
-- event declaration -> all `withEvents` usages
-
-Status:
-- defined
-
-### 7.1.5 `apis {}` block
-
-Entries under `apis {}` define named API resources and may point to:
-- OpenAPI
-- AsyncAPI
-- ZDL
-
-Definition:
-- API name or URI/path -> external resource target
-
-References:
-- API declaration -> all annotations referencing that API
-
-Status:
-- defined at high level
-- exact matching rules still need to be frozen
-
-## 7.2 External navigation
-
-### 7.2.1 `@asyncapi`
-
-Service methods and events may be annotated with `@asyncapi`.
-
-This should navigate to an external AsyncAPI target defined in `apis`.
-
-Possible matching dimensions:
-- `api`
-- `channel`
-- `topic`
-- message name
-
-Definition:
-- annotation or channel/topic value -> AsyncAPI target
-
-References:
-- AsyncAPI channel/message -> all ZDL methods or events referencing it
-
-Frozen rules:
-- if `@asyncapi` contains `api`, that value identifies the API declared in `apis`
-- if `@asyncapi` does not contain `api`, it refers to an API named `default`
-- that default API must have role `provider`
-- `channel` identifies the AsyncAPI channel target
-- `topic` is additional semantic metadata and may be used for validation or fallback matching
-
-Examples:
+Definition on an `@asyncapi` annotation of a method or an event goes to the channel it names. The API is the one named
+by `api`, an entry of `apis`; without `api`, the `apis` entry named `default`, which must have role `provider`. Then
+`channel` names the channel in that document. `topic` is metadata, used for validation and as a fallback match. These
+resolution rules were frozen in the first draft.
 
 ```zdl
-@asyncapi({channel: "CustomerEventsChannel", topic: "customer.events"})
-event CustomerEvent { ... }
-```
-
-```zdl
-asyncapi client OrdersAsyncAPI "orders/src/main/resources/apis/asyncapi.yml"
-
 @asyncapi({api: OrdersAsyncAPI, channel: "OrderCreatedChannel"})
 createDelivery(DeliveryInput) Delivery withEvents DeliveryStatusUpdated
 ```
 
-Target resolution order:
-1. resolve API target:
-   - explicit `api`
-   - otherwise `default` provider API
-2. resolve `channel` inside that AsyncAPI
-3. use `topic` as validation/fallback metadata where needed
+*Not today:* `@asyncapi` has no definition, only forward references ([NAV-T2](#nav-t2)).
 
-### 7.2.2 REST/OpenAPI navigation
+<a id="nav-r16"></a>
+### NAV-R16 (partial). REST annotations go to their OpenAPI operation
 
-Services and methods may be annotated with:
-- `@rest`
-- `@get`
-- `@post`
-- `@put`
-- `@delete`
-- other HTTP method annotations
-
-These should navigate to an OpenAPI operation in the default provider OpenAPI.
-
-Definition:
-- REST annotation -> OpenAPI path and operation
-
-References:
-- OpenAPI operation -> ZDL service method(s)
-
-Frozen rules:
-- `@rest("<basePath>")` on the service defines the base path prefix
-- `@get`, `@post`, `@put`, `@delete`, and related HTTP method annotations on methods define the relative path plus HTTP verb
-- the effective OpenAPI path is `serviceBasePath + methodRelativePath`
-- the HTTP verb is taken from the method annotation
-- if no explicit API is named, navigation targets the OpenAPI API named `default` with role `provider`
-- if `operationId` is not explicitly present on the HTTP annotation payload, it defaults to the ZDL method name
-- if no `default` provider OpenAPI exists, resolution falls back to the first provider OpenAPI
-
-Example:
+Definition on `@get`, `@post`, `@put`, `@delete` or another HTTP annotation of a method goes to the OpenAPI operation
+whose path is the service's `@rest` base path plus the method's relative path, with that verb. The OpenAPI document is
+the `apis` entry named `default` with role `provider`, or the first provider OpenAPI when there is no `default`. The
+`operationId` defaults to the method name. These resolution rules were frozen in the first draft.
 
 ```zdl
 @rest("/orders")
@@ -333,352 +281,143 @@ service OrdersService for (CustomerOrder) {
 }
 ```
 
-This resolves to:
-- path: `/orders/{orderId}`
-- method: `get`
-- operationId: `getCustomerOrder`
+This resolves to `get /orders/{orderId}`, `operationId` `getCustomerOrder`.
 
-Target resolution order:
-1. resolve OpenAPI API target:
-   - named API if an explicit rule is added later
-   - otherwise `default` provider OpenAPI
-   - otherwise first provider OpenAPI
-2. compute effective path from service `@rest` plus method HTTP annotation path
-3. resolve HTTP operation by verb on that path
+*Missing:* the operation is resolved with no range and dropped ([NAV-T2](#nav-t2), [NAV-R5](#nav-r5)).
 
-### 7.2.3 Source code inference
+### APIs and the manifest
 
-Entities, inputs, outputs, events, services, and related elements may have Java/Kotlin source-code representations.
+<a id="nav-r17"></a>
+### NAV-R17 (exists). OpenAPI, AsyncAPI and Avro follow their own references
 
-These may be inferred from:
-- `basePackage`
-- repository layout
-- target repository
-- language choice (Java/Kotlin)
+A `$ref`, local or to another file, goes to the node it names. An AsyncAPI payload goes to its Avro schema. An Avro
+field type goes to its record, enum or fixed. Find References answers the reverse within what is indexed
+([NAV-R20](#nav-r20)). Each module implements definition and references ([LS-T1](server-architecture.md#ls-t1)); how
+complete each is was not checked for this document.
 
-Definition:
-- model element -> inferred source-code file/class
+<a id="nav-r18"></a>
+### NAV-R18 (proposed). A manifest service leads to its artifacts, repository and docs
 
-References:
-- source-code element -> originating model element
+From a service in the manifest, whether under a domain or a subdomain, definition or *Open Related* reaches its
+`artifacts` (ZDL, OpenAPI, AsyncAPI), its repository and its docs. Navigation from an artifact back to the service that
+owns it, and between producers and consumers, is for later ([NAV-Q8](#nav-q8)).
 
-TBD:
-- exact path inference rules
-- Java/Kotlin coexistence rules
-- target repository selection
+*Not checked:* the manifest module has hover and definition ([LS-T1](server-architecture.md#ls-t1)); what its
+definition answers today was not read.
 
-## 8. ZFL navigation rules
+### References
 
-## 8.1 In-file navigation
+<a id="nav-r19"></a>
+### NAV-R19 (proposed). Find References is the only "who uses this"
 
-### 8.1.1 Events
+Find References answers who uses a declaration, in every IDE. The command `zenwave.model.reverseReferences` is retired,
+and the Model tree's *Go to References* runs Find References
+([ME-R9](../zenwave-platform-vscode/model-explorer.md#me-r9)). Forward references stay a command of their own,
+because the protocol has nothing for that direction ([MA-R1](../zenwave-platform-vscode/model-actions.md#ma-r1)).
+Decided by the owner on 2026-11-19: both already answered from the same index ([NAV-T3](#nav-t3)), so the
+separation was a label, not a behaviour.
 
-Events are:
-- emitted
-- subscribed to by `when`
-- used in `end` outcomes
+**Example:** given the cursor on `event OrderCreated` in a ZDL, when the user runs Find References, then the
+`withEvents OrderCreated` of the ZDL and the `when OrderCreated` of the flows that link it are listed.
 
-Definition:
-- event usage in `when` or `end` -> event declaration or canonical semantic source in the same file
+<a id="nav-r20"></a>
+### NAV-R20 (proposed). The reference index covers every known local file
 
-References:
-- event declaration/source -> all `when`, `emits`, `end`, and related usages
+The server indexes the known local files in the background when it starts, so that Find References includes uses in
+documents that are not open. It does not index remote documents at start. This answers the "documents it knows of" of
+[LVR-R9](../flows/lsp-visualization-requests.md#lvr-r9). The rule holds only once its cost on the JS server's single
+thread is measured and accepted ([NAV-Q11](#nav-q11)).
 
-TBD:
-- whether all events have an explicit declaration site versus being only flow-level semantic nodes
+**Example:** given a closed `checkout.zfl` that the manifest declares and that uses `createOrder`, when the user runs
+Find References on the ZDL method, then the use in `checkout.zfl` is listed.
 
-### 8.1.2 Commands
+<a id="nav-r21"></a>
+### NAV-R21 (proposed). A remote document is indexed when it is opened
 
-Commands may be:
-- used in `when`
-- called with `call`
+When the user opens a remote document, for example by Ctrl+click on a remote `@zdl`, the server indexes it and the
+remote documents it names directly (its `@zdl`, `apis` and `$ref`), one level deep, and keeps them for the session.
+Find References from a remote document uses that index and the local one. The answer is complete for local uses and
+partial for remote ones: a remote document cannot tell who else uses it. Fetching the directly named documents is the
+one fetch made without a client asking for that address; [AR-R10](../flows/architecture-resources.md#ar-r10) still
+holds for the tree.
 
-Definition:
-- command usage -> semantic command source in the same file
+### Done
 
-References:
-- command source -> all usages
+<a id="nav-r22"></a>
+### NAV-R22 (proposed). Navigation is done when it works through the transport and in each IDE
 
-TBD:
-- exact `call` semantics
+The server is tested at the protocol level, through the transport and not only the module, which is where a dropped
+range hides ([NAV-T2](#nav-t2)). VS Code has a packaged smoke of Ctrl+click from ZFL to ZDL and of Find References
+across files. IntelliJ has a manual checklist with the same cases, until it has UI tests.
 
-### 8.1.3 Outcomes
+## Status by link
 
-Outcomes may be listened to with `on Outcome`.
+What the first draft's matrix listed, with the rule that now owns each link.
 
-Definition:
-- outcome usage -> outcome definition/source in the same file
+| Source | Target | Rule | Status |
+| --- | --- | --- | --- |
+| ZDL field type, parameter, return type, `withEvents` | ZDL declaration | [NAV-R14](#nav-r14) | partial |
+| ZDL `apis` entry | OpenAPI, AsyncAPI or ZDL file | [NAV-R8](#nav-r8) | proposed |
+| ZDL `@asyncapi` | AsyncAPI channel | [NAV-R15](#nav-r15) | proposed |
+| ZDL REST annotation | OpenAPI operation | [NAV-R16](#nav-r16) | partial |
+| ZDL model element | inferred Java or Kotlin source | [NAV-Q4](#nav-q4), [NAV-Q5](#nav-q5) | out |
+| ZFL `@zdl` | linked ZDL | [NAV-R8](#nav-r8), [NAV-R9](#nav-r9) | proposed |
+| ZFL command | ZDL method | [NAV-R11](#nav-r11), [NAV-R13](#nav-r13) | proposed |
+| ZFL event | ZDL event or first appearance | [NAV-R12](#nav-r12), [NAV-R13](#nav-r13) | proposed |
+| ZFL command or event | APIs through the ZDL | [NAV-R15](#nav-r15), [NAV-R16](#nav-r16) from the ZDL | after ZFL to ZDL |
+| OpenAPI and AsyncAPI `$ref`, AsyncAPI payload, Avro types | referenced node | [NAV-R17](#nav-r17) | exists |
+| AsyncAPI channel or message, OpenAPI operation | ZDL method or event | [NAV-Q7](#nav-q7) | later wave |
+| AsyncAPI client spec | producer channel | [NAV-Q8](#nav-q8) | later wave |
+| Avro schema | ZDL event, input or output | [NAV-Q6](#nav-q6) | open |
+| Manifest service | artifacts, repository, docs | [NAV-R18](#nav-r18) | proposed |
+| Any declaration | its uses, open or not | [NAV-R19](#nav-r19), [NAV-R20](#nav-r20), [NAV-R21](#nav-r21) | proposed |
 
-References:
-- outcome definition/source -> all usages
+## LSP surface
 
-TBD:
-- exact `on Outcome` semantics
-- whether outcomes always map to events
+Navigation uses `textDocument/definition`, `textDocument/references`, `textDocument/documentSymbol` and
+`textDocument/hover`. `zenwave/forwardReferences` serves forward references, and the hierarchy's `relatedResources`
+serve *Open Related* ([LVR-R9](../flows/lsp-visualization-requests.md#lvr-r9)). The semantic resolution lives in
+`lsp-core`, not in an IDE client.
 
-### 8.1.4 End outcomes
+## Open questions
 
-End outcomes are treated as events on the same file.
+<a id="nav-q1"></a>
+**NAV-Q1. What does `call` mean for navigation?** Deferred from this wave.
 
-Definition:
-- end outcome usage -> same-file end outcome semantic node
+<a id="nav-q2"></a>
+**NAV-Q2. What does `on Outcome` mean for navigation?** Deferred from this wave.
 
-References:
-- end outcome semantic node -> all usages
+<a id="nav-q3"></a>
+**NAV-Q3. Is an end outcome always event-like?** Until then, [NAV-R12](#nav-r12) sends one to its first appearance.
 
-TBD:
-- whether end outcomes are always event-like or only outcome-like
+<a id="nav-q4"></a>
+**NAV-Q4. How is Java or Kotlin source inferred from a model element?** From `basePackage`, repository layout and
+language. Out of scope until decided otherwise (owner, 2026-11-19).
 
-## 8.2 Cross-file navigation
+<a id="nav-q5"></a>
+**NAV-Q5. Which repository holds the inferred source when several could?** Out of scope with NAV-Q4.
 
-### 8.2.1 `@zdl`
+<a id="nav-q6"></a>
+**NAV-Q6. Do Avro schemas map back to ZDL elements, and how?**
 
-Systems have a `@zdl` annotation pointing to the ZDL representing the service/domain.
+<a id="nav-q7"></a>
+**NAV-Q7. What does navigation from OpenAPI or AsyncAPI back to ZDL and ZFL do?** Including the precedence between
+`api`, `channel`, `topic` and message. A later wave (owner, 2026-11-19); it needs [NAV-R20](#nav-r20) first.
 
-Definition:
-- `@zdl` value -> linked ZDL document
+<a id="nav-q8"></a>
+**NAV-Q8. How does a consumer's `asyncapi-client.yml` reach the producer's channels, and an artifact its owning
+service?** Deferred since the first draft, with producer and consumer validation.
 
-References:
-- ZDL document/service/event/method -> all ZFL systems or flow nodes using it
+<a id="nav-q9"></a>
+**NAV-Q9. How are credentials given for a direct remote location?** A remote the manifest declares uses
+[AR-R7](../flows/architecture-resources.md#ar-r7). A direct URL in `@zdl` or `apis` has no credentials today
+([NAV-R10](#nav-r10)).
 
-Status:
-- defined
+<a id="nav-q10"></a>
+**NAV-Q10. Under what address does a direct remote open?** [AR-R2](../flows/architecture-resources.md#ar-r2) refuses
+any `zenwave:` address the manifest does not declare, and a direct URL in a model is not declared. Opening it
+read-only in the editor ([NAV-R10](#nav-r10)) needs an address, and a reason that does not reopen what AR-R2 closes.
 
-### 8.2.2 Commands and events through linked ZDL
-
-Commands and events referenced in ZFL should navigate through the linked ZDL model.
-
-Examples:
-- ZFL command -> ZDL service method
-- ZFL event -> ZDL event
-
-References:
-- ZDL service method/event -> all matching ZFL usages
-
-TBD:
-- exact scoping rules when multiple linked systems/ZDLs are in one file
-- fallback behavior when names collide
-
-### 8.2.3 External APIs through linked ZDL
-
-ZFL commands and events may also navigate to external APIs through the linked ZDL and its API annotations.
-
-Examples:
-- ZFL command -> ZDL method -> AsyncAPI/OpenAPI target
-- ZFL event -> ZDL event -> AsyncAPI target
-
-Status:
-- intended
-- second phase after ZFL -> ZDL is stable
-
-## 9. OpenAPI navigation rules
-
-## 9.1 In-file
-
-- path -> operations
-- operation -> parameters / request body / responses
-- schema -> referenced schema via `$ref`
-- cross-file `$ref` -> external schema target
-
-Definition:
-- `$ref` -> referenced node
-
-References:
-- schema/operation -> all referencing nodes
-
-Status:
-- mostly defined
-
-## 9.2 Reverse navigation to models
-
-OpenAPI operations may reverse-link to:
-- ZDL services
-- ZDL service methods
-
-TBD:
-- exact matching rules from ZDL REST annotations to OpenAPI operations
-
-## 10. AsyncAPI navigation rules
-
-## 10.1 In-file
-
-- channel -> publish/subscribe operations
-- operation -> message
-- message -> payload
-- `$ref` -> referenced node
-
-Definition:
-- `$ref` or payload link -> referenced message/schema target
-
-References:
-- message/channel/schema -> all referencing nodes
-
-Status:
-- mostly defined
-
-## 10.2 Reverse navigation to models
-
-AsyncAPI should reverse-link to:
-- ZDL events
-- ZDL service methods with `@asyncapi`
-- ZFL commands/events through linked ZDL
-
-TBD:
-- exact matching precedence for channel/topic/message/api
-
-## 10.3 AsyncAPI client navigation
-
-Consumer-side `asyncapi-client.yml` is expected to reference producer-side AsyncAPI channels.
-
-This is important, but deferred from the first navigation implementation wave.
-
-Deferred:
-- validation of client channel references against producer channels
-- references from producer channels to consumer client specs
-
-## 11. Avro navigation rules
-
-## 11.1 In-file
-
-- record -> fields
-- field type -> primitive or named type
-- named type -> target type definition
-
-Definition:
-- field type -> record/enum/fixed target
-
-References:
-- type declaration -> all fields/messages using it
-
-Status:
-- defined
-
-## 11.2 Cross-file
-
-Avro is primarily linked through AsyncAPI payload references.
-
-Definition:
-- AsyncAPI payload -> Avro schema
-
-References:
-- Avro schema -> AsyncAPI messages using it
-
-Potential later link:
-- Avro schema -> ZDL event/input/output by semantic convention
-
-TBD:
-- exact rules for Avro <-> ZDL semantic equivalence
-
-## 12. Project manifest / architecture navigation
-
-The manifest should support navigation from:
-- service -> repository
-- service -> docs
-- service -> owned ZDL/OpenAPI/AsyncAPI/AsyncAPI-client specs
-
-This applies whether the service is declared:
-- directly under a domain
-- under a domain subdomain
-
-Later:
-- reverse navigation from owned spec back to owning service
-- producer/consumer validation and navigation graph
-
-Status:
-- service -> resource links in scope
-- graph enrichment deferred
-
-Reference example:
-- [zenwave-architecture.yml](https://github.com/arcadia-editions/arcadia-editions-architecture/blob/main/zenwave-architecture.yml)
-
-## 13. Cross-language navigation matrix
-
-This matrix summarizes intended links.
-
-| Source | Target | Status |
-|---|---|---|
-| ZDL field type | entity / enum / input / output / event | defined |
-| ZDL service parameter | entity / input | defined |
-| ZDL service return type | entity / output | defined |
-| ZDL `withEvents` | ZDL event | defined |
-| ZDL `apis` entry | OpenAPI / AsyncAPI / ZDL resource | defined at high level |
-| ZDL `@asyncapi` | AsyncAPI channel/message/api target | defined |
-| ZDL REST annotations | OpenAPI operation | defined |
-| ZDL model element | inferred Java/Kotlin source code | TBD |
-| ZFL `@zdl` | linked ZDL file | defined |
-| ZFL command | linked ZDL service method | partially defined |
-| ZFL event | linked ZDL event | partially defined |
-| ZFL command/event | linked external APIs through ZDL | deferred second phase |
-| OpenAPI `$ref` | OpenAPI schema/target | defined |
-| AsyncAPI `$ref` | AsyncAPI schema/message/target | defined |
-| AsyncAPI payload | Avro schema | defined |
-| AsyncAPI channel/message | ZDL method/event | partially defined |
-| Avro schema | AsyncAPI payload usages | defined |
-| manifest service | repository/docs/specs | defined at high level |
-
-## 14. Ambiguity and precedence rules
-
-When multiple navigation targets are possible, the server must apply explicit precedence rules.
-
-The first implementation should avoid guessing when no rule is frozen.
-
-### 14.1 Required precedence definitions
-
-Still needed:
-- ZFL command/event scoping when multiple systems or linked ZDLs match
-- source-code inference precedence when multiple repos/languages match
-
-### 14.2 Behavior when ambiguous
-
-When ambiguity remains after applying frozen rules:
-- return multiple navigation targets
-- annotate them with category/relation metadata
-- do not silently pick one arbitrary target
-
-## 15. Missing targets and partial workspace behavior
-
-Partial checkout and remote/resource absence are normal conditions.
-
-Behavior:
-- unresolved local or remote target should not crash the server
-- diagnostics should be emitted where appropriate
-- navigation may degrade to file-level related-resource links when semantic target resolution is unavailable
-
-## 16. LSP surface
-
-The navigation model should be exposed primarily through standard LSP operations:
-- `textDocument/definition`
-- `textDocument/references`
-- `textDocument/documentSymbol`
-- `workspace/symbol`
-- `textDocument/hover`
-
-Custom requests may still be used for richer hierarchy or related-resource views.
-
-## 17. IDE model
-
-IDE integrations should remain thin.
-
-Expected behavior:
-- click navigation uses `definition`
-- find usages uses `references`
-- outline/structure uses `documentSymbol` or hierarchy
-- richer related links may use custom requests later
-
-The semantic graph belongs in `lsp-core`, not in IntelliJ- or VSCode-specific code.
-
-## 18. Open questions
-
-The following need explicit answers before full implementation:
-
-1. What are the exact ZFL `call` semantics?
-2. What are the exact ZFL `on Outcome` semantics?
-3. Are ZFL end outcomes always event-like targets?
-4. What are the exact Java/Kotlin source-code inference rules?
-5. How is the target repository for inferred source code selected?
-6. How do we map Avro schemas back to ZDL elements, if at all?
-7. What are the exact reverse-navigation expectations from OpenAPI/AsyncAPI back to ZDL/ZFL?
-
----
-
-**Status**: This document is intentionally a first structured draft. It freezes the navigation space, identifies what can already be implemented, and marks unresolved semantics explicitly so they can be filled before deeper implementation. 
+<a id="nav-q11"></a>
+**NAV-Q11. What does background indexing cost on the JS server?** One thread serves every request
+([backlog 001/2.17](../work/backlog.md)). To measure on a real architecture before [NAV-R20](#nav-r20) is built.

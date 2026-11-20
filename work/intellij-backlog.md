@@ -208,6 +208,7 @@ Source: [model explorer](../zenwave-platform-vscode/model-explorer.md), [LVR-R5 
   - Files: new `ZenwaveReferencesHandler.kt`, `ZenwaveLspProjectService.kt`, `plugin.xml`.
   - Verify: tests on a two-file fixture: usages of an entity found in the second file. Note [LVR-R8, R9](../flows/lsp-visualization-requests.md#lvr-r8) are *partial* and [D28](owner-decisions-2026-11-12.md) changes `conceptAt`'s answer to an object; do not build `conceptAt` before that lands (backlog `001/2.x`).
   - Needs: IJ/2.1. Source: [LVR-R7 to R9](../flows/lsp-visualization-requests.md#lvr-r7), [backlog PX/9.7](backlog.md).
+  - Amended 2026-11-20 by [navigation](../zenwave-lsp/navigation-spec.md): who uses a concept is Find Usages only, with no second action ([NAV-R19](../zenwave-lsp/navigation-spec.md#nav-r19)); forward references stay an action; Go to Declaration shows a list when there are several targets instead of `firstOrNull()` ([NAV-R6](../zenwave-lsp/navigation-spec.md#nav-r6)); the manual checklist is [NAV-R22](../zenwave-lsp/navigation-spec.md#nav-r22) (backlog PX/7.2, PX/7.5).
 
 - [ ] **IJ/6.5** (**O**, S) Compare the tree and the references with VS Code on the same fixtures.
   - Files: none. Verify: differences logged as bugs against one client ([backlog 006/7.4, 001/6.4](backlog.md)).
