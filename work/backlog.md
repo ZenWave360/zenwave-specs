@@ -75,6 +75,35 @@ Language change approved by the owner. Grok implements; one Codex review at the 
 - [x] **RU/9** zenwave-sdk (done 2026-11-21: zenwave-sdk `746d979`; the `rules` test builds its model by hand until the SDK moves to dsl-kotlin 1.11): `BackendApplicationDefaultHelpers.java:432-433` reads `@rules(…)` as well as `@policy`, and `$.rules` instead of `$.policies`. After that release, dsl-kotlin can drop the `policies` copy in the model ([ZFL-R11](../dsl-kotlin/zfl-language.md#zfl-r11)).
 - [x] **RU/10** Annotations on a rule, dsl-kotlin first: `rules (SlotOccupancy) { @invariant noBookingWithoutSeats "..." @pre deadlineForCitizens "..." @temporal noShowWindow "..." }`. Today `policie_body` (`Zdl.g4:185`) and `flow_rule` (`Zfl.g4:205`) take only a name and a value. Decided by the owner 2026-11-22 ([ZFL-R11](../dsl-kotlin/zfl-language.md#zfl-r11)): free annotations and a javadoc, kept in `rules.<name>.options` and `.javadoc`, shown in docs and hover, not in Mermaid. Then lsp (hover, outline, completion of known kinds), tmLanguage in VS Code and IntelliJ, sdd skills. [ZFL-R11](../dsl-kotlin/zfl-language.md#zfl-r11). **Done 2026-11-22:** dsl-kotlin 13c8a65, zenwave-lsp 6e2dfa9 (scanner skips annotations and javadoc; hover and completion detail show them). No tmLanguage change was needed: annotations already highlight. sdd skills not updated.
 
+## Towards formal verification (experimental), opened 2026-11-22
+
+Follows the experiment [ZFL-X1 to ZFL-X4](../dsl-kotlin/zfl-language.md#zfl-x1): instance view, timers, expected end states. Two lines of work: a multi-file linter in the server, and validating one aggregate's state machine, shown visually on top of the Problems list. Everything here is experimental like ZFL-X. Blocked on the owner's answers to FV-D1 to FV-D7; rules are written after them.
+
+Decisions:
+
+- [ ] **FV-D1** Scope of the multi-file linter: only the ZFL-X cross-file checks (members, paths, correlation, start fields lost, `at` types, lifecycle states), or also the general ZFL↔ZDL checks that navigation already resolves (a command, event or service in a flow that the winning ZDL lacks, a command whose ZDL method has no `@transition`, an emitted event the method does not declare in `withEvents`). Proposal: both, all warnings.
+- [ ] **FV-D2** Direction: a ZDL change re-lints the flows that link it (the link tracking of [NAV-R9](../zenwave-lsp/navigation-spec.md#nav-r9) already knows them), and the findings stay on the ZFL. Closed flows too (background index, [NAV-R20](../zenwave-lsp/navigation-spec.md#nav-r20)), or only open ones? Proposal: open flows only at first.
+- [ ] **FV-D3** What "validate a state machine" means, by level: (a) structural, from the ZDL alone: states of the `@lifecycle` enum, initial state exists, every state reachable from it, states with no way out, transitions to or from values outside the enum, two transitions of one command from the same state; (b) per flow: walk each variant ([EF-R25](../flows/eventflow.md#ef-r25)) applying the `@transition` of every command run on that aggregate, check each command is called in one of its `from` states and the state at rest matches the `end` expectation (ZFL-X3); (c) export to TLA+ or an explorer. Proposal: (a) and (b) now, (c) later.
+- [ ] **FV-D4** Continuous or on demand: (a) as diagnostics always; (b) on demand for "one concrete aggregate" (a command or a view where you choose it). Proposal: (a) as diagnostics, (b) as the visual view.
+- [ ] **FV-D5** Semantics the walk needs: an aggregate with `[]` (several per key: every instance, or any?), a command that changes the aggregate from outside this flow (ignored?), a call whose response decides the state (the outcome of the `do` picks the transition?), a timer firing at any point while armed (ZFL-X2: explore both orders?).
+- [ ] **FV-D6** The visual, on top of Problems. Proposal, in order:
+  1. a **state machine view** of one aggregate, from the ZDL Diagrams state machine kind ([MP-R25](../zenwave-platform-vscode/model-preview.md#mp-r25)): Mermaid `stateDiagram-v2`, transitions labelled by command, unreachable states dashed, faulty transitions red, initial and terminal states marked, the problems listed under it;
+  2. **from a flow**: the same diagram per view member, with the states and transitions the selected variant (or tree line) walks highlighted, and the expected end state marked ✓ or ✗;
+  3. the **variant tree** marks leaves whose end states fail with ✗ and a count on lines, so a failing path is found from the dropdown;
+  4. **inlay hints** on `end` lines: `Payment: VOIDED ✓` or `Payment: expected CAPTURED, reaches VOIDED ✗`.
+  Which ones, and in what order?
+- [ ] **FV-D7** Where the walk runs: dsl-kotlin (shared by the server and the SDK), the server only, or both. Proposal: dsl-kotlin, as the ZFL-X linters.
+
+Tasks, once the decisions are taken (drafts; ids kept):
+
+- [ ] **FV/1** Rules: write FV-R rules in a new experimental spec `dsl-kotlin/state-machines.md` and the multi-file lint rules in [ZFL-X4](../dsl-kotlin/zfl-language.md#zfl-x4), from FV-D1 to FV-D7.
+- [ ] **FV/2** dsl-kotlin: structural state machine checks of a ZDL aggregate (FV-D3 a), as ZDL warnings.
+- [ ] **FV/3** dsl-kotlin: the per-variant walk (FV-D3 b, FV-D5) over the variant steps of EF-R25, with a result per variant and aggregate: states visited, transitions taken, violations, end state against the expectation.
+- [ ] **FV/4** zenwave-lsp: wire the cross-file linter (FV-D1) and the walk as diagnostics on the ZFL, re-linting when a linked ZDL changes (FV-D2); a request that returns the walk for the visual.
+- [ ] **FV/5** zenwave-lsp and dsl-views: the state machine diagram with problem styling (FV-D6 1), and per flow with the variant highlighted (FV-D6 2).
+- [ ] **FV/6** vistas and VS Code: ✗ marks in the variant tree (FV-D6 3), inlay hints on `end` (FV-D6 4).
+- [ ] **FV/7** Arcadia: run it on `place-order-flow.experimental.zfl` against the modulith ZDLs; record what it finds (D4-type defects) without fixing the ZDLs.
+
 ## dsl-kotlin: visual ZFL editing
 
 - [x] **ZVE/5** Make the ZFL language changes of [decision 0026](../decisions/0026-deleting-a-trigger-keeps-the-body.md): warn on an action nothing triggers or calls ([ZFL-R6](../dsl-kotlin/zfl-language.md#zfl-r6)); a missing `completed` end outcome ([ZFL-R7](../dsl-kotlin/zfl-language.md#zfl-r7)) and a missing service ([ZFL-R8](../dsl-kotlin/zfl-language.md#zfl-r8)) become warnings. Evidence, checked 2026-11-05: `dsl-kotlin/src/commonMain/kotlin/io/zenwave360/language/zfl/semantic/ZflSemanticAnalyzer.kt:549` and `:320` report both as `Severity.ERROR`, and nothing reports an uncalled `do`. Without this, deleting a trigger ([ZVE-R19](../flows/zfl-visual-editing.md#zve-r19)), creating a command without a service and editing an empty flow all make the document invalid and the canvas read-only. Update existing tests that expect the two errors; check the user guide `ZFL-Flow-Language.mdx`. Prerequisite of the ES-P2 operations below.
