@@ -98,6 +98,8 @@ A plain click selects. Ctrl+click (Cmd+click on macOS) goes to the definition. A
 | Mermaid diagram in a preview | Nothing | Nothing | Copy only ([MP-R19](../zenwave-platform-vscode/model-preview.md#mp-r19)) |
 | Markdown preview page | A link, as [MP-R20](../zenwave-platform-vscode/model-preview.md#mp-r20) says | Same | Not defined in this wave |
 
+**VS Code tree exception (2026-11-22).** A VS Code tree item cannot tell a Ctrl+click from a click: `TreeItem.command` receives no modifier keys ([microsoft/vscode#336540](https://github.com/microsoft/vscode/issues/336540)). In the Model tree, F12 on the selected item goes to the definition and Shift+F12 runs Find References, and the item's menu offers both ([NAV-R3](#nav-r3)). Ctrl+click on a tree item stays a plain click until VS Code offers a modifier-aware command.
+
 Definition is the semantic one. In the tree, revealing the source and the definition are the same place for a
 declaration; they differ for a node that refers to something else. A Mermaid diagram does not navigate: the client
 does not interpret Mermaid ([MP-T1](../zenwave-platform-vscode/model-preview.md#mp-t1)), and the EventFlow diagram is
