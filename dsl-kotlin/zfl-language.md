@@ -183,3 +183,27 @@ A rule name with `-` lexes as a different token from a plain identifier, so insi
 @rules(minimumAmount, "stock-first")
 when PlaceOrderRequested do placeOrder
 ```
+
+## Experimental: instance view, timers and expected end states
+
+These rules are **experimental** (owner, 2026-11-22). They are merged so they can be tried on real flows, but they may be changed or rolled back. The user docs do not describe them. Goal: a flow says which aggregates take part and how they correlate, its timers, and the expected state of each aggregate at each end, so it can be translated to a state model (TLA+ or an explorer) without inventing anything. Context: the formal-verification report on PlaceOrderFlow (ivangsa.com, sections 1.7, 1.10, C3, C4). Example: `arcadia-editions-architecture/business-flows/place-order-flow.experimental.zfl`.
+
+<a id="zfl-x1"></a>
+### ZFL-X1 (experimental). A flow may declare one instance view, as its first block
+
+`view PlaceOrderView by Order.id { Order  StockReservation.orderId  Payment.orderId  Fulfillment.order.id  Notification[].orderId }`. `by` names the instance key: one instance per `Order`. Each member is an aggregate of the flow's `systems` with the path of a field that points to the key; the root (the one in `by`) has no path; `[]` means several instances per key; paths may be nested. An event correlates when it carries the key or a member's key; `<member>Id` resolves through `<Member>.id` and then the member's path. `start` fields are part of the instance context. `rules (PlaceOrderView) { … }` holds rules across the view's aggregates.
+
+<a id="zfl-x2"></a>
+### ZFL-X2 (experimental). A timer is a step of the flow
+
+`timer after OrderCreated "10 minutes" unless PaymentAuthorized, PaymentDeclined do releaseStock` and `timer at Booking.endsAt unless BookingCancelled do completeBooking`. `after` arms it when the event is emitted (the duration is free text for now); `at` arms it at the instant a view field holds; `unless` disarms it when any of those events is emitted for the same instance. Firing and disarming are atomic. A timer's body is read as a `when` body. The old `@time("…")` is just an annotation and stays valid. Diagrams draw a timer as a timer policy: a ⏳ hexagon in the flowchart and a `Note over …: ⏳ …` in sequences; a `timer at …` has no arming event, so it appears in no sequence.
+
+<a id="zfl-x3"></a>
+### ZFL-X3 (experimental). An end outcome may state the expected state of each aggregate
+
+`completed: OrderConfirmationSent, OrderConfirmationSkipped { Order: CONFIRMED, Payment: CAPTURED }`. A comma between events means "or". The same outcome name may appear on several lines with different events and states: it is still one outcome, with several variants of final states, and the diagrams are unchanged. Keys are view members; values are states of that aggregate's `@lifecycle`, `none` (does not exist) or a list `[A, B]` (any of them); an absent aggregate is not checked. The state is evaluated when the instance is at rest, not when the event is emitted.
+
+<a id="zfl-x4"></a>
+### ZFL-X4 (experimental). Two linters check them, and their findings are warnings
+
+`view` and `timer` are keywords; `by`, `after`, `at` and `unless` are contextual words and stay usable as names; `none` is an identifier. A single-file linter checks what the ZFL alone can say (one view and first; root without path; members listed once; timer events and commands exist; end keys are view members; an event ends one outcome only; a failure event has a consumer or is an end). A cross-file linter also reads the ZDLs of `systems`, supplied by the caller (members and paths exist and match the key's type; every event correlates; `start` fields reach the commands that need them; `at` fields are dates or times; expected states belong to the lifecycle and some command reaches them). All findings are warnings. The editor shows the single-file ones; the cross-file linter is not wired into the server yet. Open, for the owner: a variant keyed by its end event cannot express two state variants for one event (Arcadia `orderCancelled`); the Arcadia expiry timer has no `unless`.
