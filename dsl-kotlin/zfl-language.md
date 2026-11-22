@@ -153,6 +153,7 @@ A `rules` block lists named business rules, each a name and a text value: `rules
 - **ZFL:** `rules` goes inside a `flow`, anywhere among `start`, `when`, `do` and `end`, and a flow may have several. The aggregate in parentheses is optional and, for now, is not validated against the flow's services. ZFL never had a `policies` keyword, so it has no alias.
 - **Names:** in ZFL, `when … do …` is still called a policy in the code, the specs and EventFlow. A rule is a different thing: a statement of business logic, not a link between an event and a command. The [glossary](../architecture/glossary.md) says so.
 - **Where they show:** the generated docs list a flow's rules on the flow page, and a ZDL's rules in the module page as policies are today; the editor gives highlighting, hover and outline in VS Code and IntelliJ.
+- **Annotations:** a rule may carry annotations and a javadoc, as other ZDL elements do: `@invariant noBookingWithoutSeats "…"`. Annotations are free, like any `@option`; no fixed set of kinds. The model keeps them in `rules.<name>.options` and the javadoc in `rules.<name>.javadoc`. The generated docs and the hover show them; the Mermaid `%% rules:` comment does not. Decided by the owner, 2026-11-22 ([RU/10](../work/backlog.md)).
 
 **Example**
 

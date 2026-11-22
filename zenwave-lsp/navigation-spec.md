@@ -326,7 +326,7 @@ separation was a label, not a behaviour.
 The server indexes the known local files in the background when it starts, so that Find References includes uses in
 documents that are not open. It does not index remote documents at start. This answers the "documents it knows of" of
 [LVR-R9](../flows/lsp-visualization-requests.md#lvr-r9). The rule holds only once its cost on the JS server's single
-thread is measured and accepted ([NAV-Q11](#nav-q11)).
+thread is measured and accepted ([NAV-Q11](#nav-q11), accepted 2026-11-22 with the limits written there).
 
 **Example:** given a closed `checkout.zfl` that the manifest declares and that uses `createOrder`, when the user runs
 Find References on the ZDL method, then the use in `checkout.zfl` is listed.
@@ -420,4 +420,4 @@ read-only in the editor ([NAV-R10](#nav-r10)) needs an address, and a reason tha
 
 <a id="nav-q11"></a>
 **NAV-Q11. What does background indexing cost on the JS server?** One thread serves every request
-([backlog 001/2.17](../work/backlog.md)). To measure on a real architecture before [NAV-R20](#nav-r20) is built.
+([backlog 001/2.17](../work/backlog.md)). To measure on a real architecture before [NAV-R20](#nav-r20) is built. **Answered 2026-11-22:** measured on lsp-js under Node (Arcadia: 11 model files in 0.6 s; synthetic 480 files in 7.2 s, 1920 in 20.6 s; about 10 ms per warm file; about 460 KB retained per file through the open-document path). The owner accepted: index at start, in the background, yielding to requests every 4 ms of work or less, open files first; index the local workspace files, skipping dot-directories (the manifest is not the source of the set for now); cap the first pass at about 500 files, beyond which files are indexed on demand and the index reports itself partial; keep only the references of a closed file, not its parse cache. Harness: zenwave-lsp `feature/nav-index-bench` (`lsp-js/bench/`).
