@@ -185,7 +185,7 @@ path resolves against the document it is written in. A remote one opens as [NAV-
 `@zdl("../orders/orders.zdl", "https://example.com/orders/orders.zdl")` resolves to the first location that exists,
 the winning ZDL. The commands and events of that system resolve against the winning ZDL. Ctrl+click on one string opens
 that location, even when it is not the winner. When no location resolves, the `@zdl` has a diagnostic and navigation
-through that system returns nothing ([NAV-R7](#nav-r7)). The owner decided the list form on 2026-11-19.
+through that system returns nothing ([NAV-R7](#nav-r7)). The owner decided the list form on 2026-11-19, and confirmed it 2026-11-22.
 
 *Not checked:* the grammar accepts a list as an annotation value (`complex_value`, `Zfl.g4:126`), but
 `declaredZdlUris` reads one string ([NAV-T1](#nav-t1)), and the validator was not read.

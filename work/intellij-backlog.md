@@ -8,6 +8,8 @@ shares its style. The analysis, the gap tables and the risks are in [the Intelli
 **Status:** written 2026-11-16 from a read-only survey of the plugin at 79964a2 (`main`, 2026-10-13). Nothing was built or run, so
 every file and line is from reading, not from a failing build. VS Code reference: `feature/architecture-navigator` at fbd321a.
 
+**Maintenance mode (owner, 2026-11-22):** no new features in the plugin. It gets only what reaches it through zenwave-lsp, and fixes. The tasks below stay recorded but are not scheduled.
+
 Tags: **M** mechanical, fit for Grok; **J** judgement; **O** the owner. Sizes S/M/L. Paths are relative to
 `ZenWaveDomainModelEditor/` unless a repository is named. "Needs" lists the tasks or decisions that must land first.
 Each block is 3 to 6 tasks to implement and review together; build and run the plugin once per block, not per task.
